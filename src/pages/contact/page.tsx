@@ -1,0 +1,309 @@
+import { useState, useEffect } from 'react';
+import Navbar from '@/components/feature/Navbar';
+import Footer from '@/components/feature/Footer';
+import { useTranslation } from 'react-i18next';
+
+type FormState = 'idle' | 'submitting' | 'success' | 'error';
+
+function ContactJsonLd() {
+  const { i18n } = useTranslation();
+  useEffect(() => {
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'ContactPage',
+      name: 'Contact Alvin Tran | Marketer & AI Automation Specialist',
+      description: 'Get in touch with Alvin Tran for marketing strategy, AI automation, and communications consulting. Available for collaborations and projects.',
+      url: `${import.meta.env.VITE_SITE_URL ?? 'https://example.com'}/contact`,
+      inLanguage: i18n.language === 'vi' ? 'vi' : 'en',
+      mainEntity: {
+        '@type': 'Person',
+        name: 'Alvin Tran',
+        jobTitle: 'Marketer, AI Automation Specialist & Communications Strategist',
+        telephone: '+84376960193',
+        url: import.meta.env.VITE_SITE_URL ?? 'https://example.com',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'Ha Dong',
+          addressRegion: 'Hanoi',
+          addressCountry: 'VN',
+        },
+      },
+    };
+
+    const existing = document.getElementById('contact-jsonld');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id = 'contact-jsonld';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    const titleEl = document.querySelector('title');
+    if (titleEl) titleEl.textContent = 'Contact Alvin Tran | Marketer & AI Automation Specialist';
+
+    const descEl = document.querySelector('meta[name="description"]');
+    if (descEl) descEl.setAttribute('content', 'Contact Alvin Tran for marketing strategy, AI automation consulting, and communications projects. Based in Hanoi, Vietnam. Available for collaborations.');
+
+    const canonicalEl = document.querySelector('link[rel="canonical"]');
+    if (canonicalEl) canonicalEl.setAttribute('href', `${import.meta.env.VITE_SITE_URL ?? 'https://example.com'}/contact`);
+
+    return () => {
+      const el = document.getElementById('contact-jsonld');
+      if (el) el.remove();
+    };
+  }, [i18n.language]);
+
+  return null;
+}
+
+export default function ContactPage() {
+  const { t } = useTranslation();
+  const [formState, setFormState] = useState<FormState>('idle');
+  const [charCount, setCharCount] = useState(0);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value;
+    if (message.length > 500) return;
+
+    setFormState('submitting');
+
+    const data = new URLSearchParams();
+    const formData = new FormData(form);
+    formData.forEach((value, key) => {
+      data.append(key, value as string);
+    });
+
+    try {
+      const res = await fetch('https://readdy.ai/api/form/d7girbmi0ais34q5m500', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: data.toString(),
+      });
+      if (res.ok) {
+        setFormState('success');
+        form.reset();
+        setCharCount(0);
+      } else {
+        setFormState('error');
+      }
+    } catch {
+      setFormState('error');
+    }
+  };
+
+  const infoItems = t('contact.infoItems', { returnObjects: true }) as Array<{ icon: string; title: string; desc: string }>;
+
+  return (
+    <div className="min-h-screen" style={{ background: '#F8F6F2' }}>
+      <ContactJsonLd />
+      <Navbar />
+
+      {/* Hero */}
+      <section className="pt-28 pb-12 md:pt-36 md:pb-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ background: 'radial-gradient(ellipse at 50% 0%, #2C3E50 0%, transparent 60%)' }}></div>
+        <div className="max-w-3xl mx-auto px-4 md:px-6 text-center relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2C3E50]/20 bg-[#2C3E50]/5 mb-5">
+            <span className="text-[#2C3E50] text-xs font-semibold">{t('contact.badge')}</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-[#1C2526] mb-4 leading-tight">
+            {t('contact.title')} <span className="gradient-text">{t('contact.titleHighlight')}</span>
+          </h1>
+          <p className="text-[#5A6A72] text-base md:text-lg leading-relaxed">
+            {t('contact.subtitle')}
+          </p>
+        </div>
+      </section>
+
+      {/* Main content */}
+      <section className="py-14 md:py-20" style={{ background: '#ffffff' }}>
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+            {/* Left info */}
+            <div className="lg:col-span-2 space-y-6">
+              <div>
+                <h2 className="text-[#1C2526] font-bold text-xl mb-3">{t('contact.infoTitle')}</h2>
+                <p className="text-[#5A6A72] text-sm leading-relaxed">
+                  {t('contact.infoDesc')}
+                </p>
+              </div>
+
+              {infoItems.map((item) => (
+                <div key={item.title} className="flex items-start gap-4">
+                  <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#2C3E50]/10 shrink-0">
+                    <i className={`${item.icon} text-base text-[#2C3E50]`}></i>
+                  </div>
+                  <div>
+                    <p className="text-[#1C2526] text-sm font-semibold">{item.title}</p>
+                    <p className="text-[#8A97A0] text-xs mt-0.5">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Avatar card */}
+              <div className="card-light rounded-2xl p-5 flex items-center gap-4 mt-4">
+                <img
+                  src="https://static.readdy.ai/image/f4782dda055a3841fcfd0612adf32078/59d195d43fbe9524d26babfa75d94193.jpeg"
+                  alt={t('contact.avatarName')}
+                  className="w-12 h-12 rounded-full object-cover shrink-0"
+                />
+                <div>
+                  <p className="text-[#1C2526] font-semibold text-sm">{t('contact.avatarName')}</p>
+                  <p className="text-[#8A97A0] text-xs">{t('contact.avatarRole')}</p>
+                  <p className="text-[#5A6A72] text-xs mt-1 italic">&ldquo;{t('contact.avatarQuote')}&rdquo;</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div className="lg:col-span-3">
+              <div className="card-light rounded-2xl p-7 md:p-8">
+                {formState === 'success' ? (
+                  <div className="text-center py-10">
+                    <div className="w-16 h-16 flex items-center justify-center rounded-full bg-green-50 mx-auto mb-5">
+                      <i className="ri-check-line text-3xl text-green-500"></i>
+                    </div>
+                    <h3 className="text-[#1C2526] font-bold text-xl mb-3">{t('contact.form.successTitle')}</h3>
+                    <p className="text-[#5A6A72] text-sm leading-relaxed max-w-sm mx-auto">
+                      {t('contact.form.successDesc')}
+                    </p>
+                    <button
+                      onClick={() => setFormState('idle')}
+                      className="mt-6 border border-gray-200 text-[#1C2526] text-sm font-semibold px-6 py-2.5 rounded-full hover:border-[#2C3E50]/30 hover:text-[#2C3E50] transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {t('contact.form.sendAnother')}
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={handleSubmit}
+                    data-readdy-form
+                    id="contact-form-alvin"
+                    className="space-y-5"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-[#1C2526] text-sm font-medium mb-2">
+                          {t('contact.form.nameLabel')} <span className="text-[#2C3E50]">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          placeholder={t('contact.form.namePlaceholder')}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[#1C2526] text-sm font-medium mb-2">
+                          {t('contact.form.emailLabel')} <span className="text-[#2C3E50]">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          required
+                          placeholder={t('contact.form.emailPlaceholder')}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-[#1C2526] text-sm font-medium mb-2">
+                          {t('contact.form.phoneLabel')} <span className="text-[#2C3E50]">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          required
+                          placeholder={t('contact.form.phonePlaceholder')}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[#1C2526] text-sm font-medium mb-2">
+                          {t('contact.form.companyLabel')}
+                        </label>
+                        <input
+                          type="text"
+                          name="company"
+                          placeholder={t('contact.form.companyPlaceholder')}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[#1C2526] text-sm font-medium mb-2">
+                        {t('contact.form.subjectLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        name="subject"
+                        placeholder={t('contact.form.subjectPlaceholder')}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[#1C2526] text-sm font-medium mb-2">
+                        {t('contact.form.messageLabel')} <span className="text-[#2C3E50]">*</span>
+                      </label>
+                      <textarea
+                        name="message"
+                        required
+                        rows={4}
+                        maxLength={500}
+                        placeholder={t('contact.form.messagePlaceholder')}
+                        onChange={(e) => setCharCount(e.target.value.length)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors resize-none"
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[#8A97A0] text-xs">{t('contact.form.messageHint')}</span>
+                        <span className={`text-xs ${charCount > 450 ? 'text-red-500' : 'text-[#8A97A0]'}`}>{charCount}{t('contact.form.charLimit')}</span>
+                      </div>
+                    </div>
+
+                    {formState === 'error' && (
+                      <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
+                        <i className="ri-error-warning-line text-red-500 text-sm"></i>
+                        <p className="text-red-500 text-xs">{t('contact.form.errorMsg')}</p>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={formState === 'submitting' || charCount > 500}
+                      className="gradient-bg text-white font-semibold py-3.5 rounded-full w-full flex items-center justify-center gap-2 whitespace-nowrap hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer text-sm"
+                    >
+                      {formState === 'submitting' ? (
+                        <>
+                          <i className="ri-loader-4-line animate-spin text-base"></i>
+                          {t('contact.form.sending')}
+                        </>
+                      ) : (
+                        <>
+                          <i className="ri-send-plane-line text-base"></i>
+                          {t('contact.form.sendBtn')}
+                        </>
+                      )}
+                    </button>
+
+                    <p className="text-center text-[#8A97A0] text-xs">
+                      <i className="ri-lock-line mr-1"></i>
+                      {t('contact.form.privacyNote')}
+                    </p>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}

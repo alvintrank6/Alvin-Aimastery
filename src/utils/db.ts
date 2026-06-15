@@ -22,6 +22,13 @@ export interface Freelancer {
   rateValue: number;
   status: 'Pending' | 'Approved' | 'Rejected';
   date: string;
+  title?: string;
+  yearsOfExperience?: string;
+  englishProficiency?: string;
+  cvLink?: string;
+  availability?: string;
+  shortBio?: string;
+  dateOfBirth?: string;
 }
 
 export interface Project {
@@ -88,7 +95,7 @@ const DEFAULT_LEADS: Lead[] = [
     email: 'vana@techcorp.vn',
     phone: '0912345678',
     company: 'TechCorp Viet Nam',
-    service: 'Web Development',
+    service: 'web',
     message: 'We need an e-commerce website designed in React and Tailwind.',
     status: 'Qualified',
     date: '2026-06-10 09:30',
@@ -99,7 +106,7 @@ const DEFAULT_LEADS: Lead[] = [
     email: 'janes@aesthetics.com',
     phone: '+1415888999',
     company: 'Aesthetics Cosmetics',
-    service: 'Email Automation',
+    service: 'email',
     message: 'Looking for setting up an Klaviyo automated sequence for abandoned carts.',
     status: 'New',
     date: '2026-06-11 14:15',
@@ -110,7 +117,7 @@ const DEFAULT_LEADS: Lead[] = [
     email: 'lethib@spa.vn',
     phone: '0987654321',
     company: 'An Nhien Spa',
-    service: 'AI Chatbot',
+    service: 'chatbot',
     message: 'Need a Facebook chatbot to automatically handle booking consultations.',
     status: 'Contacted',
     date: '2026-06-12 08:00',
@@ -159,7 +166,7 @@ const DEFAULT_PROJECTS: Project[] = [
     name: 'React Dashboard for TechCorp',
     clientName: 'Nguyen Van A',
     clientEmail: 'vana@techcorp.vn',
-    service: 'Web Development',
+    service: 'web',
     status: 'In Progress',
     assigneeId: 'free-2',
     assigneeName: 'Minh Dev',
@@ -177,7 +184,7 @@ const DEFAULT_PROJECTS: Project[] = [
     name: 'n8n HubSpot-Slack Sync',
     clientName: 'Alvin Tran',
     clientEmail: 'alvin@agency.com',
-    service: 'n8n Automation',
+    service: 'n8n',
     status: 'Client Review',
     assigneeId: 'free-1',
     assigneeName: 'Tran Freelancer',
@@ -195,7 +202,7 @@ const DEFAULT_PROJECTS: Project[] = [
     name: 'Landing Page for Spa An Nhien',
     clientName: 'Le Thi B',
     clientEmail: 'lethib@spa.vn',
-    service: 'Landing Page',
+    service: 'landing',
     status: 'New',
     assigneeId: 'Unassigned',
     assigneeName: 'None',
@@ -213,7 +220,7 @@ const DEFAULT_PROJECTS: Project[] = [
     name: 'Lead Generation Chatbot',
     clientName: 'Nguyen Van A',
     clientEmail: 'vana@techcorp.vn',
-    service: 'AI Chatbot',
+    service: 'chatbot',
     status: 'Completed',
     assigneeId: 'free-1',
     assigneeName: 'Tran Freelancer',

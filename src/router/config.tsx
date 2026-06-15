@@ -3,10 +3,12 @@ import NotFound from "../pages/NotFound";
 import Home from "../pages/home/page";
 import ContactPage from "../pages/contact/page";
 import ServicePage from "../pages/services/ServicePage";
-import Register from "../pages/outsource/Register";
+import Register from "../pages/developer/Register";
 import ClientPortal from "../pages/client/ClientPortal";
 import MemberPortal from "../pages/member/MemberPortal";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import Login from "../pages/auth/Login";
+import RegisterSelection from "../pages/auth/RegisterSelection";
 
 const routes: RouteObject[] = [
   {
@@ -22,7 +24,7 @@ const routes: RouteObject[] = [
     element: <ServicePage />,
   },
   {
-    path: "/outsource/register",
+    path: "/developer/register",
     element: <Register />,
   },
   {
@@ -36,6 +38,14 @@ const routes: RouteObject[] = [
   {
     path: "/admin",
     element: <AdminDashboard />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <RegisterSelection />,
   },
   {
     path: "*",

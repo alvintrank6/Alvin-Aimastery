@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import { MockDB, Project, Freelancer } from '@/utils/db';
 
 export default function MemberPortal() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
   const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -15,13 +17,58 @@ export default function MemberPortal() {
   const [editingProjId, setEditingProjId] = useState<string | null>(null);
   const [tempProgress, setTempProgress] = useState<number>(0);
   const [tempDeliverables, setTempDeliverables] = useState<string>('');
+  const [isUnapproved, setIsUnapproved] = useState<boolean>(false);
 
   useEffect(() => {
-    // Get list of approved freelancers for login simulator
-    const list = MockDB.getFreelancers().filter((f) => f.status === 'Approved');
-    setFreelancers(list);
-    setTaxRate(MockDB.getTaxRate());
-  }, []);
+    const isLoggedIn = sessionStorage.getItem('user_logged_in') === 'true';
+    const role = sessionStorage.getItem('user_role');
+    const email = sessionStorage.getItem('user_email');
+
+    if (!isLoggedIn || role !== 'freelancer') {
+      navigate('/login');
+      return;
+    }
+
+    if (email) {
+      const allList = MockDB.getFreelancers();
+      const list = allList.filter((f) => f.status === 'Approved');
+      setFreelancers(list);
+      setTaxRate(MockDB.getTaxRate());
+
+      const matched = list.find(f => f.email.toLowerCase() === email.toLowerCase());
+      if (matched) {
+        setSelectedFreelancer(matched);
+        setIsUnapproved(false);
+      } else {
+        const pendingMatched = allList.find(f => f.email.toLowerCase() === email.toLowerCase());
+        if (pendingMatched && pendingMatched.status !== 'Approved') {
+          setIsUnapproved(true);
+        } else {
+          const loggedName = sessionStorage.getItem('user_name') || 'Freelancer';
+          const loggedId = sessionStorage.getItem('user_id') || 'free-1';
+          setSelectedFreelancer({
+            id: loggedId,
+            name: loggedName,
+            email,
+            skills: [],
+            portfolio: '',
+            rateType: 'hourly',
+            rateValue: 0,
+            status: 'Approved',
+            date: '',
+          });
+          setIsUnapproved(false);
+        }
+      }
+    }
+  }, [navigate]);
+
+  const loadProjects = useCallback(() => {
+    if (!selectedFreelancer) return;
+    const allProjects = MockDB.getProjects();
+    const myProjs = allProjects.filter((p) => p.assigneeId === selectedFreelancer.id);
+    setProjects(myProjs);
+  }, [selectedFreelancer]);
 
   useEffect(() => {
     if (selectedFreelancer) {
@@ -29,18 +76,17 @@ export default function MemberPortal() {
     } else {
       setProjects([]);
     }
-  }, [selectedFreelancer]);
-
-  const loadProjects = () => {
-    if (!selectedFreelancer) return;
-    const allProjects = MockDB.getProjects();
-    const myProjs = allProjects.filter((p) => p.assigneeId === selectedFreelancer.id);
-    setProjects(myProjs);
-  };
+  }, [selectedFreelancer, loadProjects]);
 
   const handleLogout = () => {
+    sessionStorage.removeItem('user_logged_in');
+    sessionStorage.removeItem('user_role');
+    sessionStorage.removeItem('user_email');
+    sessionStorage.removeItem('user_name');
+    sessionStorage.removeItem('user_id');
     setSelectedFreelancer(null);
     setEditingProjId(null);
+    navigate('/login');
   };
 
   const handleStartEdit = (proj: Project) => {
@@ -83,52 +129,36 @@ export default function MemberPortal() {
 
       <main className="pt-24 pb-16 flex-grow">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
-          {!selectedFreelancer ? (
-            /* Login Simulation Card */
-            <div className="max-w-md mx-auto my-10 bg-white rounded-3xl p-6 md:p-8 border border-[#2C3E50]/5 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1.5 gradient-bg" />
-              <div className="text-center space-y-2 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-[#9B2A4C]/10 flex items-center justify-center text-[#9B2A4C] mx-auto text-xl">
-                  <i className="ri-code-box-line" />
-                </div>
-                <h1 className="text-2xl font-black text-[#1C2526]">{t('member.title')}</h1>
-                <p className="text-xs text-[#5A6A72]">{t('member.subtitle')}</p>
+          {isUnapproved ? (
+            <div className="max-w-md mx-auto bg-white rounded-3xl p-8 border border-yellow-100 shadow-xl text-center space-y-6 animate-fadeIn mt-10">
+              <div className="w-16 h-16 bg-yellow-50 text-yellow-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <i className="ri-error-warning-fill text-3xl" />
               </div>
-
-              <div className="space-y-4">
-                <label className="block text-xs font-bold text-[#1C2526] uppercase">
-                  {t('portals.loginAs')}
-                </label>
-                <div className="space-y-2">
-                  {freelancers.length === 0 ? (
-                    <p className="text-xs text-red-500 italic text-center py-2">
-                      No approved freelancer accounts found. Please register in the Outsource Portal first!
-                    </p>
-                  ) : (
-                    freelancers.map((free) => (
-                      <button
-                        key={free.email}
-                        onClick={() => setSelectedFreelancer(free)}
-                        className="w-full text-left p-4 rounded-2xl border border-gray-200 hover:border-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all flex items-center justify-between group cursor-pointer"
-                      >
-                        <div>
-                          <p className="text-sm font-bold text-[#1C2526] group-hover:text-[#9B2A4C]">
-                            {free.name}
-                          </p>
-                          <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold">
-                            Skills: {free.skills.join(', ')}
-                          </p>
-                        </div>
-                        <i className="ri-arrow-right-line text-[#8A97A0] group-hover:text-[#9B2A4C] transition-colors" />
-                      </button>
-                    ))
-                  )}
-                </div>
-
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-[#5A6A72] leading-relaxed">
-                  <span className="font-bold text-[#1C2526]">RBAC Policy Warning:</span> Logs are strictly filtered. Freelancers can only view their own projects and calculations, preventing unauthorized information access.
-                </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-black text-[#1C2526]">{t('portals.memberPortal')}</h2>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {t('member.noFreelancersFound')}
+                </p>
               </div>
+              <div className="pt-2">
+                <a
+                  href="http://localhost:3000/developer/register"
+                  className="inline-block w-full py-3 rounded-xl gradient-bg text-white font-bold text-xs shadow hover:opacity-95 transition-opacity"
+                >
+                  {t('portals.outsourceRegister')}
+                </a>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-xs text-[#8A97A0] hover:text-[#2C3E50] font-bold cursor-pointer"
+              >
+                {t('portals.logout')}
+              </button>
+            </div>
+          ) : !selectedFreelancer ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <i className="ri-loader-4-line animate-spin text-4xl text-[#9B2A4C]" />
+              <p className="text-xs text-[#8A97A0] mt-2">Loading workspace...</p>
             </div>
           ) : (
             /* Dashboard View */
@@ -167,8 +197,8 @@ export default function MemberPortal() {
                   {projects.length === 0 ? (
                     <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
                       <i className="ri-inbox-line text-4xl text-gray-300 block mb-3" />
-                      <p className="text-sm font-semibold text-gray-400">No active projects assigned to you.</p>
-                      <p className="text-xs text-gray-400 mt-1">Please wait for the Admin to link you to a client campaign.</p>
+                      <p className="text-sm font-semibold text-gray-400">{t('member.noTasks')}</p>
+                      <p className="text-xs text-gray-400 mt-1">{t('member.noTasksDesc')}</p>
                     </div>
                   ) : (
                     projects.map((proj) => (
@@ -179,7 +209,7 @@ export default function MemberPortal() {
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-gray-100">
                           <div>
                             <span className="text-xs font-bold text-[#9B2A4C] uppercase tracking-wider">
-                              {proj.service}
+                              {i18n.exists(`services.list.${proj.service}.title`) ? t(`services.list.${proj.service}.title` as any) : proj.service}
                             </span>
                             <h3 className="text-md font-bold text-[#1C2526] mt-0.5">{proj.name}</h3>
                           </div>
@@ -200,12 +230,12 @@ export default function MemberPortal() {
                         {/* Progress and Work URL */}
                         <div className="flex justify-between items-center text-xs pt-1">
                           <div>
-                            <span className="font-bold text-gray-400 uppercase tracking-wide">Progress: </span>
+                            <span className="font-bold text-gray-400 uppercase tracking-wide">{t('member.progressLabel')}: </span>
                             <span className="font-bold text-[#9B2A4C]">{proj.progress}%</span>
                           </div>
                           {proj.deliverablesUrl && (
                             <div className="truncate max-w-xs text-gray-400 font-medium">
-                              Link: <span className="text-gray-600 underline">{proj.deliverablesUrl}</span>
+                              {t('member.linkLabel')}: <span className="text-gray-600 underline">{proj.deliverablesUrl}</span>
                             </div>
                           )}
                         </div>
@@ -241,7 +271,7 @@ export default function MemberPortal() {
                                   type="url"
                                   value={tempDeliverables}
                                   onChange={(e) => setTempDeliverables(e.target.value)}
-                                  placeholder="https://github.com/... or staging deployment URL"
+                                  placeholder={t('member.deliverablesPlaceholder')}
                                   className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] transition-colors"
                                 />
                               </div>
@@ -252,7 +282,7 @@ export default function MemberPortal() {
                                   onClick={() => setEditingProjId(null)}
                                   className="px-4 py-2 rounded-xl border border-gray-200 text-gray-500 font-semibold text-xs hover:bg-gray-50 transition-colors"
                                 >
-                                  Cancel
+                                  {t('common.cancel')}
                                 </button>
                                 <button
                                   type="submit"
@@ -269,7 +299,7 @@ export default function MemberPortal() {
                               onClick={() => handleStartEdit(proj)}
                               className="px-4 py-2 border border-[#2C3E50]/20 text-[#2C3E50] font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
                             >
-                              Update Progress & Files
+                              {t('member.updateProgressBtn')}
                             </button>
 
                             {/* Payout actions */}
@@ -311,7 +341,7 @@ export default function MemberPortal() {
                       {t('member.personalFinance')}
                     </h2>
                     <p className="text-xs text-[#5A6A72]">
-                      Thù lao payments automatically deduct tax and are pending review in the Admin billing queue.
+                      {t('member.financeDesc')}
                     </p>
 
                     <div className="h-px bg-gray-100" />
@@ -347,25 +377,24 @@ export default function MemberPortal() {
                           </div>
 
                           <div className="flex justify-between items-center pt-1">
-                            <span className="text-[10px] uppercase font-bold text-gray-400">Status</span>
+                            <span className="text-[10px] uppercase font-bold text-gray-400">{t('common.status')}</span>
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                proj.payoutStatus === 'Paid'
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${proj.payoutStatus === 'Paid'
                                   ? 'bg-green-50 text-green-600'
                                   : proj.payoutStatus === 'Approved'
-                                  ? 'bg-blue-50 text-blue-600'
-                                  : proj.payoutStatus === 'Requested'
-                                  ? 'bg-yellow-50 text-yellow-600'
-                                  : 'bg-gray-100 text-gray-500'
-                              }`}
+                                    ? 'bg-blue-50 text-blue-600'
+                                    : proj.payoutStatus === 'Requested'
+                                      ? 'bg-yellow-50 text-yellow-600'
+                                      : 'bg-gray-100 text-gray-500'
+                                }`}
                             >
                               {proj.payoutStatus === 'Paid'
                                 ? t('member.statusPaid')
                                 : proj.payoutStatus === 'Approved'
-                                ? t('member.statusApproved')
-                                : proj.payoutStatus === 'Requested'
-                                ? t('member.statusRequested')
-                                : t('member.statusNone')}
+                                  ? t('member.statusApproved')
+                                  : proj.payoutStatus === 'Requested'
+                                    ? t('member.statusRequested')
+                                    : t('member.statusNone')}
                             </span>
                           </div>
                         </div>
@@ -373,7 +402,7 @@ export default function MemberPortal() {
                     })}
 
                     {projects.length === 0 && (
-                      <p className="text-xs text-gray-400 italic text-center py-4">No finance statements available.</p>
+                      <p className="text-xs text-gray-400 italic text-center py-4">{t('member.noFinance')}</p>
                     )}
                   </div>
                 </div>

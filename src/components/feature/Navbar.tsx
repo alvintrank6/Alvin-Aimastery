@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -14,23 +14,25 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [authDropdownOpen, setAuthDropdownOpen] = useState(false);
+  const authDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
 
   const servicesList = [
-    { name: 'Xây dựng website', id: 'web' },
-    { name: 'Xây dựng chatbot', id: 'chatbot' },
-    { name: 'Xây dựng landing page', id: 'landing' },
-    { name: 'Xây dựng workflow', id: 'workflow' },
-    { name: 'Xây dựng email automation', id: 'email' },
-    { name: 'Xây dựng n8n', id: 'n8n' },
-    { name: 'Xây app', id: 'app' },
+    { id: 'web', icon: 'ri-global-line', textColor: 'text-blue-500', bgColor: 'bg-blue-50' },
+    { id: 'chatbot', icon: 'ri-chat-voice-line', textColor: 'text-emerald-500', bgColor: 'bg-emerald-50' },
+    { id: 'landing', icon: 'ri-layout-grid-line', textColor: 'text-violet-500', bgColor: 'bg-violet-50' },
+    { id: 'workflow', icon: 'ri-git-branch-line', textColor: 'text-amber-500', bgColor: 'bg-amber-50' },
+    { id: 'email', icon: 'ri-mail-send-line', textColor: 'text-rose-500', bgColor: 'bg-rose-50' },
+    { id: 'n8n', icon: 'ri-route-line', textColor: 'text-teal-500', bgColor: 'bg-teal-50' },
+    { id: 'app', icon: 'ri-smartphone-line', textColor: 'text-cyan-500', bgColor: 'bg-cyan-50' },
   ];
 
   const navItems = [
-    { label: t('navbar.about'), id: 'about' },
     { label: t('navbar.projects'), id: 'projects' },
+    { label: t('navbar.about'), id: 'about' },
   ];
 
   useEffect(() => {
@@ -42,7 +44,18 @@ export default function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
     setServicesOpen(false);
+    setAuthDropdownOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (authDropdownRef.current && !authDropdownRef.current.contains(event.target as Node)) {
+        setAuthDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleNavClick = (id: string) => {
     if (isHome) {
@@ -60,189 +73,307 @@ export default function Navbar() {
     }
   }, [isHome, location]);
 
-  const toggleLang = () => {
-    const next = i18n.language === 'vi' ? 'en' : 'vi';
-    i18n.changeLanguage(next);
-  };
-
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'glass-nav shadow-sm bg-white/90 backdrop-blur-md border-b border-gray-100' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full transition-all duration-300 px-4 md:px-8 mt-4`}
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+      <div
+        className={`w-full max-w-7xl h-16 flex items-center justify-between px-6 rounded-2xl border transition-all duration-300 ${
+          scrolled
+            ? 'bg-white/95 backdrop-blur-lg border-gray-100 shadow-[0_12px_40px_rgba(44,62,80,0.08)] py-1'
+            : 'bg-white/60 backdrop-blur-md border-white/20 shadow-sm'
+        }`}
+      >
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="font-bold text-base text-[#1C2526] whitespace-nowrap">Alvin Tran</span>
+        <Link to="/" className="flex items-center gap-2 group shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#2C3E50] to-[#9B2A4C] flex items-center justify-center text-white font-bold text-sm shadow-[0_3px_10px_rgba(155,42,76,0.15)] group-hover:scale-105 transition-transform duration-200">
+            A
+          </div>
+          <span className="font-extrabold text-base text-[#1C2526] tracking-tight whitespace-nowrap flex items-center">
+            Alvin
+            <span className="text-[#9B2A4C] font-semibold ml-0.5">Tran</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#9B2A4C] ml-1 animate-pulse" />
+          </span>
         </Link>
 
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-6">
           {/* Services Dropdown */}
           <div
-            className="relative"
+            className="relative h-full flex items-center group"
             onMouseEnter={() => setServicesOpen(true)}
             onMouseLeave={() => setServicesOpen(false)}
           >
-            <button className="text-sm font-medium text-[#5A6A72] hover:text-[#2C3E50] transition-colors duration-200 whitespace-nowrap flex items-center gap-1 cursor-pointer">
-              Services
-              <i className={`ri-arrow-down-s-line transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`} />
+            <button className="text-sm font-bold text-[#5A6A72] hover:text-[#1C2526] transition-colors duration-200 whitespace-nowrap flex items-center gap-1 cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 rounded-xl">
+              {t('navbar.services')}
+              <i className={`ri-arrow-down-s-line transition-transform duration-200 ${servicesOpen ? 'rotate-180 text-[#9B2A4C]' : ''}`} />
             </button>
 
-            {servicesOpen && (
-              <div className="absolute top-5 left-0 w-60 bg-white border border-gray-100 rounded-2xl shadow-xl py-3 z-50 animate-fadeIn">
+            {/* Mega Menu Dropdown */}
+            <div
+              className={`absolute top-[90%] left-1/2 -translate-x-[35%] mt-2 w-[720px] bg-white border border-gray-100 rounded-3xl shadow-[0_20px_50px_rgba(44,62,80,0.12)] p-6 z-50 flex gap-6 transition-all duration-300 origin-top ${
+                servicesOpen
+                  ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+                  : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+              }`}
+            >
+              {/* Services Grid (Left - 2 Columns) */}
+              <div className="flex-1 grid grid-cols-2 gap-3">
                 {servicesList.map((svc) => (
                   <Link
                     key={svc.id}
                     to={`/services/${svc.id}`}
-                    className="block px-4 py-2.5 text-xs font-semibold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all"
+                    className="flex gap-3 p-2.5 rounded-2xl hover:bg-[#9B2A4C]/5 group/item transition-all duration-200 border border-transparent hover:border-[#9B2A4C]/10"
                   >
-                    {i18n.language === 'vi' ? svc.name : svc.name.replace('Xây dựng', 'Build').replace('Xây', 'Build')}
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg ${svc.bgColor} ${svc.textColor} shrink-0 transition-transform group-hover/item:scale-110 duration-200`}
+                    >
+                      <i className={svc.icon} />
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-bold text-[#1C2526] group-hover/item:text-[#9B2A4C] transition-colors">
+                        {t(`services.list.${svc.id}.title` as any)}
+                      </h4>
+                      <p className="text-[10px] text-gray-400 leading-normal line-clamp-2">
+                        {t(`services.list.${svc.id}.desc` as any)}
+                      </p>
+                    </div>
                   </Link>
                 ))}
               </div>
-            )}
+
+              {/* Featured Promo Panel (Right) */}
+              <div className="w-56 bg-gradient-to-br from-[#9B2A4C] to-[#2C3E50] rounded-2xl p-5 text-white flex flex-col justify-between relative overflow-hidden shadow-inner shrink-0 group/promo">
+                {/* Glow effect */}
+                <div className="absolute -right-10 -top-10 w-28 h-28 bg-white/10 rounded-full blur-xl group-hover/promo:scale-125 transition-transform duration-500 animate-pulse" />
+
+                <div className="space-y-2.5 relative z-10">
+                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-sm font-bold">
+                    <i className="ri-rocket-line text-white" />
+                  </div>
+                  <h4 className="text-xs font-extrabold tracking-wide">
+                    {i18n.language === 'vi' ? 'Giải Pháp Tùy Biến?' : 'Custom Solution?'}
+                  </h4>
+                  <p className="text-[9px] text-white/80 leading-relaxed font-medium">
+                    {i18n.language === 'vi'
+                      ? 'Xây dựng quy trình tự động hóa và AI riêng biệt theo nhu cầu doanh nghiệp của bạn.'
+                      : 'Build tailored AI chatbots and workflow automations for your business.'}
+                  </p>
+                </div>
+
+                <Link
+                  to="/contact"
+                  className="mt-4 w-full py-2 bg-white text-[#9B2A4C] rounded-xl text-[10px] font-bold text-center block shadow hover:bg-gray-50 transition-all hover:scale-[1.02] relative z-10 cursor-pointer"
+                >
+                  {i18n.language === 'vi' ? 'Nhận Tư Vấn Miễn Phí' : 'Get Free Consultation'}
+                </Link>
+              </div>
+            </div>
           </div>
 
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleNavClick(item.id)}
-              className="text-sm font-medium text-[#5A6A72] hover:text-[#2C3E50] transition-colors duration-200 whitespace-nowrap cursor-pointer"
+              className="text-sm font-bold text-[#5A6A72] hover:text-[#1C2526] transition-all duration-200 whitespace-nowrap cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 rounded-xl"
             >
               {item.label}
             </button>
           ))}
-
-          {/* Portals Links */}
-          <Link
-            to="/client-portal"
-            className={`text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
-              location.pathname === '/client-portal' ? 'text-[#9B2A4C] font-bold' : 'text-[#5A6A72] hover:text-[#2C3E50]'
-            }`}
-          >
-            {t('portals.clientPortal')}
-          </Link>
-
-          <Link
-            to="/outsource/register"
-            className={`text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
-              location.pathname === '/outsource/register' ? 'text-[#9B2A4C] font-bold' : 'text-[#5A6A72] hover:text-[#2C3E50]'
-            }`}
-          >
-            {t('portals.memberPortal')}
-          </Link>
-
-          <Link
-            to="/admin"
-            className={`text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
-              location.pathname === '/admin' ? 'text-[#9B2A4C] font-bold' : 'text-[#5A6A72] hover:text-[#2C3E50]'
-            }`}
-          >
-            {t('portals.adminDashboard')}
-          </Link>
-
-          {/* Language toggle */}
-          <button
-            onClick={toggleLang}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-[#2C3E50]/20 text-[#2C3E50] hover:bg-[#2C3E50]/5 transition-colors whitespace-nowrap cursor-pointer"
-            aria-label={t('common.switchLang')}
-          >
-            <i className="ri-global-line text-sm" />
-            {i18n.language === 'vi' ? 'EN' : 'VI'}
-          </button>
         </div>
 
-        {/* CTA */}
-        <div className="hidden lg:flex items-center gap-3">
+        {/* Actions & Utilities */}
+        <div className="hidden lg:flex items-center gap-4">
+          {/* Premium Sliding Language toggle */}
+          <div className="relative bg-[#F8F6F2] p-0.5 rounded-full border border-gray-200 flex items-center w-24 h-8 select-none">
+            {/* Sliding indicator */}
+            <div
+              className="absolute top-0.5 bottom-0.5 w-[44px] bg-white rounded-full shadow-sm transition-all duration-300 ease-out"
+              style={{
+                transform: i18n.language === 'vi' ? 'translateX(0px)' : 'translateX(44px)',
+              }}
+            />
+            <button
+              onClick={() => i18n.changeLanguage('vi')}
+              className={`flex-1 text-center text-[10px] font-bold z-10 transition-colors cursor-pointer ${
+                i18n.language === 'vi' ? 'text-[#9B2A4C]' : 'text-gray-400'
+              }`}
+            >
+              VI
+            </button>
+            <button
+              onClick={() => i18n.changeLanguage('en')}
+              className={`flex-1 text-center text-[10px] font-bold z-10 transition-colors cursor-pointer ${
+                i18n.language === 'en' ? 'text-[#9B2A4C]' : 'text-gray-400'
+              }`}
+            >
+              EN
+            </button>
+          </div>
+
+          {/* User Auth Dropdown */}
+          <div className="relative" ref={authDropdownRef}>
+            <button
+              onClick={() => setAuthDropdownOpen(!authDropdownOpen)}
+              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-[#5A6A72] hover:text-[#9B2A4C] hover:border-[#9B2A4C]/30 hover:bg-[#9B2A4C]/5 transition-all duration-200 cursor-pointer relative"
+              aria-label="User Account"
+            >
+              <i className="ri-user-line text-lg" />
+            </button>
+
+            {/* Dropdown Menu */}
+            <div
+              className={`absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-[0_12px_30px_rgba(44,62,80,0.12)] p-2 z-50 transition-all duration-300 origin-top-right ${
+                authDropdownOpen
+                  ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+                  : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+              }`}
+            >
+              <Link
+                to="/login"
+                onClick={() => setAuthDropdownOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all"
+              >
+                <i className="ri-login-box-line text-base text-[#9B2A4C]" />
+                {t('portals.signIn')}
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setAuthDropdownOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all"
+              >
+                <i className="ri-user-add-line text-base text-[#9B2A4C]" />
+                {i18n.language === 'vi' ? 'Đăng Ký' : 'Register'}
+              </Link>
+            </div>
+          </div>
+
+          {/* Contact CTA Button */}
           <Link
             to="/contact"
-            className="gradient-bg text-white text-sm font-semibold px-5 py-2 rounded-full whitespace-nowrap hover:opacity-90 transition-opacity cursor-pointer"
+            className="gradient-bg text-white text-xs font-bold px-5 py-2.5 rounded-full whitespace-nowrap hover:shadow-[0_4px_15px_rgba(155,42,76,0.25)] hover:scale-[1.02] transition-all duration-200 cursor-pointer"
           >
             {t('navbar.cta')}
           </Link>
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Morphing Mobile hamburger */}
         <button
-          className="lg:hidden w-8 h-8 flex items-center justify-center text-[#1C2526]"
+          className="lg:hidden w-8 h-8 flex flex-col justify-center items-center relative focus:outline-none cursor-pointer"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
-          <i className={`ri-${mobileOpen ? 'close' : 'menu'}-line text-xl`}></i>
+          <span
+            className={`w-5 h-0.5 bg-[#1C2526] rounded transition-all duration-300 absolute ${
+              mobileOpen ? 'rotate-45' : '-translate-y-1.5'
+            }`}
+          />
+          <span
+            className={`w-5 h-0.5 bg-[#1C2526] rounded transition-all duration-300 absolute ${
+              mobileOpen ? 'opacity-0' : 'opacity-100'
+            }`}
+          />
+          <span
+            className={`w-5 h-0.5 bg-[#1C2526] rounded transition-all duration-300 absolute ${
+              mobileOpen ? '-rotate-45' : 'translate-y-1.5'
+            }`}
+          />
         </button>
       </div>
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="lg:hidden bg-white/95 backdrop-blur-lg border-t border-gray-100 px-4 py-4 flex flex-col gap-3 shadow-lg">
-          <div className="text-xs font-bold text-gray-400 px-2 uppercase tracking-wider">Services</div>
-          {servicesList.map((svc) => (
-            <Link
-              key={svc.id}
-              to={`/services/${svc.id}`}
-              className="text-xs font-semibold px-4 py-1.5 text-[#5A6A72] hover:text-[#9B2A4C]"
-              onClick={() => setMobileOpen(false)}
-            >
-              {i18n.language === 'vi' ? svc.name : svc.name.replace('Xây dựng', 'Build').replace('Xây', 'Build')}
-            </Link>
-          ))}
+        <div className="absolute top-full left-4 right-4 bg-white/95 backdrop-blur-lg border border-gray-100 rounded-3xl p-5 flex flex-col gap-4 shadow-xl mt-2 max-h-[85vh] overflow-y-auto animate-fadeIn z-50">
+          <div className="text-[10px] font-bold text-gray-400 px-1 uppercase tracking-wider">
+            {t('navbar.services')}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {servicesList.map((svc) => (
+              <Link
+                key={svc.id}
+                to={`/services/${svc.id}`}
+                className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#9B2A4C]/5 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-md ${svc.bgColor} ${svc.textColor}`}
+                >
+                  <i className={svc.icon} />
+                </div>
+                <span className="text-xs font-bold text-[#1C2526]">
+                  {t(`services.list.${svc.id}.title` as any)}
+                </span>
+              </Link>
+            ))}
+          </div>
 
           <div className="h-px bg-gray-100 my-1" />
 
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setMobileOpen(false);
-                handleNavClick(item.id);
-              }}
-              className="text-sm font-medium py-1.5 text-left text-[#5A6A72] hover:text-[#2C3E50] cursor-pointer px-2"
+          <div className="flex flex-col gap-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleNavClick(item.id);
+                }}
+                className="text-xs font-bold py-2.5 text-left text-[#5A6A72] hover:text-[#1C2526] px-2 hover:bg-gray-50 rounded-xl"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-px bg-gray-100 my-1" />
+
+          <div className="flex flex-col gap-2">
+            <Link
+              to="/login"
+              className="flex items-center gap-2.5 text-xs font-bold py-2.5 text-[#5A6A72] hover:text-[#9B2A4C] px-2 hover:bg-[#9B2A4C]/5 rounded-xl transition-all"
+              onClick={() => setMobileOpen(false)}
             >
-              {item.label}
-            </button>
-          ))}
+              <i className="ri-login-box-line text-sm text-[#9B2A4C]" />
+              {t('portals.signIn')}
+            </Link>
+            <Link
+              to="/register"
+              className="flex items-center gap-2.5 text-xs font-bold py-2.5 text-[#5A6A72] hover:text-[#9B2A4C] px-2 hover:bg-[#9B2A4C]/5 rounded-xl transition-all"
+              onClick={() => setMobileOpen(false)}
+            >
+              <i className="ri-user-add-line text-sm text-[#9B2A4C]" />
+              {i18n.language === 'vi' ? 'Đăng Ký' : 'Register'}
+            </Link>
 
-          <Link
-            to="/client-portal"
-            className="text-sm font-medium py-1.5 text-[#5A6A72] hover:text-[#2C3E50] px-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            {t('portals.clientPortal')}
-          </Link>
-          <Link
-            to="/outsource/register"
-            className="text-sm font-medium py-1.5 text-[#5A6A72] hover:text-[#2C3E50] px-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            {t('portals.memberPortal')}
-          </Link>
-          <Link
-            to="/admin"
-            className="text-sm font-medium py-1.5 text-[#5A6A72] hover:text-[#2C3E50] px-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            {t('portals.adminDashboard')}
-          </Link>
+            <div className="flex justify-between items-center px-2 py-1 bg-[#F8F6F2] rounded-xl border border-gray-100">
+              <span className="text-[10px] font-bold text-gray-400">Language</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => i18n.changeLanguage('vi')}
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${
+                    i18n.language === 'vi' ? 'bg-white text-[#9B2A4C] shadow-sm' : 'text-gray-400'
+                  }`}
+                >
+                  VI
+                </button>
+                <button
+                  onClick={() => i18n.changeLanguage('en')}
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${
+                    i18n.language === 'en' ? 'bg-white text-[#9B2A4C] shadow-sm' : 'text-gray-400'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
+            </div>
 
-          <button
-            onClick={() => {
-              toggleLang();
-              setMobileOpen(false);
-            }}
-            className="flex items-center gap-1.5 text-sm font-semibold py-1.5 text-[#5A6A72] hover:text-[#2C3E50] cursor-pointer px-2"
-          >
-            <i className="ri-global-line text-sm" />
-            {i18n.language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
-          </button>
-          <Link
-            to="/contact"
-            className="gradient-bg text-white text-sm font-semibold px-4 py-3 rounded-full text-center whitespace-nowrap mt-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            {t('navbar.cta')}
-          </Link>
+            <Link
+              to="/contact"
+              className="gradient-bg text-white text-xs font-bold py-3 rounded-xl text-center whitespace-nowrap mt-2 shadow hover:opacity-95 transition-opacity"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t('navbar.cta')}
+            </Link>
+          </div>
         </div>
       )}
     </nav>

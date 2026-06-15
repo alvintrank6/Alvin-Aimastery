@@ -143,10 +143,10 @@ export default function ProjectsSection() {
               key={i}
               className="card-light card-light-hover rounded-2xl overflow-hidden transition-all duration-300"
             >
-              {/* Layout: media projects get stacked (media top, content below), single-image projects keep side-by-side */}
-              <div className={`grid ${project.media ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
+              {/* Bố cục: chia cột song song đan xen (Zebra layout) trên Desktop, xếp chồng trên Mobile */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
                 {/* Image / Media */}
-                <div className={`relative overflow-hidden ${project.media ? (project.media.length === 1 ? 'h-[280px] md:h-[380px]' : project.media.length === 2 ? 'h-[320px] md:h-[420px]' : (project.media.length >= 4 && project.media.length <= 6) ? 'h-auto py-4 md:py-6' : project.media.length === 3 ? 'h-[320px] md:h-[480px]' : 'h-[420px] md:h-[520px]') : 'h-64 lg:h-auto'}`}>
+                <div className={`relative overflow-hidden lg:col-span-7 ${project.media ? (project.media.length === 1 ? 'h-[280px] md:h-[380px]' : project.media.length === 2 ? 'h-[320px] md:h-[420px]' : (project.media.length >= 4 && project.media.length <= 6) ? 'h-auto py-4 md:py-6' : project.media.length === 3 ? 'h-[320px] md:h-[480px]' : 'h-[420px] md:h-[520px]') : 'h-64 lg:h-auto'} ${i % 2 !== 0 ? 'lg:order-last' : ''}`}>
                   {project.media ? (
                     <ProjectMediaGallery media={project.media} color={project.color} labels={galleryLabels} />
                   ) : (
@@ -162,7 +162,7 @@ export default function ProjectsSection() {
                 </div>
 
                 {/* Content */}
-                <div className="p-7 md:p-8 flex flex-col justify-center">
+                <div className="p-7 md:p-8 lg:col-span-5 flex flex-col justify-center">
                   <div className="flex items-center gap-2 mb-3">
                     <span
                       className="text-xs font-semibold px-2.5 py-1 rounded-full"

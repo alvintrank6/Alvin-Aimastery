@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
@@ -15,11 +16,33 @@ const CLIENT_ACCOUNTS: ClientAccount[] = [
 ];
 
 export default function ClientPortal() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [selectedClient, setSelectedClient] = useState<ClientAccount | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [supportMessage, setSupportMessage] = useState('');
   const [supportSent, setSupportSent] = useState(false);
+
+  useEffect(() => {
+    const isLoggedIn = sessionStorage.getItem('user_logged_in') === 'true';
+    const role = sessionStorage.getItem('user_role');
+    const email = sessionStorage.getItem('user_email');
+
+    if (!isLoggedIn || role !== 'client') {
+      navigate('/login');
+      return;
+    }
+
+    if (email) {
+      const matched = CLIENT_ACCOUNTS.find(c => c.email.toLowerCase() === email.toLowerCase());
+      if (matched) {
+        setSelectedClient(matched);
+      } else {
+        const loggedName = sessionStorage.getItem('user_name') || 'Client';
+        setSelectedClient({ name: loggedName, email });
+      }
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (selectedClient) {
@@ -38,7 +61,13 @@ export default function ClientPortal() {
   }, [selectedClient]);
 
   const handleLogout = () => {
+    sessionStorage.removeItem('user_logged_in');
+    sessionStorage.removeItem('user_role');
+    sessionStorage.removeItem('user_email');
+    sessionStorage.removeItem('user_name');
+    sessionStorage.removeItem('user_id');
     setSelectedClient(null);
+    navigate('/login');
   };
 
   const handleSupportSubmit = (e: React.FormEvent) => {
@@ -66,43 +95,9 @@ export default function ClientPortal() {
       <main className="pt-24 pb-16 flex-grow">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           {!selectedClient ? (
-            /* Login Simulation Card */
-            <div className="max-w-md mx-auto my-10 bg-white rounded-3xl p-6 md:p-8 border border-[#2C3E50]/5 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1.5 gradient-bg" />
-              <div className="text-center space-y-2 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-[#9B2A4C]/10 flex items-center justify-center text-[#9B2A4C] mx-auto text-xl">
-                  <i className="ri-user-shared-line" />
-                </div>
-                <h1 className="text-2xl font-black text-[#1C2526]">{t('client.title')}</h1>
-                <p className="text-xs text-[#5A6A72]">{t('client.subtitle')}</p>
-              </div>
-
-              <div className="space-y-4">
-                <label className="block text-xs font-bold text-[#1C2526] uppercase">
-                  {t('portals.loginAs')}
-                </label>
-                <div className="space-y-2">
-                  {CLIENT_ACCOUNTS.map((client) => (
-                    <button
-                      key={client.email}
-                      onClick={() => setSelectedClient(client)}
-                      className="w-full text-left p-4 rounded-2xl border border-gray-200 hover:border-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all flex items-center justify-between group cursor-pointer"
-                    >
-                      <div>
-                        <p className="text-sm font-bold text-[#1C2526] group-hover:text-[#9B2A4C]">
-                          {client.name}
-                        </p>
-                        <p className="text-xs text-[#8A97A0]">{client.email}</p>
-                      </div>
-                      <i className="ri-arrow-right-line text-[#8A97A0] group-hover:text-[#9B2A4C] transition-colors" />
-                    </button>
-                  ))}
-                </div>
-
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-[#5A6A72] leading-relaxed">
-                  <span className="font-bold text-[#1C2526]">Note:</span> This login is simulated. Choosing an account will load that specific client\'s contract, tracking metrics, and files from our mock database.
-                </div>
-              </div>
+            <div className="flex flex-col items-center justify-center py-20">
+              <i className="ri-loader-4-line animate-spin text-4xl text-[#9B2A4C]" />
+              <p className="text-xs text-[#8A97A0] mt-2">Loading workspace...</p>
             </div>
           ) : (
             /* Dashboard View */
@@ -134,10 +129,17 @@ export default function ClientPortal() {
                   </h2>
 
                   {projects.length === 0 ? (
-                    <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
+                    <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 flex flex-col items-center">
                       <i className="ri-folder-open-line text-4xl text-gray-300 block mb-3" />
-                      <p className="text-sm font-semibold text-gray-400">No active projects registered for this account.</p>
-                      <p className="text-xs text-gray-400 mt-1">Submit a request on our service pages to start a new project.</p>
+                      <p className="text-sm font-semibold text-gray-400">{t('client.noProjects')}</p>
+                      <p className="text-xs text-gray-400 mt-1">{t('client.noProjectsDesc')}</p>
+                      <button
+                        onClick={() => navigate('/')}
+                        className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 gradient-bg text-white font-bold text-xs rounded-xl shadow hover:opacity-95 transition-opacity cursor-pointer"
+                      >
+                        <i className="ri-home-line" />
+                        {t('client.backToHome')}
+                      </button>
                     </div>
                   ) : (
                     projects.map((proj) => {
@@ -151,8 +153,8 @@ export default function ClientPortal() {
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-gray-100">
                             <div>
-                              <span className="text-xs font-semibold text-[#9B2A4C] uppercase tracking-wider">
-                                {proj.service}
+                               <span className="text-xs font-semibold text-[#9B2A4C] uppercase tracking-wider">
+                                {i18n.exists(`services.list.${proj.service}.title`) ? t(`services.list.${proj.service}.title` as any) : proj.service}
                               </span>
                               <h3 className="text-lg font-bold text-[#1C2526] mt-0.5">{proj.name}</h3>
                             </div>
@@ -273,18 +275,18 @@ export default function ClientPortal() {
                       {t('client.contactSupport')}
                     </h2>
                     <p className="text-xs text-[#5A6A72] leading-relaxed">
-                      Need custom changes or support? Post your message below and Alvin will respond within 24 hours.
+                      {t('client.supportDesc')}
                     </p>
 
                     {supportSent ? (
                       <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-200 text-xs font-semibold text-center space-y-1">
                         <i className="ri-checkbox-circle-fill text-lg block" />
-                        <p>Ticket successfully submitted!</p>
+                        <p>{t('client.supportSent')}</p>
                         <button
                           onClick={() => setSupportSent(false)}
                           className="text-[#9B2A4C] hover:underline font-bold mt-1 block w-full"
                         >
-                          Send another query
+                          {t('client.sendAnother')}
                         </button>
                       </div>
                     ) : (
@@ -294,14 +296,14 @@ export default function ClientPortal() {
                           required
                           value={supportMessage}
                           onChange={(e) => setSupportMessage(e.target.value)}
-                          placeholder="Detail your request or support query here..."
+                          placeholder={t('client.supportPlaceholder')}
                           className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] transition-colors resize-none"
                         />
                         <button
                           type="submit"
                           className="w-full bg-[#2C3E50] text-white font-bold py-2.5 rounded-xl hover:bg-[#2C3E50]/90 transition-colors text-xs cursor-pointer"
                         >
-                          Submit Ticket
+                          {t('client.submitTicket')}
                         </button>
                       </form>
                     )}
@@ -309,13 +311,13 @@ export default function ClientPortal() {
 
                   {/* Portal Guidelines Card */}
                   <div className="bg-[#2C3E50] text-white rounded-3xl p-6 space-y-4">
-                    <h3 className="font-bold text-sm">Professional Portal Guard</h3>
+                    <h3 className="font-bold text-sm">{t('client.guardTitle')}</h3>
                     <p className="text-[11px] text-gray-300 leading-relaxed">
-                      This Client Portal is engineered to provide absolute transparent visibility into work timelines. All project milestones are updated directly by the assignees.
+                      {t('client.guardDesc')}
                     </p>
                     <div className="flex gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1 animate-ping" />
-                      <span className="text-[10px] text-gray-300">Sync is secured & active</span>
+                      <span className="text-[10px] text-gray-300">{t('client.syncActive')}</span>
                     </div>
                   </div>
                 </div>

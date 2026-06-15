@@ -93,25 +93,26 @@ const SERVICES_DATA: Record<string, ServiceContent> = {
 
 // 1. Web Showcase: Viewport and Theme switcher
 function WebShowcase() {
+  const { t } = useTranslation();
   const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">Live Web Template Simulator</span>
+        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.web.title')}</span>
         <div className="flex gap-2">
           <button
             onClick={() => setViewport('desktop')}
             className={`px-3 py-1 text-[10px] font-bold rounded-lg ${viewport === 'desktop' ? 'bg-[#9B2A4C] text-white' : 'bg-white text-gray-500 border border-gray-100'}`}
           >
-            Desktop
+            {t('services.showcase.web.desktop')}
           </button>
           <button
             onClick={() => setViewport('mobile')}
             className={`px-3 py-1 text-[10px] font-bold rounded-lg ${viewport === 'mobile' ? 'bg-[#9B2A4C] text-white' : 'bg-white text-gray-500 border border-gray-100'}`}
           >
-            Mobile
+            {t('services.showcase.web.mobile')}
           </button>
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
@@ -139,12 +140,12 @@ function WebShowcase() {
           </div>
           {/* Hero */}
           <div className="p-6 text-center space-y-3">
-            <h4 className="text-md font-extrabold leading-tight">Reveal Your Natural Glowing Skin</h4>
+            <h4 className="text-md font-extrabold leading-tight">{t('services.showcase.web.tagline')}</h4>
             <p className="text-[10px] text-gray-400 max-w-xs mx-auto">
-              Organic serums engineered with premium vitamins for radiant hydration.
+              {t('services.showcase.web.desc')}
             </p>
             <button className="bg-[#9B2A4C] text-white text-[9px] font-bold px-4 py-2 rounded-full shadow hover:opacity-90">
-              Shop Serum
+              {t('services.showcase.web.cta')}
             </button>
           </div>
           {/* Mock Product */}
@@ -153,14 +154,14 @@ function WebShowcase() {
               <div className="aspect-square bg-gradient-to-tr from-[#9B2A4C]/10 to-[#A8B5A0]/20 rounded-lg mb-2 flex items-center justify-center text-[#9B2A4C]">
                 <i className="ri-fluid-line text-lg" />
               </div>
-              <p className="text-[9px] font-bold">Hyaluronic Acid</p>
+              <p className="text-[9px] font-bold">{t('services.showcase.web.prod1')}</p>
               <p className="text-[8px] text-[#9B2A4C] font-semibold">$24.00</p>
             </div>
             <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-gray-100'}`}>
               <div className="aspect-square bg-gradient-to-tr from-[#9B2A4C]/10 to-[#A8B5A0]/20 rounded-lg mb-2 flex items-center justify-center text-[#9B2A4C]">
                 <i className="ri-contrast-drop-line text-lg" />
               </div>
-              <p className="text-[9px] font-bold">Retinol Booster</p>
+              <p className="text-[9px] font-bold">{t('services.showcase.web.prod2')}</p>
               <p className="text-[8px] text-[#9B2A4C] font-semibold">$28.00</p>
             </div>
           </div>
@@ -172,10 +173,15 @@ function WebShowcase() {
 
 // 2. Chatbot Showcase: Interactive typing bot
 function ChatbotShowcase() {
-  const [messages, setMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([
-    { sender: 'bot', text: 'Xin chào! Tôi là Trợ Lý AI của Alvin Agency. Bạn đang quan tâm giải pháp chatbot nào?' }
-  ]);
+  const { t, i18n } = useTranslation();
+  const [messages, setMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([]);
   const [typing, setTyping] = useState(false);
+
+  useEffect(() => {
+    setMessages([
+      { sender: 'bot', text: t('services.showcase.chatbot.welcome') }
+    ]);
+  }, [i18n.language, t]);
 
   const triggerReply = (query: string, reply: string) => {
     setMessages((prev) => [...prev, { sender: 'user', text: query }]);
@@ -190,8 +196,8 @@ function ChatbotShowcase() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">Interactive AI Bot Simulator</span>
-        <span className="text-[9px] font-bold text-gray-400">Status: Active</span>
+        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.chatbot.title')}</span>
+        <span className="text-[9px] font-bold text-gray-400">{t('services.showcase.chatbot.status')}</span>
       </div>
 
       <div className="bg-slate-900 rounded-3xl p-4 border border-slate-800 shadow-2xl flex flex-col h-[340px] justify-between">
@@ -227,25 +233,25 @@ function ChatbotShowcase() {
 
         {/* Buttons Suggestions */}
         <div className="border-t border-slate-800 pt-3 mt-2 space-y-2">
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide">Suggested Queries</p>
+          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wide">{t('services.showcase.chatbot.suggested')}</p>
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => triggerReply('Dịch vụ giá thế nào?', 'Dịch vụ Chatbot AI của chúng tôi bắt đầu từ $300/tháng tùy thuộc vào số lượng hội thoại và cơ sở dữ liệu (Knowledge Base) cung cấp.')}
+              onClick={() => triggerReply(t('services.showcase.chatbot.q1'), t('services.showcase.chatbot.a1'))}
               className="text-[10px] font-semibold bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl transition-colors text-left"
             >
-              🏷️ Payout/Rates?
+              {t('services.showcase.chatbot.q1')}
             </button>
             <button
-              onClick={() => triggerReply('Bot có tích hợp WhatsApp không?', 'Có! Chúng tôi hỗ trợ tích hợp WhatsApp Business API, Facebook Messenger, Zalo và trực tiếp lên Website.')}
+              onClick={() => triggerReply(t('services.showcase.chatbot.q2'), t('services.showcase.chatbot.a2'))}
               className="text-[10px] font-semibold bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl transition-colors text-left"
             >
-              💬 WhatsApp channels?
+              {t('services.showcase.chatbot.q2')}
             </button>
             <button
-              onClick={() => triggerReply('Tư vấn dịch vụ AI', 'Vui lòng gửi form đặt lịch bên cạnh, trợ lý AI sẽ tự động lập lịch biểu tư vấn 1-1 với chuyên gia Alvin.')}
+              onClick={() => triggerReply(t('services.showcase.chatbot.q3'), t('services.showcase.chatbot.a3'))}
               className="text-[10px] font-semibold bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl transition-colors text-left"
             >
-              📞 Book AI Session?
+              {t('services.showcase.chatbot.q3')}
             </button>
           </div>
         </div>
@@ -256,24 +262,25 @@ function ChatbotShowcase() {
 
 // 3. Landing Page Showcase: A/B Testing comparison slider
 function LandingShowcase() {
+  const { t } = useTranslation();
   const [activeSide, setActiveSide] = useState<'old' | 'optimized'>('optimized');
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">A/B Test Design Comparison</span>
+        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.landing.title')}</span>
         <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-white">
           <button
             onClick={() => setActiveSide('old')}
             className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${activeSide === 'old' ? 'bg-[#2C3E50] text-white' : 'text-gray-400'}`}
           >
-            Old Design
+            {t('services.showcase.landing.oldDesign')}
           </button>
           <button
             onClick={() => setActiveSide('optimized')}
             className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${activeSide === 'optimized' ? 'bg-[#9B2A4C] text-white' : 'text-gray-400'}`}
           >
-            Optimized (Alvin)
+            {t('services.showcase.landing.optDesign')}
           </button>
         </div>
       </div>
@@ -282,41 +289,41 @@ function LandingShowcase() {
         {activeSide === 'old' ? (
           <div className="space-y-4 animate-fadeIn">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">Conversion Rate: 1.8%</span>
-              <span className="text-[10px] text-gray-400 font-bold">Bounce Rate: 72%</span>
+              <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">{t('services.showcase.landing.convRate')}: 1.8%</span>
+              <span className="text-[10px] text-gray-400 font-bold">{t('services.showcase.landing.bounceRate')}: 72%</span>
             </div>
             <div className="border border-dashed border-gray-200 p-8 text-center rounded-2xl space-y-2">
-              <h5 className="font-bold text-gray-500 text-sm">Welcome to our Medical Spa</h5>
-              <p className="text-[10px] text-gray-400 max-w-xs mx-auto">We provide deep body massage and facials. Contact us today or write down your email in our newsletter form below.</p>
-              <div className="w-full h-8 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400">Newsletter input form here</div>
-              <button className="bg-gray-400 text-white text-[10px] font-bold px-4 py-1.5 rounded mt-2">Submit</button>
+              <h5 className="font-bold text-gray-500 text-sm">{t('services.showcase.landing.oldTitle')}</h5>
+              <p className="text-[10px] text-gray-400 max-w-xs mx-auto">{t('services.showcase.landing.oldDesc')}</p>
+              <div className="w-full h-8 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400">{t('services.showcase.landing.oldPlaceholder')}</div>
+              <button className="bg-gray-400 text-white text-[10px] font-bold px-4 py-1.5 rounded mt-2">{t('services.showcase.landing.oldSubmit')}</button>
             </div>
-            <p className="text-[10px] text-gray-400 italic">Weak layout, lack of visual hooks, generic copy, and low contrast call-to-actions.</p>
+            <p className="text-[10px] text-gray-400 italic">{t('services.showcase.landing.oldFooter')}</p>
           </div>
         ) : (
           <div className="space-y-4 animate-fadeIn">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">Conversion Rate: 8.5% (+370%)</span>
-              <span className="text-[10px] text-green-600 font-bold">Bounce Rate: 34%</span>
+              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md">{t('services.showcase.landing.convRate')}: 8.5% (+370%)</span>
+              <span className="text-[10px] text-green-600 font-bold">{t('services.showcase.landing.bounceRate')}: 34%</span>
             </div>
             <div className="bg-slate-900 border border-slate-800 text-white p-6 rounded-3xl space-y-4 text-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#9B2A4C]/10 rounded-full blur-xl" />
-              <div className="inline-block text-[8px] font-bold text-[#A8B5A0] tracking-widest uppercase">🌿 Organic Spa Therapies</div>
-              <h5 className="font-extrabold text-md leading-snug">Rejuvenate Your Senses. Restore Your Health.</h5>
-              <p className="text-[10px] text-slate-300 max-w-xs mx-auto">Get 15% OFF your first deep facial therapy session. Limited slots available this week.</p>
+              <div className="inline-block text-[8px] font-bold text-[#A8B5A0] tracking-widest uppercase">{t('services.showcase.landing.optBadge')}</div>
+              <h5 className="font-extrabold text-md leading-snug">{t('services.showcase.landing.optTitle')}</h5>
+              <p className="text-[10px] text-slate-300 max-w-xs mx-auto">{t('services.showcase.landing.optDesc')}</p>
               <div className="flex gap-2 max-w-xs mx-auto">
                 <input
                   type="email"
                   disabled
-                  placeholder="Enter your email"
+                  placeholder={t('services.showcase.landing.optPlaceholder')}
                   className="bg-slate-800 border border-slate-700 text-[10px] px-3 py-2 rounded-xl w-full"
                 />
                 <button className="bg-[#9B2A4C] text-white text-[10px] font-bold px-4 py-2 rounded-xl whitespace-nowrap shadow-lg">
-                  Claim 15% Off
+                  {t('services.showcase.landing.optBtn')}
                 </button>
               </div>
             </div>
-            <p className="text-[10px] text-slate-500 font-medium">Highly optimized above-the-fold layout, custom copy strategy, social proof hooks, and urgent call-to-action.</p>
+            <p className="text-[10px] text-slate-500 font-medium">{t('services.showcase.landing.optFooter')}</p>
           </div>
         )}
       </div>
@@ -326,6 +333,7 @@ function LandingShowcase() {
 
 // 4. Workflow Automation Showcase: Simulation trigger
 function WorkflowShowcase() {
+  const { t } = useTranslation();
   const [step, setStep] = useState<number>(0);
   const [running, setRunning] = useState(false);
 
@@ -349,14 +357,14 @@ function WorkflowShowcase() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">Workflow Automation Pipeline</span>
+        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.workflow.title')}</span>
         <button
           onClick={startSimulation}
           disabled={running}
           className="px-3.5 py-1.5 bg-[#9B2A4C] text-white text-[10px] font-bold rounded-xl disabled:opacity-50 transition-opacity flex items-center gap-1 cursor-pointer"
         >
           <i className="ri-play-fill" />
-          {running ? 'Running Simulation...' : 'Test Simulation'}
+          {running ? t('services.showcase.workflow.runningBtn') : t('services.showcase.workflow.runBtn')}
         </button>
       </div>
 
@@ -369,8 +377,8 @@ function WorkflowShowcase() {
             <i className="ri-webhook-line" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-100">Step 1: Webhook Trigger</p>
-            <p className="text-[9px] text-slate-400">Listens to new customer form submissions</p>
+            <p className="text-xs font-bold text-slate-100">{t('services.showcase.workflow.step1Title')}</p>
+            <p className="text-[9px] text-slate-400">{t('services.showcase.workflow.step1Desc')}</p>
           </div>
         </div>
 
@@ -387,8 +395,8 @@ function WorkflowShowcase() {
             <i className="ri-database-2-line" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-100">Step 2: Database Sync</p>
-            <p className="text-[9px] text-slate-400">Stores lead data inside agency CRM database</p>
+            <p className="text-xs font-bold text-slate-100">{t('services.showcase.workflow.step2Title')}</p>
+            <p className="text-[9px] text-slate-400">{t('services.showcase.workflow.step2Desc')}</p>
           </div>
         </div>
 
@@ -405,8 +413,8 @@ function WorkflowShowcase() {
             <i className="ri-slack-line" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-100">Step 3: Alert Notification</p>
-            <p className="text-[9px] text-slate-400">Dispatches detailed report in team Slack channel</p>
+            <p className="text-xs font-bold text-slate-100">{t('services.showcase.workflow.step3Title')}</p>
+            <p className="text-[9px] text-slate-400">{t('services.showcase.workflow.step3Desc')}</p>
           </div>
         </div>
 
@@ -423,8 +431,8 @@ function WorkflowShowcase() {
             <i className="ri-file-excel-line" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-100">Step 4: Google Sheets Ledger Update</p>
-            <p className="text-[9px] text-slate-400">Updates finance database reports</p>
+            <p className="text-xs font-bold text-slate-100">{t('services.showcase.workflow.step4Title')}</p>
+            <p className="text-[9px] text-slate-400">{t('services.showcase.workflow.step4Desc')}</p>
           </div>
         </div>
       </div>
@@ -434,24 +442,25 @@ function WorkflowShowcase() {
 
 // 5. Email Showcase: Newsletter sequence selector
 function EmailShowcase() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'abandoned' | 'welcome'>('abandoned');
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">Campaign Email Template Mock</span>
+        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.email.title')}</span>
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab('abandoned')}
             className={`px-3 py-1 text-[10px] font-bold rounded-lg ${activeTab === 'abandoned' ? 'bg-[#9B2A4C] text-white' : 'bg-white text-gray-500 border border-gray-100'}`}
           >
-            Abandoned Cart
+            {t('services.showcase.email.tabAbandoned')}
           </button>
           <button
             onClick={() => setActiveTab('welcome')}
             className={`px-3 py-1 text-[10px] font-bold rounded-lg ${activeTab === 'welcome' ? 'bg-[#9B2A4C] text-white' : 'bg-white text-gray-500 border border-gray-100'}`}
           >
-            Welcome Series
+            {t('services.showcase.email.tabWelcome')}
           </button>
         </div>
       </div>
@@ -460,33 +469,33 @@ function EmailShowcase() {
         {activeTab === 'abandoned' ? (
           <div className="bg-white rounded-2xl shadow w-full max-w-sm overflow-hidden text-slate-800 animate-fadeIn">
             <div className="bg-[#2C3E50] p-4 text-center text-white">
-              <span className="text-[9px] uppercase font-bold tracking-widest text-[#A8B5A0]">Did you forget something?</span>
+              <span className="text-[9px] uppercase font-bold tracking-widest text-[#A8B5A0]">{t('services.showcase.email.abandonedBadge')}</span>
             </div>
             <div className="p-6 text-center space-y-4">
-              <h5 className="font-black text-sm">We saved your cart items!</h5>
+              <h5 className="font-black text-sm">{t('services.showcase.email.abandonedTitle')}</h5>
               <p className="text-[10px] text-gray-400 max-w-[250px] mx-auto leading-relaxed">
-                Your skincare routine is waiting. Claim an exclusive 10% coupon below to check out.
+                {t('services.showcase.email.abandonedDesc')}
               </p>
               <div className="border border-dashed p-3 rounded-xl max-w-[180px] mx-auto text-xs font-bold text-[#9B2A4C] bg-[#9B2A4C]/5">
                 CODE: BACK10
               </div>
               <button className="w-full bg-[#9B2A4C] text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:opacity-90">
-                Restore Shopping Cart
+                {t('services.showcase.email.abandonedBtn')}
               </button>
             </div>
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow w-full max-w-sm overflow-hidden text-slate-800 animate-fadeIn">
             <div className="bg-[#9B2A4C] p-4 text-center text-white">
-              <span className="text-[9px] uppercase font-bold tracking-widest text-slate-200">Welcome to the Club</span>
+              <span className="text-[9px] uppercase font-bold tracking-widest text-slate-200">{t('services.showcase.email.welcomeBadge')}</span>
             </div>
             <div className="p-6 text-center space-y-4">
-              <h5 className="font-black text-sm">Thanks for joining us!</h5>
+              <h5 className="font-black text-sm">{t('services.showcase.email.welcomeTitle')}</h5>
               <p className="text-[10px] text-gray-400 max-w-[250px] mx-auto leading-relaxed">
-                As a valued member, you get access to early collection launches, tutorials, and expert skin health advice.
+                {t('services.showcase.email.welcomeDesc')}
               </p>
               <button className="w-full bg-[#2C3E50] text-white text-xs font-bold py-2.5 rounded-xl shadow-md hover:opacity-90">
-                Explore Best Sellers
+                {t('services.showcase.email.welcomeBtn')}
               </button>
             </div>
           </div>
@@ -498,12 +507,13 @@ function EmailShowcase() {
 
 // 6. Mobile App Showcase: App screen slider inside device mock
 function AppShowcase() {
+  const { t } = useTranslation();
   const [activeScreen, setActiveScreen] = useState<'welcome' | 'shop' | 'profile'>('welcome');
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">Interactive Mobile App Prototype</span>
+        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.app.title')}</span>
         <div className="flex gap-2">
           {['welcome', 'shop', 'profile'].map((screen) => (
             <button
@@ -511,7 +521,7 @@ function AppShowcase() {
               onClick={() => setActiveScreen(screen as any)}
               className={`px-2 py-0.5 text-[9px] uppercase font-bold rounded ${activeScreen === screen ? 'bg-[#9B2A4C] text-white' : 'bg-white text-gray-400 border border-gray-100'}`}
             >
-              {screen}
+              {t(`services.showcase.app.screens.${screen}`)}
             </button>
           ))}
         </div>
@@ -531,14 +541,14 @@ function AppShowcase() {
                   <i className="ri-customer-service-line text-lg" />
                 </div>
                 <div className="space-y-1">
-                  <h6 className="font-extrabold text-xs">AI Chat Hub</h6>
-                  <p className="text-[8px] text-gray-400 max-w-[150px] mx-auto">Integrated multi-channel agent assistant for teams.</p>
+                  <h6 className="font-extrabold text-xs">{t('services.showcase.app.welcomeTitle')}</h6>
+                  <p className="text-[8px] text-gray-400 max-w-[150px] mx-auto">{t('services.showcase.app.welcomeDesc')}</p>
                 </div>
                 <button
                   onClick={() => setActiveScreen('shop')}
                   className="w-full bg-[#9B2A4C] text-white text-[8px] font-bold py-1.5 rounded-lg"
                 >
-                  Get Started
+                  {t('services.showcase.app.welcomeBtn')}
                 </button>
               </div>
             )}
@@ -546,16 +556,16 @@ function AppShowcase() {
             {activeScreen === 'shop' && (
               <div className="h-full flex flex-col justify-between animate-fadeIn">
                 <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                  <span className="text-[8px] font-bold">Workspace App Store</span>
+                  <span className="text-[8px] font-bold">{t('services.showcase.app.storeTitle')}</span>
                   <i className="ri-shopping-cart-2-line text-[9px] text-[#9B2A4C]" />
                 </div>
                 <div className="space-y-2 py-2 flex-grow overflow-y-auto">
                   <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
-                    <span className="text-[8px] font-bold">Chatbot Plugin</span>
+                    <span className="text-[8px] font-bold">{t('services.showcase.app.plugin1')}</span>
                     <span className="text-[8px] text-[#9B2A4C] font-semibold">$9.99</span>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
-                    <span className="text-[8px] font-bold">n8n Node sync</span>
+                    <span className="text-[8px] font-bold">{t('services.showcase.app.plugin2')}</span>
                     <span className="text-[8px] text-[#9B2A4C] font-semibold">$14.99</span>
                   </div>
                 </div>
@@ -563,7 +573,7 @@ function AppShowcase() {
                   onClick={() => setActiveScreen('profile')}
                   className="w-full bg-[#2C3E50] text-white text-[8px] font-bold py-1.5 rounded-lg"
                 >
-                  Checkout
+                  {t('services.showcase.app.checkoutBtn')}
                 </button>
               </div>
             )}
@@ -574,11 +584,11 @@ function AppShowcase() {
                   U
                 </div>
                 <div className="space-y-1">
-                  <h6 className="font-extrabold text-[10px]">User Account Settings</h6>
-                  <p className="text-[8px] text-gray-400">Authenticated: user@agency.com</p>
+                  <h6 className="font-extrabold text-[10px]">{t('services.showcase.app.userTitle')}</h6>
+                  <p className="text-[8px] text-gray-400">{t('services.showcase.app.userDesc')}</p>
                 </div>
                 <div className="bg-green-50 border border-green-200 text-green-700 text-[8px] p-2 rounded-lg font-bold">
-                  Payment Gateway Secured
+                  {t('services.showcase.app.gatewaySecured')}
                 </div>
               </div>
             )}
@@ -591,33 +601,34 @@ function AppShowcase() {
 
 // 7. General Placeholder / Fallback Showcase (used as template sample list)
 function GeneralShowcase({ serviceId }: { serviceId: string }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">Sample Templates & Reference Cases</span>
-        <span className="text-[9px] font-bold text-gray-400">7 Active Clients</span>
+        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.general.title')}</span>
+        <span className="text-[9px] font-bold text-gray-400">{t('services.showcase.general.activeClients')}</span>
       </div>
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
-        <h3 className="text-xs font-bold text-[#1C2526] uppercase">Reference Showcase Cases</h3>
+        <h3 className="text-xs font-bold text-[#1C2526] uppercase">{t('services.showcase.general.header')}</h3>
         <div className="space-y-3">
           <div className="p-3 rounded-2xl bg-[#F8F6F2]/50 border border-gray-100 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-[#1C2526]">Senn Cosmetics Landing Portal</p>
-              <p className="text-[9px] text-gray-400">Conversion Rate: 8.4% | Dynamic Klaviyo email integration</p>
+              <p className="text-xs font-bold text-[#1C2526]">{t('services.showcase.general.case1Title')}</p>
+              <p className="text-[9px] text-gray-400">{t('services.showcase.general.case1Desc')}</p>
             </div>
             <i className="ri-arrow-right-up-line text-[#9B2A4C]" />
           </div>
           <div className="p-3 rounded-2xl bg-[#F8F6F2]/50 border border-gray-100 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-[#1C2526]">Beta Home Viet Nam Realty CRM</p>
-              <p className="text-[9px] text-gray-400">Automated Lead ingestion pipelines syncing directly with Slack</p>
+              <p className="text-xs font-bold text-[#1C2526]">{t('services.showcase.general.case2Title')}</p>
+              <p className="text-[9px] text-gray-400">{t('services.showcase.general.case2Desc')}</p>
             </div>
             <i className="ri-arrow-right-up-line text-[#9B2A4C]" />
           </div>
           <div className="p-3 rounded-2xl bg-[#F8F6F2]/50 border border-gray-100 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-[#1C2526]">ByeBye Pimple Shop Store</p>
-              <p className="text-[9px] text-gray-400">Responsive web UI scaling Daily sales to $8,000 in one week</p>
+              <p className="text-xs font-bold text-[#1C2526]">{t('services.showcase.general.case3Title')}</p>
+              <p className="text-[9px] text-gray-400">{t('services.showcase.general.case3Desc')}</p>
             </div>
             <i className="ri-arrow-right-up-line text-[#9B2A4C]" />
           </div>
@@ -679,8 +690,8 @@ export default function ServicePage() {
       <div className="min-h-screen flex flex-col justify-between" style={{ background: '#F8F6F2' }}>
         <Navbar />
         <div className="max-w-md mx-auto text-center py-20 px-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Service Not Found</h1>
-          <Link to="/" className="text-[#9B2A4C] hover:underline">Return to Home</Link>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">{t('services.booking.notFoundTitle')}</h1>
+          <Link to="/" className="text-[#9B2A4C] hover:underline">{t('services.booking.backHome')}</Link>
         </div>
         <Footer />
       </div>
@@ -697,8 +708,8 @@ export default function ServicePage() {
         email,
         phone,
         company,
-        service: t(service.titleKey),
-        message: message || `Client requested consultation for: ${t(service.titleKey)}`
+        service: service.id,
+        message: message || `${t('services.bookService')}: ${t(service.titleKey)}`
       });
 
       setSubmitting(false);
@@ -769,7 +780,7 @@ export default function ServicePage() {
                   {t('services.bookService')}
                 </h2>
                 <p className="text-xs text-[#8A97A0] mb-6">
-                  Submit this form to book an onboarding session. This request will instantly feed into the Admin CRM portal.
+                  {t('services.booking.subtitle')}
                 </p>
 
                 {success ? (
@@ -777,74 +788,78 @@ export default function ServicePage() {
                     <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
                       <i className="ri-checkbox-circle-fill text-4xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-[#1C2526]">Request Submitted!</h3>
+                    <h3 className="text-lg font-bold text-[#1C2526]">{t('services.booking.successTitle')}</h3>
                     <p className="text-xs text-[#5A6A72] leading-relaxed max-w-xs mx-auto">
-                      Thank you. We have saved your lead details. Go to the <span className="font-semibold text-[#9B2A4C] cursor-pointer" onClick={() => navigate('/admin')}>Super Admin CRM Panel</span> to view your lead list.
+                      {t('services.booking.successDescPart1')}
+                      <span className="font-semibold text-[#9B2A4C] cursor-pointer" onClick={() => navigate('/admin')}>
+                        {t('services.booking.successDescLink')}
+                      </span>
+                      {t('services.booking.successDescPart2')}
                     </p>
                     <button
                       onClick={() => setSuccess(false)}
                       className="text-xs font-bold text-[#9B2A4C] hover:underline"
                     >
-                      Submit another request
+                      {t('services.booking.submitAnother')}
                     </button>
                   </div>
                 ) : (
                   <form onSubmit={handleBooking} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">Full Name *</label>
+                      <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">{t('services.booking.nameLabel')}</label>
                       <input
                         type="text"
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Your name"
+                        placeholder={t('services.booking.namePlaceholder')}
                         className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9B2A4C] transition-colors"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">Email *</label>
+                        <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">{t('services.booking.emailLabel')}</label>
                         <input
                           type="email"
                           required
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          placeholder="partner@company.com"
+                          placeholder={t('services.booking.emailPlaceholder')}
                           className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9B2A4C] transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">Phone *</label>
+                        <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">{t('services.booking.phoneLabel')}</label>
                         <input
                           type="tel"
                           required
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+84 9xx xx..."
+                          placeholder={t('services.booking.phonePlaceholder')}
                           className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9B2A4C] transition-colors"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">Company Name</label>
+                      <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">{t('services.booking.companyLabel')}</label>
                       <input
                         type="text"
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
-                        placeholder="Your organization"
+                        placeholder={t('services.booking.companyPlaceholder')}
                         className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9B2A4C] transition-colors"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">Message / Goals</label>
+                      <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">{t('services.booking.messageLabel')}</label>
                       <textarea
                         rows={3}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Tell us about your project requirements..."
+                        placeholder={t('services.booking.messagePlaceholder')}
                         className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#9B2A4C] transition-colors resize-none"
                       />
                     </div>
@@ -857,7 +872,7 @@ export default function ServicePage() {
                       {submitting ? (
                         <span className="flex items-center justify-center gap-2">
                           <i className="ri-loader-4-line animate-spin" />
-                          Processing...
+                          {t('services.booking.processing')}
                         </span>
                       ) : (
                         t('services.bookService')
@@ -888,7 +903,7 @@ export default function ServicePage() {
                       </span>
                       <h4 className="text-sm font-bold text-[#1C2526] mb-1">{step}</h4>
                       <p className="text-xs text-[#5A6A72]">
-                        Detailed task verification, quality control, and standard delivery timelines apply to this phase.
+                        {t('services.booking.processDesc')}
                       </p>
                     </div>
                   ))}
@@ -914,15 +929,15 @@ export default function ServicePage() {
                 </div>
 
                 <div className="bg-[#2C3E50]/5 rounded-3xl p-6 border border-[#2C3E50]/10 text-center space-y-4">
-                  <h3 className="font-bold text-sm text-[#2C3E50]">Ready to kickstart this project?</h3>
+                  <h3 className="font-bold text-sm text-[#2C3E50]">{t('services.booking.readyTitle')}</h3>
                   <p className="text-xs text-[#5A6A72]">
-                    We schedule onboarding slots within 24 hours. Contact our strategists today.
+                    {t('services.booking.readyDesc')}
                   </p>
                   <Link
                     to="/contact"
                     className="inline-block bg-[#2C3E50] text-white text-xs font-semibold px-6 py-2.5 rounded-full hover:bg-[#2C3E50]/90 transition-colors"
                   >
-                    Go to Contact Page
+                    {t('services.booking.goToContact')}
                   </Link>
                 </div>
               </div>

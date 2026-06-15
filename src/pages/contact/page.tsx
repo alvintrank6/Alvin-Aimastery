@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import { useTranslation } from 'react-i18next';
+import ContactOrbit from './components/ContactOrbit';
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -121,7 +122,7 @@ export default function ContactPage() {
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
             {/* Left info */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-6 flex flex-col justify-between h-full">
               <div>
                 <h2 className="text-[#1C2526] font-bold text-xl mb-3">{t('contact.infoTitle')}</h2>
                 <p className="text-[#5A6A72] text-sm leading-relaxed">
@@ -129,31 +130,7 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              {infoItems.map((item) => (
-                <div key={item.title} className="flex items-start gap-4">
-                  <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#2C3E50]/10 shrink-0">
-                    <i className={`${item.icon} text-base text-[#2C3E50]`}></i>
-                  </div>
-                  <div>
-                    <p className="text-[#1C2526] text-sm font-semibold">{item.title}</p>
-                    <p className="text-[#8A97A0] text-xs mt-0.5">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-
-              {/* Avatar card */}
-              <div className="card-light rounded-2xl p-5 flex items-center gap-4 mt-4">
-                <img
-                  src="https://static.readdy.ai/image/f4782dda055a3841fcfd0612adf32078/59d195d43fbe9524d26babfa75d94193.jpeg"
-                  alt={t('contact.avatarName')}
-                  className="w-12 h-12 rounded-full object-cover shrink-0"
-                />
-                <div>
-                  <p className="text-[#1C2526] font-semibold text-sm">{t('contact.avatarName')}</p>
-                  <p className="text-[#8A97A0] text-xs">{t('contact.avatarRole')}</p>
-                  <p className="text-[#5A6A72] text-xs mt-1 italic">&ldquo;{t('contact.avatarQuote')}&rdquo;</p>
-                </div>
-              </div>
+              <ContactOrbit />
             </div>
 
             {/* Form */}

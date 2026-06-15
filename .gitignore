@@ -115,3 +115,4 @@ dist-ssr/
 
 # Store double-entry/history files
 .DS_Store
+node_modules

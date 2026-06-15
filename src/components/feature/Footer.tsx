@@ -57,7 +57,10 @@ export default function Footer() {
                 <Link to="/client-portal" className="hover:text-[#9B2A4C] transition-colors">{t('portals.clientPortal')}</Link>
               </li>
               <li>
-                <Link to="/outsource/register" className="hover:text-[#9B2A4C] transition-colors">{t('portals.memberPortal')}</Link>
+                <Link to="/member-portal" className="hover:text-[#9B2A4C] transition-colors">{t('portals.memberPortal')}</Link>
+              </li>
+              <li>
+                <Link to="/developer/register" className="hover:text-[#9B2A4C] transition-colors">{t('portals.outsourceRegister')}</Link>
               </li>
               <li>
                 <Link to="/admin" className="hover:text-[#9B2A4C] transition-colors">{t('portals.adminDashboard')}</Link>
@@ -70,12 +73,12 @@ export default function Footer() {
 
           {/* Center Column: Services */}
           <div className="md:col-span-3 space-y-4">
-            <h4 className="text-[#1C2526] text-xs font-bold uppercase tracking-wider">Services</h4>
+            <h4 className="text-[#1C2526] text-xs font-bold uppercase tracking-wider">{t('navbar.services')}</h4>
             <ul className="space-y-2.5 text-xs font-semibold text-[#5A6A72]">
               {services.map(svc => (
                 <li key={svc.id}>
                   <Link to={`/services/${svc.id}`} className="hover:text-[#9B2A4C] transition-colors">
-                    {i18n.language === 'vi' ? svc.name.replace('Website Design', 'Thiết kế Web').replace('AI Chatbots', 'Chatbot AI').replace('Landing Pages', 'Landing Page').replace('Workflow Automations', 'Tự động hóa Workflow').replace('Email Automations', 'Email Automation').replace('n8n Cloud Sync', 'Hệ thống n8n').replace('Mobile Apps', 'Ứng dụng App') : svc.name}
+                    {t(`services.list.${svc.id}.title` as any)}
                   </Link>
                 </li>
               ))}

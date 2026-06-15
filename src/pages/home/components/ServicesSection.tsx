@@ -36,7 +36,7 @@ export default function ServicesSection() {
             {t('services.title')} <span className="gradient-text">{t('services.titleHighlight')}</span>
           </h2>
           <p className="text-[#5A6A72] text-sm md:text-base leading-relaxed">
-            From custom high-converting web applications and AI-driven support bots to complete workflow pipelines, we build custom solutions tailored directly to your business logic.
+            {t('services.subtitle')}
           </p>
         </div>
 

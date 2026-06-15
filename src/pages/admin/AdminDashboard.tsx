@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
+import { useToast } from '@/components/common/ToastContext';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -15,11 +16,21 @@ import {
 const COLORS = ['#2C3E50', '#9B2A4C', '#A8B5A0', '#D97706', '#2563EB'];
 
 export default function AdminDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
-  // RBAC Roles: 'admin' (Super Admin), 'manager' (Manager)
-  const [role, setRole] = useState<'admin' | 'manager'>('admin');
+  // Authentication states
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return sessionStorage.getItem('admin_logged_in') === 'true';
+  });
+  const [role, setRole] = useState<'admin' | 'manager'>(() => {
+    return (sessionStorage.getItem('admin_role') as 'admin' | 'manager') || 'admin';
+  });
+
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   // DB States
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -43,14 +54,14 @@ export default function AdminDashboard() {
   const [newLeadEmail, setNewLeadEmail] = useState('');
   const [newLeadPhone, setNewLeadPhone] = useState('');
   const [newLeadCompany, setNewLeadCompany] = useState('');
-  const [newLeadService, setNewLeadService] = useState('Web Development');
+  const [newLeadService, setNewLeadService] = useState('web');
   const [newLeadMessage, setNewLeadMessage] = useState('');
 
   // Kanban task assignment
   const [taskName, setTaskName] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
-  const [taskService, setTaskService] = useState('Web Development');
+  const [taskService, setTaskService] = useState('web');
   const [assigneeId, setAssigneeId] = useState('Unassigned');
   const [contractValue, setContractValue] = useState<number>(1500);
   const [outsourceFee, setOutsourceFee] = useState<number>(600);
@@ -59,6 +70,38 @@ export default function AdminDashboard() {
 
   // Bulk CSV simulator message
   const [csvMessage, setCsvMessage] = useState('');
+
+  // Unified login check
+  useEffect(() => {
+    const isUserLoggedIn = sessionStorage.getItem('user_logged_in') === 'true';
+    const userRole = sessionStorage.getItem('user_role');
+
+    if (!isUserLoggedIn || (userRole !== 'admin' && userRole !== 'manager')) {
+      navigate('/login');
+      return;
+    }
+
+    setIsLoggedIn(true);
+    setRole(userRole as 'admin' | 'manager');
+  }, [navigate]);
+
+  const handleSwitchRole = (newRole: 'admin' | 'manager') => {
+    setRole(newRole);
+    sessionStorage.setItem('admin_role', newRole);
+    sessionStorage.setItem('user_role', newRole); // Sync role
+  };
+
+  const handleLogoutAdmin = () => {
+    sessionStorage.removeItem('user_logged_in');
+    sessionStorage.removeItem('user_role');
+    sessionStorage.removeItem('user_email');
+    sessionStorage.removeItem('user_name');
+    sessionStorage.removeItem('user_id');
+    sessionStorage.removeItem('admin_logged_in');
+    sessionStorage.removeItem('admin_role');
+    setIsLoggedIn(false);
+    navigate('/login');
+  };
 
   useEffect(() => {
     loadData();
@@ -85,7 +128,7 @@ export default function AdminDashboard() {
   // Approve freelance application
   const handleApproveFreelancer = (id: string, approve: boolean) => {
     if (role === 'manager') {
-      alert('Security Denied: Manager role is restricted from approving outsource applications.');
+      showToast(t('admin.deniedApprove'), 'error');
       return;
     }
     MockDB.updateFreelancerStatus(id, approve ? 'Approved' : 'Rejected');
@@ -115,18 +158,33 @@ export default function AdminDashboard() {
   // Import mock CSV data
   const handleCsvImport = () => {
     const mockItems = [
-      { name: 'David Miller', email: 'david@growfast.co', phone: '+12025550144', company: 'GrowFast Co', service: 'n8n Workflow Setup', message: 'Sync CRM leads to ActiveCampaign.' },
-      { name: 'Sophia Chen', email: 'sophia@techasia.org', phone: '+6591234567', company: 'TechAsia', service: 'Custom App Development', message: 'Build cross-platform client app.' },
-      { name: 'Minh Huy', email: 'huy.minh@vietnambrand.vn', phone: '0905556677', company: 'VN Brands', service: 'High-Converting Landings', message: 'Product landing page design.' }
+      { name: 'David Miller', email: 'david@growfast.co', phone: '+12025550144', company: 'GrowFast Co', service: 'n8n', message: 'Sync CRM leads to ActiveCampaign.' },
+      { name: 'Sophia Chen', email: 'sophia@techasia.org', phone: '+6591234567', company: 'TechAsia', service: 'app', message: 'Build cross-platform client app.' },
+      { name: 'Minh Huy', email: 'huy.minh@vietnambrand.vn', phone: '0905556677', company: 'VN Brands', service: 'landing', message: 'Product landing page design.' }
     ];
 
     mockItems.forEach(item => {
       MockDB.addLead(item);
     });
 
-    setCsvMessage('Successfully imported 3 mockup lead records from CSV simulator!');
+    setCsvMessage(t('admin.csvSuccess'));
     loadData();
     setTimeout(() => setCsvMessage(''), 4000);
+  };
+
+  // Reset database tool
+  const handleResetDb = () => {
+    localStorage.removeItem('alvin_leads');
+    localStorage.removeItem('alvin_freelancers');
+    localStorage.removeItem('alvin_projects');
+    localStorage.removeItem('alvin_traffic');
+    localStorage.removeItem('alvin_alerts');
+    localStorage.removeItem('alvin_finance');
+    localStorage.removeItem('alvin_tax_rate');
+    localStorage.removeItem('alvin_2fa_enabled');
+    MockDB.init();
+    loadData();
+    showToast(t('admin.resetDbSuccess'), 'success');
   };
 
   // Add Kanban Project
@@ -176,7 +234,7 @@ export default function AdminDashboard() {
   // Payout actions
   const handleApprovePayout = (id: string) => {
     if (role === 'manager') {
-      alert('Security Denied: Managers cannot authorize payout operations.');
+      showToast(t('admin.deniedPayout'), 'error');
       return;
     }
     MockDB.approvePayoutRequest(id);
@@ -185,7 +243,7 @@ export default function AdminDashboard() {
 
   const handleMarkPaid = (id: string) => {
     if (role === 'manager') {
-      alert('Security Denied: Managers cannot authorize payout operations.');
+      showToast(t('admin.deniedPayout'), 'error');
       return;
     }
     MockDB.markPayoutAsPaid(id);
@@ -196,7 +254,7 @@ export default function AdminDashboard() {
   const handleExportPayoutsCsv = () => {
     const pending = payouts.filter(p => p.status === 'Approved');
     if (pending.length === 0) {
-      alert('No approved payout records pending bank transfer.');
+      showToast(t('admin.noApprovedPayouts'), 'warning');
       return;
     }
 
@@ -217,7 +275,7 @@ export default function AdminDashboard() {
   // Config adjustments
   const handleTaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (role === 'manager') {
-      alert('Managers cannot alter corporate tax rules.');
+      showToast(t('admin.deniedTax'), 'error');
       return;
     }
     const val = parseInt(e.target.value) || 0;
@@ -227,7 +285,7 @@ export default function AdminDashboard() {
 
   const handleToggle2FA = () => {
     if (role === 'manager') {
-      alert('Managers cannot change authentication parameters.');
+      showToast(t('admin.denied2fa'), 'error');
       return;
     }
     if (!twoFA) {
@@ -273,43 +331,58 @@ export default function AdminDashboard() {
       <Navbar />
 
       <main className="pt-24 pb-16 flex-grow max-w-7xl mx-auto px-4 md:px-6 w-full">
-        {/* Header Control Panel */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-[#1C2526]">{t('admin.title')}</h1>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${role === 'admin' ? 'bg-[#9B2A4C]/10 text-[#9B2A4C]' : 'bg-[#2C3E50]/10 text-[#2C3E50]'}`}>
-                {role === 'admin' ? t('portals.roleAdmin') : t('portals.roleManager')}
-              </span>
-            </div>
-            <p className="text-xs text-[#5A6A72] mt-0.5">{t('admin.subtitle')}</p>
+        {!isLoggedIn ? (
+          <div className="flex flex-col items-center justify-center py-20 w-full">
+            <i className="ri-loader-4-line animate-spin text-4xl text-[#9B2A4C]" />
+            <p className="text-xs text-[#8A97A0] mt-2">Loading workspace...</p>
           </div>
+        ) : (
+          <>
+            {/* Header Control Panel */}
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-black text-[#1C2526]">{t('admin.title')}</h1>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${role === 'admin' ? 'bg-[#9B2A4C]/10 text-[#9B2A4C]' : 'bg-[#2C3E50]/10 text-[#2C3E50]'}`}>
+                    {role === 'admin' ? t('portals.roleAdmin') : t('portals.roleManager')}
+                  </span>
+                </div>
+                <p className="text-xs text-[#5A6A72] mt-0.5">{t('admin.subtitle')}</p>
+              </div>
 
-          {/* Role switcher & RBAC simulation selector */}
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs font-bold text-[#5A6A72] uppercase tracking-wide">
-              {t('admin.currentRole')}:
-            </span>
-            <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-gray-50">
-              <button
-                onClick={() => setRole('admin')}
-                className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${
-                  role === 'admin' ? 'bg-white text-[#9B2A4C] shadow-sm' : 'text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                {t('portals.roleAdmin')}
-              </button>
-              <button
-                onClick={() => setRole('manager')}
-                className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${
-                  role === 'manager' ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                {t('portals.roleManager')}
-              </button>
+              {/* Role switcher & RBAC simulation selector */}
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-xs font-bold text-[#5A6A72] uppercase tracking-wide">
+                  {t('admin.currentRole')}:
+                </span>
+                <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-gray-50">
+                  <button
+                    onClick={() => handleSwitchRole('admin')}
+                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${
+                      role === 'admin' ? 'bg-white text-[#9B2A4C] shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    {t('portals.roleAdmin')}
+                  </button>
+                  <button
+                    onClick={() => handleSwitchRole('manager')}
+                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${
+                      role === 'manager' ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    {t('portals.roleManager')}
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleLogoutAdmin}
+                  className="flex items-center gap-1 px-3 py-1.5 border border-red-200 hover:bg-red-50 text-red-500 text-[10px] font-bold rounded-xl cursor-pointer transition-colors"
+                >
+                  <i className="ri-logout-box-r-line" />
+                  {t('admin.logoutBtn')}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
 
         {/* Dashboard Overview Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -430,7 +503,7 @@ export default function AdminDashboard() {
                   <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.realtimeTraffic')}</h3>
                   <span className="text-[10px] text-green-500 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" />
-                    Connected to GA4 & Social APIs
+                    {t('admin.activeApis')}
                   </span>
                 </div>
 
@@ -541,7 +614,7 @@ export default function AdminDashboard() {
                   <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.sheetsIntegration')}</h3>
                   <span className="text-[10px] text-[#2C3E50] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 bg-[#2C3E50]/5 rounded-xl">
                     <i className="ri-file-excel-fill text-green-600 text-sm" />
-                    Google Sheets API Active
+                    {t('admin.sheetsActive')}
                   </span>
                 </div>
 
@@ -564,7 +637,7 @@ export default function AdminDashboard() {
                 {/* Sheets Grid table representation */}
                 <div className="space-y-3">
                   <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                    Live Sheet: Income Statement
+                    {t('admin.sheetsLedger')}
                   </h4>
                   <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                     <table className="w-full text-left text-xs border-collapse">
@@ -603,15 +676,22 @@ export default function AdminDashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
                   <div>
                     <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.crmDatabase')}</h3>
-                    <p className="text-xs text-gray-400">Track and close incoming project prospects.</p>
+                    <p className="text-xs text-gray-400">{t('admin.crmDesc')}</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={handleCsvImport}
                       className="px-4 py-2 border border-dashed border-[#9B2A4C]/30 text-[#9B2A4C] hover:bg-[#9B2A4C]/5 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <i className="ri-file-upload-line" />
                       {t('admin.importCsv')}
+                    </button>
+                    <button
+                      onClick={handleResetDb}
+                      className="px-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <i className="ri-refresh-line" />
+                      {t('admin.resetDb')}
                     </button>
                   </div>
                 </div>
@@ -627,10 +707,10 @@ export default function AdminDashboard() {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                        <th className="p-3">Customer info</th>
-                        <th className="p-3">Request Details</th>
-                        <th className="p-3">Lead Status</th>
-                        <th className="p-3 text-center">Actions</th>
+                        <th className="p-3">{t('admin.customerInfo')}</th>
+                        <th className="p-3">{t('admin.requestDetails')}</th>
+                        <th className="p-3">{t('admin.leadStatus')}</th>
+                        <th className="p-3 text-center">{t('common.actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 text-gray-700">
@@ -644,7 +724,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="p-3 space-y-1 max-w-xs">
                             <span className="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-                              {lead.service}
+                              {i18n.exists(`services.list.${lead.service}.title`) ? t(`services.list.${lead.service}.title` as any) : lead.service}
                             </span>
                             <p className="text-[10px] text-[#5A6A72] leading-relaxed line-clamp-3">
                               {lead.message}
@@ -659,10 +739,10 @@ export default function AdminDashboard() {
                               }}
                               className="bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-[10px] font-bold text-gray-700 focus:outline-none focus:border-[#9B2A4C]"
                             >
-                              <option value="New">New</option>
-                              <option value="Contacted">Contacted</option>
-                              <option value="Qualified">Qualified</option>
-                              <option value="Closed">Closed</option>
+                              <option value="New">{t('admin.statusNew')}</option>
+                              <option value="Contacted">{t('admin.statusContacted')}</option>
+                              <option value="Qualified">{t('admin.statusQualified')}</option>
+                              <option value="Closed">{t('admin.statusClosed')}</option>
                             </select>
                           </td>
                           <td className="p-3 text-center">
@@ -692,7 +772,7 @@ export default function AdminDashboard() {
                     <input
                       type="text"
                       required
-                      placeholder="Name"
+                      placeholder={t('admin.crmForm.name')}
                       value={newLeadName}
                       onChange={(e) => setNewLeadName(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -700,7 +780,7 @@ export default function AdminDashboard() {
                     <input
                       type="email"
                       required
-                      placeholder="Email"
+                      placeholder={t('admin.crmForm.email')}
                       value={newLeadEmail}
                       onChange={(e) => setNewLeadEmail(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -708,7 +788,7 @@ export default function AdminDashboard() {
                     <input
                       type="tel"
                       required
-                      placeholder="Phone"
+                      placeholder={t('admin.crmForm.phone')}
                       value={newLeadPhone}
                       onChange={(e) => setNewLeadPhone(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -717,7 +797,7 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input
                       type="text"
-                      placeholder="Company"
+                      placeholder={t('admin.crmForm.company')}
                       value={newLeadCompany}
                       onChange={(e) => setNewLeadCompany(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -727,18 +807,18 @@ export default function AdminDashboard() {
                       onChange={(e) => setNewLeadService(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
                     >
-                      <option value="Web Development">Web Development</option>
-                      <option value="AI Chatbots">AI Chatbots</option>
-                      <option value="Landing Page">Landing Page</option>
-                      <option value="Workflow Automation">Workflow Automation</option>
-                      <option value="Email Automation">Email Automation</option>
-                      <option value="n8n Integration">n8n Integration</option>
-                      <option value="Mobile App">Mobile App</option>
+                      <option value="web">{t('services.list.web.title')}</option>
+                      <option value="chatbot">{t('services.list.chatbot.title')}</option>
+                      <option value="landing">{t('services.list.landing.title')}</option>
+                      <option value="workflow">{t('services.list.workflow.title')}</option>
+                      <option value="email">{t('services.list.email.title')}</option>
+                      <option value="n8n">{t('services.list.n8n.title')}</option>
+                      <option value="app">{t('services.list.app.title')}</option>
                     </select>
                   </div>
                   <textarea
                     rows={2}
-                    placeholder="Inquiry Brief / Client Goals..."
+                    placeholder={t('admin.crmForm.messagePlaceholder')}
                     value={newLeadMessage}
                     onChange={(e) => setNewLeadMessage(e.target.value)}
                     className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none"
@@ -747,7 +827,7 @@ export default function AdminDashboard() {
                     type="submit"
                     className="bg-[#2C3E50] text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
                   >
-                    Add Lead
+                    {t('admin.addLeadBtn')}
                   </button>
                 </form>
               </div>
@@ -758,18 +838,18 @@ export default function AdminDashboard() {
               <div className="space-y-8 animate-fadeIn">
                 <div>
                   <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.taskBoard')}</h3>
-                  <p className="text-xs text-gray-400">Map and orchestrate freelancer timelines dynamically.</p>
+                  <p className="text-xs text-gray-400">{t('admin.kanbanDesc')}</p>
                 </div>
 
                 {/* Columns */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
                   {['New', 'In Progress', 'Client Review', 'Completed'].map(columnStatus => {
                     const filtered = projects.filter(p => p.status === columnStatus);
                     return (
-                      <div key={columnStatus} className="bg-[#F8F6F2]/50 border border-gray-200 rounded-2xl p-3 space-y-3 min-h-[300px]">
+                      <div key={columnStatus} className="bg-[#F8F6F2]/60 border border-gray-200 rounded-2xl p-4 space-y-3 min-h-[300px] w-full md:w-[280px] shrink-0">
                         <div className="flex justify-between items-center px-1">
                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                            {columnStatus === 'New' ? 'Mới' : columnStatus === 'In Progress' ? 'Đang Làm' : columnStatus === 'Client Review' ? 'Chờ Khách Duyệt' : 'Hoàn Thành'}
+                            {columnStatus === 'New' ? t('admin.statusNew') : columnStatus === 'In Progress' ? t('admin.statusInProgress') : columnStatus === 'Client Review' ? t('admin.statusClientReview') : t('admin.statusCompleted')}
                           </span>
                           <span className="bg-[#2C3E50]/5 text-[#2C3E50] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                             {filtered.length}
@@ -781,7 +861,7 @@ export default function AdminDashboard() {
                             <div key={proj.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 hover:border-[#9B2A4C]/30 transition-colors">
                               <div>
                                 <span className="text-[8px] font-bold text-[#9B2A4C] uppercase bg-[#9B2A4C]/5 px-1.5 py-0.5 rounded">
-                                  {proj.service}
+                                  {i18n.exists(`services.list.${proj.service}.title`) ? t(`services.list.${proj.service}.title` as any) : proj.service}
                                 </span>
                                 <h4 className="text-xs font-bold text-[#1C2526] mt-1 line-clamp-1">{proj.name}</h4>
                                 <p className="text-[9px] text-gray-400">Client: {proj.clientName}</p>
@@ -789,15 +869,15 @@ export default function AdminDashboard() {
 
                               <div className="space-y-1.5">
                                 <div className="flex justify-between text-[9px] text-gray-500 font-bold">
-                                  <span>Assignee</span>
+                                  <span>{t('admin.assignee')}</span>
                                   <span className="text-[#2C3E50]">{proj.assigneeName}</span>
                                 </div>
                                 <div className="flex justify-between text-[9px] text-gray-500 font-bold">
-                                  <span>Deadline</span>
+                                  <span>{t('admin.deadline')}</span>
                                   <span className="text-red-500">{proj.deadline}</span>
                                 </div>
                                 <div className="flex justify-between text-[9px] text-gray-500 font-bold">
-                                  <span>Progress</span>
+                                  <span>{t('admin.progress')}</span>
                                   <span className="text-[#9B2A4C]">{proj.progress}%</span>
                                 </div>
                                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -814,7 +894,7 @@ export default function AdminDashboard() {
                                 >
                                   <i className="ri-arrow-left-s-line" />
                                 </button>
-                                <span className="text-[8px] font-bold text-[#5A6A72] uppercase">Control</span>
+                                <span className="text-[8px] font-bold text-[#5A6A72] uppercase">{t('admin.control')}</span>
                                 <button
                                   onClick={() => handleMoveCard(proj.id, proj.status, 'right')}
                                   disabled={columnStatus === 'Completed'}
@@ -840,7 +920,7 @@ export default function AdminDashboard() {
                     <input
                       type="text"
                       required
-                      placeholder="Project Name *"
+                      placeholder={t('admin.kanbanForm.projectName')}
                       value={taskName}
                       onChange={(e) => setTaskName(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -848,7 +928,7 @@ export default function AdminDashboard() {
                     <input
                       type="text"
                       required
-                      placeholder="Client Name *"
+                      placeholder={t('admin.kanbanForm.clientName')}
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -856,7 +936,7 @@ export default function AdminDashboard() {
                     <input
                       type="email"
                       required
-                      placeholder="Client Email *"
+                      placeholder={t('admin.kanbanForm.clientEmail')}
                       value={clientEmail}
                       onChange={(e) => setClientEmail(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -869,13 +949,13 @@ export default function AdminDashboard() {
                       onChange={(e) => setTaskService(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
                     >
-                      <option value="Web Development">Web Development</option>
-                      <option value="AI Chatbots">AI Chatbots</option>
-                      <option value="Landing Page">Landing Page</option>
-                      <option value="Workflow Automation">Workflow Automation</option>
-                      <option value="Email Automation">Email Automation</option>
-                      <option value="n8n Integration">n8n Integration</option>
-                      <option value="Mobile App">Mobile App</option>
+                      <option value="web">{t('services.list.web.title')}</option>
+                      <option value="chatbot">{t('services.list.chatbot.title')}</option>
+                      <option value="landing">{t('services.list.landing.title')}</option>
+                      <option value="workflow">{t('services.list.workflow.title')}</option>
+                      <option value="email">{t('services.list.email.title')}</option>
+                      <option value="n8n">{t('services.list.n8n.title')}</option>
+                      <option value="app">{t('services.list.app.title')}</option>
                     </select>
 
                     <select
@@ -883,7 +963,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setAssigneeId(e.target.value)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
                     >
-                      <option value="Unassigned">Assign Freelancer</option>
+                      <option value="Unassigned">{t('admin.kanbanForm.assignFreelancer')}</option>
                       {freelancers.filter(f => f.status === 'Approved').map(f => (
                         <option key={f.id} value={f.id}>{f.name}</option>
                       ))}
@@ -892,7 +972,7 @@ export default function AdminDashboard() {
                     <input
                       type="number"
                       required
-                      placeholder="Contract Value ($)"
+                      placeholder={t('admin.kanbanForm.contractValue')}
                       value={contractValue}
                       onChange={(e) => setContractValue(parseInt(e.target.value) || 0)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -901,7 +981,7 @@ export default function AdminDashboard() {
                     <input
                       type="number"
                       required
-                      placeholder="Outsource thù lao ($)"
+                      placeholder={t('admin.kanbanForm.outsourceFee')}
                       value={outsourceFee}
                       onChange={(e) => setOutsourceFee(parseInt(e.target.value) || 0)}
                       className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
@@ -918,7 +998,7 @@ export default function AdminDashboard() {
                     />
                     <textarea
                       rows={1}
-                      placeholder="Task specifications, requirements and client briefs..."
+                      placeholder={t('admin.kanbanForm.briefPlaceholder')}
                       value={taskBrief}
                       onChange={(e) => setTaskBrief(e.target.value)}
                       className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none"
@@ -929,7 +1009,7 @@ export default function AdminDashboard() {
                     type="submit"
                     className="bg-[#2C3E50] text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
                   >
-                    Create Project Task
+                    {t('admin.createTaskBtn')}
                   </button>
                 </form>
               </div>
@@ -941,7 +1021,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
                   <div>
                     <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.pendingPayments')}</h3>
-                    <p className="text-xs text-gray-400">Authorize payments and thù lao request sheets.</p>
+                    <p className="text-xs text-gray-400">{t('admin.payoutDesc')}</p>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -958,13 +1038,13 @@ export default function AdminDashboard() {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                        <th className="p-3">Freelancer Name</th>
-                        <th className="p-3">Project Info</th>
-                        <th className="p-3 text-right">Fee Rate</th>
-                        <th className="p-3 text-right">Tax ({taxRate}%)</th>
-                        <th className="p-3 text-right">Net Payout</th>
-                        <th className="p-3">Status</th>
-                        <th className="p-3 text-center">Actions</th>
+                        <th className="p-3">{t('admin.payoutHeaders.freelancerName')}</th>
+                        <th className="p-3">{t('admin.payoutHeaders.projectInfo')}</th>
+                        <th className="p-3 text-right">{t('admin.payoutHeaders.feeRate')}</th>
+                        <th className="p-3 text-right">{t('admin.payoutHeaders.tax')} ({taxRate}%)</th>
+                        <th className="p-3 text-right">{t('admin.payoutHeaders.netPayout')}</th>
+                        <th className="p-3">{t('common.status')}</th>
+                        <th className="p-3 text-center">{t('common.actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 text-gray-700">
@@ -983,7 +1063,7 @@ export default function AdminDashboard() {
                                 ? 'bg-blue-50 text-blue-600'
                                 : 'bg-yellow-50 text-yellow-600'
                             }`}>
-                              {p.status === 'Paid' ? t('admin.paid') : p.status === 'Approved' ? 'Approved' : 'Pending'}
+                              {p.status === 'Paid' ? t('admin.paid') : p.status === 'Approved' ? t('admin.statusApproved') : t('admin.statusPending')}
                             </span>
                           </td>
                           <td className="p-3 text-center space-x-2">
@@ -1002,11 +1082,11 @@ export default function AdminDashboard() {
                                 disabled={role === 'manager'}
                                 className="px-2.5 py-1 bg-green-500 text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
                               >
-                                Mark Paid
+                                {t('admin.markPaidBtn')}
                               </button>
                             )}
                             {p.status === 'Paid' && (
-                              <span className="text-[10px] text-gray-400 font-semibold">Done</span>
+                              <span className="text-[10px] text-gray-400 font-semibold">{t('admin.done')}</span>
                             )}
                           </td>
                         </tr>
@@ -1015,7 +1095,7 @@ export default function AdminDashboard() {
                       {payouts.length === 0 && (
                         <tr>
                           <td colSpan={7} className="p-6 text-center text-gray-400 italic">
-                            No payment requests listed in the mock database.
+                            {t('admin.noPayoutRequests')}
                           </td>
                         </tr>
                       )}
@@ -1026,7 +1106,7 @@ export default function AdminDashboard() {
                 {/* Freelancer approvals pending list */}
                 <div className="space-y-4 pt-4">
                   <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                    Pending Freelancer registrations
+                    {t('admin.pendingFreelancers')}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {freelancers.filter(f => f.status === 'Pending').map(free => (
@@ -1035,23 +1115,79 @@ export default function AdminDashboard() {
                           <div>
                             <h5 className="text-xs font-bold text-[#1C2526]">{free.name}</h5>
                             <p className="text-[10px] text-gray-400">{free.email}</p>
+                            {free.dateOfBirth && (
+                              <p className="text-[10px] text-[#5A6A72] mt-0.5">
+                                <span className="font-semibold">{t('developer.dobLabel')}:</span> {free.dateOfBirth}
+                              </p>
+                            )}
+                            {free.title && (
+                              <p className="text-[10px] font-bold text-[#9B2A4C] mt-0.5">
+                                {t(`developer.titles.${free.title}` as any, free.title)}{' '}
+                                {free.yearsOfExperience && (
+                                  <span className="text-gray-400 font-normal">
+                                    • {t(`developer.experience.${free.yearsOfExperience}` as any, free.yearsOfExperience)}
+                                  </span>
+                                )}
+                              </p>
+                            )}
                           </div>
                           <span className="text-[8px] font-bold bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded uppercase">
-                            Pending
+                            {t('admin.statusPending')}
                           </span>
                         </div>
                         <div className="text-[10px] space-y-1 text-gray-500">
-                          <p><span className="font-semibold">Skills:</span> {free.skills.join(', ')}</p>
+                          {(!free.title && free.yearsOfExperience) && (
+                            <p>
+                              <span className="font-semibold">{t('developer.yearsLabel')}:</span>{' '}
+                              {t(`developer.experience.${free.yearsOfExperience}` as any, free.yearsOfExperience)}
+                            </p>
+                          )}
+                          <p><span className="font-semibold">{t('admin.skills')}:</span> {free.skills.join(', ')}</p>
+                          
+                          {free.englishProficiency && (
+                            <p>
+                              <span className="font-semibold">{t('developer.englishLabel')}:</span>{' '}
+                              {t(`developer.englishLevels.${free.englishProficiency}` as any, free.englishProficiency)}
+                            </p>
+                          )}
+
+                          {free.availability && (
+                            <p>
+                              <span className="font-semibold">{t('developer.availabilityLabel')}:</span>{' '}
+                              {t(`developer.availabilityOptions.${free.availability}` as any, free.availability)}
+                            </p>
+                          )}
+
+                          <div className="flex flex-wrap gap-x-3 gap-y-1">
+                            <p>
+                              <span className="font-semibold">{t('admin.portfolio')}:</span>{' '}
+                              <a href={free.portfolio} target="_blank" rel="noreferrer" className="text-[#9B2A4C] hover:underline truncate inline-block max-w-[130px] align-bottom">
+                                {free.portfolio}
+                              </a>
+                            </p>
+                            {free.cvLink && (
+                              <p>
+                                <span className="font-semibold">{t('developer.cvLabel').split(' ')[0] || 'CV'}:</span>{' '}
+                                <a href={free.cvLink} target="_blank" rel="noreferrer" className="text-[#9B2A4C] hover:underline truncate inline-block max-w-[130px] align-bottom font-bold">
+                                  <i className="ri-attachment-line mr-0.5" />
+                                  {i18n.language === 'vi' ? 'Xem CV' : 'View CV'}
+                                </a>
+                              </p>
+                            )}
+                          </div>
+
                           <p>
-                            <span className="font-semibold">Portfolio:</span>{' '}
-                            <a href={free.portfolio} target="_blank" rel="noreferrer" className="text-[#9B2A4C] hover:underline truncate inline-block max-w-[150px]">
-                              {free.portfolio}
-                            </a>
+                            <span className="font-semibold">{t('admin.expectedRate')}:</span>{' '}
+                            {i18n.language === 'vi'
+                              ? `${free.rateValue.toLocaleString('vi-VN')} vnđ ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`
+                              : `$${free.rateValue} ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`}
                           </p>
-                          <p>
-                            <span className="font-semibold">Expected Rate:</span>{' '}
-                            ${free.rateValue} {free.rateType === 'hourly' ? '/ hr' : 'fixed'}
-                          </p>
+
+                          {free.shortBio && (
+                            <div className="mt-2 p-2.5 bg-white/70 border border-gray-100 rounded-xl text-[10px] text-[#5A6A72] leading-relaxed italic shadow-inner">
+                              "{free.shortBio}"
+                            </div>
+                          )}
                         </div>
                         <div className="flex gap-2 justify-end pt-1">
                           <button
@@ -1059,21 +1195,21 @@ export default function AdminDashboard() {
                             disabled={role === 'manager'}
                             className="px-2.5 py-1 border border-red-200 text-red-500 text-[10px] font-bold rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors cursor-pointer"
                           >
-                            Decline
+                            {t('admin.decline')}
                           </button>
                           <button
                             onClick={() => handleApproveFreelancer(free.id, true)}
                             disabled={role === 'manager'}
                             className="px-2.5 py-1 bg-green-500 text-white text-[10px] font-bold rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors cursor-pointer"
                           >
-                            Approve
+                            {t('admin.approve')}
                           </button>
                         </div>
                       </div>
                     ))}
 
                     {freelancers.filter(f => f.status === 'Pending').length === 0 && (
-                      <p className="text-xs text-gray-400 italic">No pending freelancer registrations waiting for approval.</p>
+                      <p className="text-xs text-gray-400 italic">{t('admin.noPendingFreelancers')}</p>
                     )}
                   </div>
                 </div>
@@ -1085,7 +1221,7 @@ export default function AdminDashboard() {
               <div className="space-y-8 animate-fadeIn">
                 <div>
                   <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.rbacConfigure')}</h3>
-                  <p className="text-xs text-gray-400">Configure business rules, tax settings and authentication layers.</p>
+                  <p className="text-xs text-gray-400">{t('admin.rbacConfigureDesc')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1100,7 +1236,7 @@ export default function AdminDashboard() {
                       </h4>
                     </div>
                     <p className="text-xs text-[#5A6A72] leading-relaxed">
-                      This percentage is deducted automatically from the outsource fee when freelancers claim payout requests.
+                      {t('admin.taxRateExplain')}
                     </p>
                     <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5">
                       <input
@@ -1130,7 +1266,7 @@ export default function AdminDashboard() {
                       {t('admin.securityExplain')}
                     </p>
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs font-semibold text-gray-500">Enable 2FA Protection</span>
+                      <span className="text-xs font-semibold text-gray-500">{t('admin.enable2fa')}</span>
                       <button
                         onClick={handleToggle2FA}
                         disabled={role === 'manager'}
@@ -1148,16 +1284,18 @@ export default function AdminDashboard() {
                 <div className="p-4 rounded-2xl bg-yellow-50/50 border border-yellow-100 text-xs text-[#5A6A72] space-y-1">
                   <p className="font-bold text-[#2C3E50] flex items-center gap-1">
                     <i className="ri-lock-line" />
-                    Encrypted Password Protocol Active
+                    {t('admin.encNoticeTitle')}
                   </p>
                   <p className="leading-relaxed text-[11px]">
-                    All freelancer profile passwords and Admin authentication database credentials are encrypted using SHA-256 visual signatures in this front-end package environment.
+                    {t('admin.encNoticeDesc')}
                   </p>
                 </div>
               </div>
             )}
           </div>
         </div>
+        </>
+        )}
       </main>
 
       {/* 2FA SETUP MODAL MOCK */}
@@ -1165,8 +1303,8 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full border border-gray-100 shadow-2xl space-y-6 animate-scaleUp">
             <div className="text-center space-y-2">
-              <h3 className="font-bold text-[#1C2526] text-lg">Set up Authenticator app</h3>
-              <p className="text-xs text-gray-400">Scan this QR code using Google Authenticator or Microsoft Authenticator.</p>
+              <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.qrTitle')}</h3>
+              <p className="text-xs text-gray-400">{t('admin.qrDesc')}</p>
             </div>
 
             {/* QR Mock */}
@@ -1182,19 +1320,19 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-3">
-              <p className="text-[10px] text-gray-400 text-center font-semibold">Or enter manually code: ALVIN2FASECRETKEY</p>
+              <p className="text-[10px] text-gray-400 text-center font-semibold">{t('admin.qrManual')}</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowTwoFAModal(false)}
                   className="w-1/2 py-2 border border-gray-200 text-gray-500 font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={confirm2FA}
                   className="w-1/2 py-2 gradient-bg text-white font-bold text-xs rounded-xl hover:opacity-95 shadow transition-colors"
                 >
-                  Verify & Enable
+                  {t('admin.verifyEnable')}
                 </button>
               </div>
             </div>

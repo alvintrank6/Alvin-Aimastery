@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import ContactOrbit from '@/pages/contact/components/ContactOrbit';
 
 export default function AboutSection() {
   const { t } = useTranslation();
@@ -15,9 +16,10 @@ export default function AboutSection() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left — Bio */}
-          <div className="space-y-5">
+        {/* Bio next to interactive Orbit contact panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
+          {/* Left — Bio (7 cols) */}
+          <div className="lg:col-span-7 space-y-5">
             <p className="text-[#5A6A72] text-base leading-relaxed">
               {t('about.bio1')}
             </p>
@@ -37,16 +39,21 @@ export default function AboutSection() {
             </div>
           </div>
 
-          {/* Right — Stats grid */}
-          <div className="grid grid-cols-2 gap-4">
-            {(t('about.stats', { returnObjects: true }) as Array<{ value: string; label: string; desc: string }>).map((stat) => (
-              <div key={stat.label} className="card-light card-light-hover rounded-xl p-5 transition-all duration-300">
-                <p className="text-2xl font-black gradient-text">{stat.value}</p>
-                <p className="text-[#1C2526] text-sm font-semibold mt-1">{stat.label}</p>
-                <p className="text-[#8A97A0] text-xs mt-0.5">{stat.desc}</p>
-              </div>
-            ))}
+          {/* Right — Orbit (5 cols) */}
+          <div className="lg:col-span-5 flex justify-center">
+            <ContactOrbit />
           </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-10 border-t border-gray-100">
+          {(t('about.stats', { returnObjects: true }) as Array<{ value: string; label: string; desc: string }>).map((stat) => (
+            <div key={stat.label} className="card-light card-light-hover rounded-xl p-5 transition-all duration-300">
+              <p className="text-2xl font-black gradient-text">{stat.value}</p>
+              <p className="text-[#1C2526] text-sm font-semibold mt-1">{stat.label}</p>
+              <p className="text-[#8A97A0] text-xs mt-0.5">{stat.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

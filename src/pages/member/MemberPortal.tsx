@@ -86,7 +86,7 @@ export default function MemberPortal() {
   useEffect(() => {
     if (!selectedFreelancer) return;
 
-    const socket = io('http://localhost:3001');
+    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
 
     socket.on('projects-updated', () => {
       console.log('WS Event: Projects updated, refetching...');

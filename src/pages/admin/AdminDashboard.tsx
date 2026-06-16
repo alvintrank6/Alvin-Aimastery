@@ -122,7 +122,7 @@ export default function AdminDashboard() {
   }, [trafficFilter]);
 
   useEffect(() => {
-    const socket = io('http://localhost:3001');
+    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
 
     socket.on('leads-updated', async () => {
       setLeads(await LeadsAPI.getAll());

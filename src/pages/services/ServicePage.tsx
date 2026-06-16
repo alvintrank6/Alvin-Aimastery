@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
-import { MockDB } from '@/utils/db';
+import { LeadsAPI } from '@/utils/api';
 
 interface ServiceContent {
   id: string;
@@ -698,12 +698,12 @@ export default function ServicePage() {
     );
   }
 
-  const handleBooking = (e: React.FormEvent) => {
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
-    setTimeout(() => {
-      MockDB.addLead({
+    try {
+      await LeadsAPI.create({
         name,
         email,
         phone,
@@ -712,7 +712,6 @@ export default function ServicePage() {
         message: message || `${t('services.bookService')}: ${t(service.titleKey)}`
       });
 
-      setSubmitting(false);
       setSuccess(true);
       // Reset form fields
       setName('');
@@ -720,7 +719,11 @@ export default function ServicePage() {
       setPhone('');
       setCompany('');
       setMessage('');
-    }, 1200);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

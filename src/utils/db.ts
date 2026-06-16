@@ -245,6 +245,22 @@ const DEFAULT_TRAFFIC: TrafficMetric[] = [
   { date: 'Jun 12', visitors: 810, organic: 320, facebook: 260, tiktok: 140, youtube: 60, direct: 30 },
 ];
 
+const DEFAULT_TRAFFIC_WEEK: TrafficMetric[] = [
+  { date: 'Week 1', visitors: 2500, organic: 1000, facebook: 600, tiktok: 500, youtube: 200, direct: 200 },
+  { date: 'Week 2', visitors: 2800, organic: 1100, facebook: 700, tiktok: 600, youtube: 250, direct: 150 },
+  { date: 'Week 3', visitors: 3200, organic: 1300, facebook: 800, tiktok: 700, youtube: 300, direct: 100 },
+  { date: 'Week 4', visitors: 3600, organic: 1500, facebook: 900, tiktok: 800, youtube: 350, direct: 50 },
+];
+
+const DEFAULT_TRAFFIC_MONTH: TrafficMetric[] = [
+  { date: 'Jan', visitors: 8000, organic: 3000, facebook: 2000, tiktok: 1500, youtube: 1000, direct: 500 },
+  { date: 'Feb', visitors: 9500, organic: 3500, facebook: 2500, tiktok: 1800, youtube: 1200, direct: 500 },
+  { date: 'Mar', visitors: 11000, organic: 4000, facebook: 3000, tiktok: 2000, youtube: 1500, direct: 500 },
+  { date: 'Apr', visitors: 13000, organic: 4500, facebook: 3500, tiktok: 2500, youtube: 1800, direct: 700 },
+  { date: 'May', visitors: 15000, organic: 5000, facebook: 4000, tiktok: 3000, youtube: 2000, direct: 1000 },
+  { date: 'Jun', visitors: 18000, organic: 6000, facebook: 5000, tiktok: 4000, youtube: 2500, direct: 500 },
+];
+
 const DEFAULT_ALERTS: CampaignAlert[] = [
   { id: 'a-1', platform: 'TikTok', campaignName: 'Summer AI Chatbot Promo', engagementDrop: 32, status: 'active' },
   { id: 'a-2', platform: 'Facebook', campaignName: 'Brand Identity Agency Ad', engagementDrop: 15, status: 'resolved' },
@@ -497,8 +513,10 @@ export class MockDB {
   }
 
   // Analytics Metrics
-  static getTrafficMetrics(): TrafficMetric[] {
+  static getTrafficMetrics(filter: 'day' | 'week' | 'month' = 'day'): TrafficMetric[] {
     this.init();
+    if (filter === 'week') return DEFAULT_TRAFFIC_WEEK;
+    if (filter === 'month') return DEFAULT_TRAFFIC_MONTH;
     return JSON.parse(localStorage.getItem('alvin_traffic') || '[]');
   }
 

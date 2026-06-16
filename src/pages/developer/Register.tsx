@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
-import { MockDB } from '@/utils/db';
+import { FreelancersAPI } from '@/utils/api';
 import { useToast } from '@/components/common/ToastContext';
 
 const SKILLS_OPTIONS = ['n8n', 'Web', 'App', 'Workflow', 'Landing', 'Email Auto', 'Copywriting', 'SEO', 'React', 'Node.js', 'Python', 'DevOps', 'PostgreSQL', 'Docker'];
@@ -86,14 +86,14 @@ export default function Register() {
     setStep((prev) => prev - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep(3)) return;
 
     setSubmitting(true);
 
-    setTimeout(() => {
-      MockDB.addFreelancer({
+    try {
+      await FreelancersAPI.create({
         name,
         email,
         skills: selectedSkills,
@@ -108,10 +108,12 @@ export default function Register() {
         shortBio,
         dateOfBirth,
       });
-
-      setSubmitting(false);
       setSuccess(true);
-    }, 1200);
+    } catch (error) {
+      showToast('Registration failed', 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

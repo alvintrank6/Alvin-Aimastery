@@ -9,9 +9,11 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import {
-  MockDB, Lead, Freelancer, Project, PayoutRequest,
+  Lead, Freelancer, Project, PayoutRequest,
   TrafficMetric, CampaignAlert, FinanceLog
 } from '@/utils/db';
+import { api, LeadsAPI, FreelancersAPI, ProjectsAPI, PayoutsAPI, AnalyticsAPI, SettingsAPI } from '@/utils/api';
+import { io } from 'socket.io-client';
 
 const COLORS = ['#2C3E50', '#9B2A4C', '#A8B5A0', '#D97706', '#2563EB'];
 
@@ -38,6 +40,7 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
   const [trafficData, setTrafficData] = useState<TrafficMetric[]>([]);
+  const [trafficFilter, setTrafficFilter] = useState<'day' | 'week' | 'month'>('day');
   const [alerts, setAlerts] = useState<CampaignAlert[]>([]);
   const [financeData, setFinanceData] = useState<FinanceLog[]>([]);
 
@@ -107,38 +110,80 @@ export default function AdminDashboard() {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setLeads(MockDB.getLeads());
-    setFreelancers(MockDB.getFreelancers());
-    setProjects(MockDB.getProjects());
-    setPayouts(MockDB.getPayoutRequests());
-    setTrafficData(MockDB.getTrafficMetrics());
-    setAlerts(MockDB.getCampaignAlerts());
-    setFinanceData(MockDB.getFinanceLogs());
-    setTaxRate(MockDB.getTaxRate());
-    setTwoFA(MockDB.get2FAEnabled());
+  useEffect(() => {
+    const fetchTraffic = async () => {
+      try {
+        setTrafficData(await AnalyticsAPI.getTraffic(trafficFilter));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchTraffic();
+  }, [trafficFilter]);
+
+  useEffect(() => {
+    const socket = io('http://localhost:3001');
+
+    socket.on('leads-updated', async () => {
+      setLeads(await LeadsAPI.getAll());
+    });
+    socket.on('freelancers-updated', async () => {
+      setFreelancers(await FreelancersAPI.getAll());
+    });
+    socket.on('projects-updated', async () => {
+      setProjects(await ProjectsAPI.getAll());
+    });
+    socket.on('payouts-updated', async () => {
+      setPayouts(await PayoutsAPI.getAll());
+    });
+    socket.on('traffic-updated', async () => {
+      setTrafficData(await AnalyticsAPI.getTraffic(trafficFilter));
+    });
+    socket.on('alerts-updated', async () => {
+      setAlerts(await AnalyticsAPI.getAlerts());
+    });
+    socket.on('settings-updated', async () => {
+      setTaxRate(await SettingsAPI.get('taxRate') || 10);
+      setTwoFA(await SettingsAPI.get('twoFA') || false);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [trafficFilter]);
+
+  const loadData = async () => {
+    setLeads(await LeadsAPI.getAll());
+    setFreelancers(await FreelancersAPI.getAll());
+    setProjects(await ProjectsAPI.getAll());
+    setPayouts(await PayoutsAPI.getAll());
+    setTrafficData(await AnalyticsAPI.getTraffic(trafficFilter));
+    setAlerts(await AnalyticsAPI.getAlerts());
+    setFinanceData(await AnalyticsAPI.getFinance());
+    setTaxRate(await SettingsAPI.get('taxRate') || 10);
+    setTwoFA(await SettingsAPI.get('twoFA') || false);
   };
 
   // Resolve campaign alert
-  const handleResolveAlert = (id: string) => {
-    MockDB.resolveCampaignAlert(id);
-    loadData();
+  const handleResolveAlert = async (id: string) => {
+    await AnalyticsAPI.updateAlert(id, { status: 'resolved' });
+    await loadData();
   };
 
   // Approve freelance application
-  const handleApproveFreelancer = (id: string, approve: boolean) => {
+  const handleApproveFreelancer = async (id: string, approve: boolean) => {
     if (role === 'manager') {
       showToast(t('admin.deniedApprove'), 'error');
       return;
     }
-    MockDB.updateFreelancerStatus(id, approve ? 'Approved' : 'Rejected');
-    loadData();
+    await FreelancersAPI.update(id, { status: approve ? 'Approved' : 'Rejected' });
+    await loadData();
   };
 
   // Add customer lead manually
-  const handleAddLead = (e: React.FormEvent) => {
+  const handleAddLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    MockDB.addLead({
+    await LeadsAPI.create({
       name: newLeadName,
       email: newLeadEmail,
       phone: newLeadPhone,
@@ -146,7 +191,7 @@ export default function AdminDashboard() {
       service: newLeadService,
       message: newLeadMessage
     });
-    loadData();
+    await loadData();
     // Reset inputs
     setNewLeadName('');
     setNewLeadEmail('');
@@ -156,24 +201,24 @@ export default function AdminDashboard() {
   };
 
   // Import mock CSV data
-  const handleCsvImport = () => {
+  const handleCsvImport = async () => {
     const mockItems = [
       { name: 'David Miller', email: 'david@growfast.co', phone: '+12025550144', company: 'GrowFast Co', service: 'n8n', message: 'Sync CRM leads to ActiveCampaign.' },
       { name: 'Sophia Chen', email: 'sophia@techasia.org', phone: '+6591234567', company: 'TechAsia', service: 'app', message: 'Build cross-platform client app.' },
       { name: 'Minh Huy', email: 'huy.minh@vietnambrand.vn', phone: '0905556677', company: 'VN Brands', service: 'landing', message: 'Product landing page design.' }
     ];
 
-    mockItems.forEach(item => {
-      MockDB.addLead(item);
-    });
+    for (const item of mockItems) {
+      await LeadsAPI.create(item);
+    }
 
     setCsvMessage(t('admin.csvSuccess'));
-    loadData();
+    await loadData();
     setTimeout(() => setCsvMessage(''), 4000);
   };
 
   // Reset database tool
-  const handleResetDb = () => {
+  const handleResetDb = async () => {
     localStorage.removeItem('alvin_leads');
     localStorage.removeItem('alvin_freelancers');
     localStorage.removeItem('alvin_projects');
@@ -182,18 +227,17 @@ export default function AdminDashboard() {
     localStorage.removeItem('alvin_finance');
     localStorage.removeItem('alvin_tax_rate');
     localStorage.removeItem('alvin_2fa_enabled');
-    MockDB.init();
-    loadData();
+    await loadData();
     showToast(t('admin.resetDbSuccess'), 'success');
   };
 
   // Add Kanban Project
-  const handleAddTask = (e: React.FormEvent) => {
+  const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     const assignedFreelancer = freelancers.find(f => f.id === assigneeId);
     const assigneeName = assignedFreelancer ? assignedFreelancer.name : 'None';
 
-    MockDB.addProject({
+    await ProjectsAPI.create({
       name: taskName,
       clientName,
       clientEmail,
@@ -208,7 +252,7 @@ export default function AdminDashboard() {
       taxRate
     });
 
-    loadData();
+    await loadData();
     // Reset Form
     setTaskName('');
     setClientName('');
@@ -217,7 +261,7 @@ export default function AdminDashboard() {
   };
 
   // Move Kanban card
-  const handleMoveCard = (id: string, currentStatus: Project['status'], direction: 'left' | 'right') => {
+  const handleMoveCard = async (id: string, currentStatus: Project['status'], direction: 'left' | 'right') => {
     const stages: Project['status'][] = ['New', 'In Progress', 'Client Review', 'Completed'];
     const currentIdx = stages.indexOf(currentStatus);
     let newIdx = currentIdx;
@@ -226,28 +270,28 @@ export default function AdminDashboard() {
     if (direction === 'right' && currentIdx < 3) newIdx = currentIdx + 1;
 
     if (newIdx !== currentIdx) {
-      MockDB.updateProjectStatus(id, stages[newIdx]);
-      loadData();
+      await ProjectsAPI.update(id, { status: stages[newIdx] });
+      await loadData();
     }
   };
 
   // Payout actions
-  const handleApprovePayout = (id: string) => {
+  const handleApprovePayout = async (id: string) => {
     if (role === 'manager') {
       showToast(t('admin.deniedPayout'), 'error');
       return;
     }
-    MockDB.approvePayoutRequest(id);
-    loadData();
+    await PayoutsAPI.update(id, { status: 'Approved' });
+    await loadData();
   };
 
-  const handleMarkPaid = (id: string) => {
+  const handleMarkPaid = async (id: string) => {
     if (role === 'manager') {
       showToast(t('admin.deniedPayout'), 'error');
       return;
     }
-    MockDB.markPayoutAsPaid(id);
-    loadData();
+    await PayoutsAPI.update(id, { status: 'Paid' });
+    await loadData();
   };
 
   // Export Payout CSV
@@ -273,17 +317,17 @@ export default function AdminDashboard() {
   };
 
   // Config adjustments
-  const handleTaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTaxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (role === 'manager') {
       showToast(t('admin.deniedTax'), 'error');
       return;
     }
     const val = parseInt(e.target.value) || 0;
     setTaxRate(val);
-    MockDB.setTaxRate(val);
+    await SettingsAPI.update('taxRate', { value: String(val) });
   };
 
-  const handleToggle2FA = () => {
+  const handleToggle2FA = async () => {
     if (role === 'manager') {
       showToast(t('admin.denied2fa'), 'error');
       return;
@@ -292,13 +336,13 @@ export default function AdminDashboard() {
       setShowTwoFAModal(true);
     } else {
       setTwoFA(false);
-      MockDB.set2FAEnabled(false);
+      await SettingsAPI.update('twoFA', { value: 'false' });
     }
   };
 
-  const confirm2FA = () => {
+  const confirm2FA = async () => {
     setTwoFA(true);
-    MockDB.set2FAEnabled(true);
+    await SettingsAPI.update('twoFA', { value: 'true' });
     setShowTwoFAModal(false);
   };
 
@@ -309,12 +353,13 @@ export default function AdminDashboard() {
   const netEarnings = totalRevenue - totalOutsource;
 
   // Pie chart format
-  const sourceTotals = trafficData.reduce((acc, curr) => {
-    acc.organic += curr.organic;
-    acc.facebook += curr.facebook;
-    acc.tiktok += curr.tiktok;
-    acc.youtube += curr.youtube;
-    acc.direct += curr.direct;
+  const safeTrafficData = Array.isArray(trafficData) ? trafficData : [];
+  const sourceTotals = safeTrafficData.reduce((acc, curr) => {
+    acc.organic += curr.organic || 0;
+    acc.facebook += curr.facebook || 0;
+    acc.tiktok += curr.tiktok || 0;
+    acc.youtube += curr.youtube || 0;
+    acc.direct += curr.direct || 0;
     return acc;
   }, { organic: 0, facebook: 0, tiktok: 0, youtube: 0, direct: 0 });
 
@@ -323,7 +368,7 @@ export default function AdminDashboard() {
     { name: 'Facebook Ads', value: sourceTotals.facebook },
     { name: 'TikTok Social', value: sourceTotals.tiktok },
     { name: 'YouTube Content', value: sourceTotals.youtube },
-    { name: 'Direct Traffic', value: sourceTotals.direct }
+    { name: 'Browser', value: sourceTotals.direct }
   ];
 
   return (
@@ -500,7 +545,29 @@ export default function AdminDashboard() {
             {activeTab === 'marketing' && (
               <div className="space-y-8 animate-fadeIn">
                 <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                  <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.realtimeTraffic')}</h3>
+                  <div className="flex items-center gap-4">
+                    <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.realtimeTraffic')}</h3>
+                    <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                      <button
+                        onClick={() => setTrafficFilter('day')}
+                        className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'day' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
+                      >
+                        Day
+                      </button>
+                      <button
+                        onClick={() => setTrafficFilter('week')}
+                        className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'week' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
+                      >
+                        Week
+                      </button>
+                      <button
+                        onClick={() => setTrafficFilter('month')}
+                        className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'month' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
+                      >
+                        Month
+                      </button>
+                    </div>
+                  </div>
                   <span className="text-[10px] text-green-500 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" />
                     {t('admin.activeApis')}
@@ -521,6 +588,7 @@ export default function AdminDashboard() {
                       <Line type="monotone" dataKey="facebook" stroke="#2563EB" name="Facebook" strokeWidth={1.5} />
                       <Line type="monotone" dataKey="tiktok" stroke="#D97706" name="TikTok" strokeWidth={1.5} />
                       <Line type="monotone" dataKey="youtube" stroke="#EF4444" name="YouTube" strokeWidth={1.5} />
+                      <Line type="monotone" dataKey="direct" stroke="#10B981" name="Browser" strokeWidth={1.5} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -733,9 +801,9 @@ export default function AdminDashboard() {
                           <td className="p-3">
                             <select
                               value={lead.status}
-                              onChange={(e) => {
-                                MockDB.updateLeadStatus(lead.id, e.target.value as Lead['status']);
-                                loadData();
+                              onChange={async (e) => {
+                                await LeadsAPI.update(lead.id, { status: e.target.value });
+                                await loadData();
                               }}
                               className="bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-[10px] font-bold text-gray-700 focus:outline-none focus:border-[#9B2A4C]"
                             >
@@ -747,9 +815,9 @@ export default function AdminDashboard() {
                           </td>
                           <td className="p-3 text-center">
                             <button
-                              onClick={() => {
-                                MockDB.deleteLead(lead.id);
-                                loadData();
+                              onClick={async () => {
+                                await LeadsAPI.delete(lead.id);
+                                await loadData();
                               }}
                               className="text-red-500 hover:text-red-700 p-1 text-sm cursor-pointer"
                               title="Delete Lead"

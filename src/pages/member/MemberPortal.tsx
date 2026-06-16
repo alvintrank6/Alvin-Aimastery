@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
-import { MockDB, Project, Freelancer } from '@/utils/db';
+import { Project, Freelancer } from '@/utils/db';
+import { api, FreelancersAPI, ProjectsAPI, PayoutsAPI, SettingsAPI } from '@/utils/api';
+import { io } from 'socket.io-client';
 
 export default function MemberPortal() {
   const { t, i18n } = useTranslation();
@@ -30,43 +32,46 @@ export default function MemberPortal() {
     }
 
     if (email) {
-      const allList = MockDB.getFreelancers();
-      const list = allList.filter((f) => f.status === 'Approved');
-      setFreelancers(list);
-      setTaxRate(MockDB.getTaxRate());
+      const fetchInit = async () => {
+        const allList = await FreelancersAPI.getAll() || [];
+        const list = allList.filter((f: any) => f.status === 'Approved');
+        setFreelancers(list);
+        setTaxRate(await SettingsAPI.get('taxRate') || 10);
 
-      const matched = list.find(f => f.email.toLowerCase() === email.toLowerCase());
-      if (matched) {
-        setSelectedFreelancer(matched);
-        setIsUnapproved(false);
-      } else {
-        const pendingMatched = allList.find(f => f.email.toLowerCase() === email.toLowerCase());
-        if (pendingMatched && pendingMatched.status !== 'Approved') {
-          setIsUnapproved(true);
-        } else {
-          const loggedName = sessionStorage.getItem('user_name') || 'Freelancer';
-          const loggedId = sessionStorage.getItem('user_id') || 'free-1';
-          setSelectedFreelancer({
-            id: loggedId,
-            name: loggedName,
-            email,
-            skills: [],
-            portfolio: '',
-            rateType: 'hourly',
-            rateValue: 0,
-            status: 'Approved',
-            date: '',
-          });
+        const matched = list.find((f: any) => f.email.toLowerCase() === email.toLowerCase());
+        if (matched) {
+          setSelectedFreelancer(matched);
           setIsUnapproved(false);
+        } else {
+          const pendingMatched = allList.find((f: any) => f.email.toLowerCase() === email.toLowerCase());
+          if (pendingMatched && pendingMatched.status !== 'Approved') {
+            setIsUnapproved(true);
+          } else {
+            const loggedName = sessionStorage.getItem('user_name') || 'Freelancer';
+            const loggedId = sessionStorage.getItem('user_id') || 'free-1';
+            setSelectedFreelancer({
+              id: loggedId,
+              name: loggedName,
+              email,
+              skills: [],
+              portfolio: '',
+              rateType: 'hourly',
+              rateValue: 0,
+              status: 'Approved',
+              date: '',
+            });
+            setIsUnapproved(false);
+          }
         }
-      }
+      };
+      fetchInit();
     }
   }, [navigate]);
 
-  const loadProjects = useCallback(() => {
+  const loadProjects = useCallback(async () => {
     if (!selectedFreelancer) return;
-    const allProjects = MockDB.getProjects();
-    const myProjs = allProjects.filter((p) => p.assigneeId === selectedFreelancer.id);
+    const allProjects = await ProjectsAPI.getAll() || [];
+    const myProjs = allProjects.filter((p: any) => p.assigneeId === selectedFreelancer.id);
     setProjects(myProjs);
   }, [selectedFreelancer]);
 
@@ -76,6 +81,31 @@ export default function MemberPortal() {
     } else {
       setProjects([]);
     }
+  }, [selectedFreelancer, loadProjects]);
+
+  useEffect(() => {
+    if (!selectedFreelancer) return;
+
+    const socket = io('http://localhost:3001');
+
+    socket.on('projects-updated', () => {
+      console.log('WS Event: Projects updated, refetching...');
+      loadProjects();
+    });
+
+    socket.on('payouts-updated', () => {
+      console.log('WS Event: Payouts updated, refetching...');
+      loadProjects();
+    });
+
+    socket.on('settings-updated', async () => {
+      console.log('WS Event: Settings updated, refetching...');
+      setTaxRate(await SettingsAPI.get('taxRate') || 10);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [selectedFreelancer, loadProjects]);
 
   const handleLogout = () => {
@@ -95,12 +125,12 @@ export default function MemberPortal() {
     setTempDeliverables(proj.deliverablesUrl || '');
   };
 
-  const handleSaveProgress = (e: React.FormEvent) => {
+  const handleSaveProgress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFreelancer || !editingProjId) return;
 
-    const allProjects = MockDB.getProjects();
-    const projIndex = allProjects.findIndex((p) => p.id === editingProjId);
+    const allProjects = await ProjectsAPI.getAll() || [];
+    const projIndex = allProjects.findIndex((p: any) => p.id === editingProjId);
     if (projIndex !== -1) {
       const proj = allProjects[projIndex];
       proj.progress = tempProgress;
@@ -111,16 +141,16 @@ export default function MemberPortal() {
         proj.status = 'Client Review';
       }
 
-      MockDB.updateProject(proj);
-      loadProjects();
+      await ProjectsAPI.update(proj.id, proj);
+      await loadProjects();
       setEditingProjId(null);
     }
   };
 
-  const handleRequestPayment = (proj: Project) => {
+  const handleRequestPayment = async (proj: Project) => {
     if (!selectedFreelancer) return;
-    MockDB.addPayoutRequest(proj.id, proj.outsourceFee);
-    loadProjects();
+    await PayoutsAPI.create({ projectId: proj.id, amount: proj.outsourceFee });
+    await loadProjects();
   };
 
   return (

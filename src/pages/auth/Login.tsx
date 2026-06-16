@@ -9,6 +9,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -55,82 +56,50 @@ export default function Login() {
     },
   ];
 
-  const handleLogin = (loginEmail: string, loginPass: string) => {
+  const handleLogin = async (loginEmail: string, loginPass: string) => {
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      const emailLower = loginEmail.toLowerCase().trim();
+    try {
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail, password: loginPass })
+      });
 
-      // 1. Admin Auth
-      if (emailLower === 'admin@agency.com' && loginPass === 'admin123') {
-        sessionStorage.setItem('user_logged_in', 'true');
-        sessionStorage.setItem('user_role', 'admin');
-        sessionStorage.setItem('user_email', emailLower);
-        sessionStorage.setItem('user_name', 'Super Admin');
+      if (!response.ok) {
+        throw new Error(t('admin.invalidCredentials'));
+      }
 
-        // Sync older admin session keys for compatibility
+      const data = await response.json();
+      
+      // Save token
+      localStorage.setItem('access_token', data.access_token);
+      
+      // Save user info for compatibility with existing UI
+      const role = data.user.role;
+      sessionStorage.setItem('user_logged_in', 'true');
+      sessionStorage.setItem('user_role', role);
+      sessionStorage.setItem('user_email', data.user.email);
+      sessionStorage.setItem('user_name', data.user.name || '');
+      sessionStorage.setItem('user_id', data.user.id);
+
+      if (role === 'admin' || role === 'manager') {
         sessionStorage.setItem('admin_logged_in', 'true');
-        sessionStorage.setItem('admin_role', 'admin');
-
+        sessionStorage.setItem('admin_role', role);
         navigate('/admin');
-        return;
-      }
-      if (emailLower === 'manager@agency.com' && loginPass === 'manager123') {
-        sessionStorage.setItem('user_logged_in', 'true');
-        sessionStorage.setItem('user_role', 'manager');
-        sessionStorage.setItem('user_email', emailLower);
-        sessionStorage.setItem('user_name', 'Agency Manager');
-
-        // Sync older admin session keys for compatibility
-        sessionStorage.setItem('admin_logged_in', 'true');
-        sessionStorage.setItem('admin_role', 'manager');
-
-        navigate('/admin');
-        return;
-      }
-
-      // 2. Client Auth
-      if (emailLower === 'vana@techcorp.vn') {
-        sessionStorage.setItem('user_logged_in', 'true');
-        sessionStorage.setItem('user_role', 'client');
-        sessionStorage.setItem('user_email', emailLower);
-        sessionStorage.setItem('user_name', 'Nguyen Van A (TechCorp)');
+      } else if (role === 'client') {
         navigate('/client-portal');
-        return;
-      }
-      if (emailLower === 'lethib@spa.vn') {
-        sessionStorage.setItem('user_logged_in', 'true');
-        sessionStorage.setItem('user_role', 'client');
-        sessionStorage.setItem('user_email', emailLower);
-        sessionStorage.setItem('user_name', 'Le Thi B (An Nhien Spa)');
-        navigate('/client-portal');
-        return;
-      }
-
-      // 3. Freelancer Auth
-      if (emailLower === 'tranfree@gmail.com') {
-        sessionStorage.setItem('user_logged_in', 'true');
-        sessionStorage.setItem('user_role', 'freelancer');
-        sessionStorage.setItem('user_email', emailLower);
-        sessionStorage.setItem('user_name', 'Tran Freelancer');
-        sessionStorage.setItem('user_id', 'free-1');
+      } else if (role === 'freelancer') {
         navigate('/member-portal');
-        return;
+      } else {
+        navigate('/');
       }
-      if (emailLower === 'minhdev@gmail.com') {
-        sessionStorage.setItem('user_logged_in', 'true');
-        sessionStorage.setItem('user_role', 'freelancer');
-        sessionStorage.setItem('user_email', emailLower);
-        sessionStorage.setItem('user_name', 'Minh Dev');
-        sessionStorage.setItem('user_id', 'free-2');
-        navigate('/member-portal');
-        return;
-      }
-
+    } catch (err: any) {
+      setError(err.message || t('admin.invalidCredentials'));
+    } finally {
       setLoading(false);
-      setError(t('admin.invalidCredentials'));
-    }, 600);
+    }
   };
 
   const onSubmitForm = (e: React.FormEvent) => {
@@ -192,16 +161,23 @@ export default function Login() {
               <label className="block text-xs font-bold text-[#1C2526] uppercase">
                 {t('admin.passwordLabel')}
               </label>
-              <div className="flex items-center gap-2 bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 focus-within:border-[#9B2A4C] transition-colors">
+              <div className="flex items-center gap-2 bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 focus-within:border-[#9B2A4C] transition-colors relative">
                 <i className="ri-lock-line text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="bg-transparent border-none outline-none w-full text-xs text-[#1C2526] placeholder-gray-400"
+                  className="bg-transparent border-none outline-none w-full text-xs text-[#1C2526] placeholder-gray-400 pr-8"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#9B2A4C] transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  <i className={showPassword ? "ri-eye-off-line" : "ri-eye-line"} />
+                </button>
               </div>
             </div>
 

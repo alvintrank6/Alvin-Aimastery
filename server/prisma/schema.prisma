@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("client") // admin, manager, client, freelancer
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lead {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  company   String
+  service   String
+  message   String
+  status    String   @default("New") // New, Contacted, Qualified, Closed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Freelancer {
+  id                String   @id @default(uuid())
+  name              String
+  email             String   @unique
+  skills            String[]
+  portfolio         String?
+  rateType          String   @default("hourly") // hourly, fixed
+  rateValue         Float
+  status            String   @default("Pending") // Pending, Approved, Rejected
+  title             String?
+  yearsOfExperience String?
+  englishProficiency String?
+  cvLink            String?
+  availability      String?
+  shortBio          String?
+  dateOfBirth       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Project {
+  id              String   @id @default(uuid())
+  name            String
+  clientName      String
+  clientEmail     String
+  service         String
+  status          String   @default("New") // New, In Progress, Client Review, Completed
+  assigneeId      String?  // References Freelancer.id or 'Unassigned'
+  assigneeName    String?
+  deadline        String
+  brief           String
+  progress        Int      @default(0) // 0 to 100
+  deliverablesUrl String?
+  contractValue   Float
+  outsourceFee    Float
+  taxRate         Float    @default(10)
+  payoutStatus    String   @default("None") // None, Requested, Approved, Paid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PayoutRequest {
+  id              String   @id @default(uuid())
+  projectId       String
+  projectName     String
+  freelancerId    String
+  freelancerName  String
+  amount          Float
+  taxDeducted     Float
+  netAmount       Float
+  status          String   @default("Pending") // Pending, Approved, Paid
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model TrafficMetric {
+  id        String   @id @default(uuid())
+  date      String   // e.g., 'Jun 06', 'Week 1', 'Jan'
+  type      String   @default("day") // 'day', 'week', 'month'
+  visitors  Int      @default(0)
+  organic   Int      @default(0)
+  facebook  Int      @default(0)
+  tiktok    Int      @default(0)
+  youtube   Int      @default(0)
+  direct    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Visit {
+  id        String   @id @default(uuid())
+  source    String   // 'facebook', 'tiktok', 'youtube', 'organic', 'direct'
+  createdAt DateTime @default(now())
+}
+
+model CampaignAlert {
+  id             String   @id @default(uuid())
+  platform       String   // Facebook, TikTok, YouTube, Google
+  campaignName   String
+  engagementDrop Float
+  status         String   @default("active") // active, resolved
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model FinanceLog {
+  id            String   @id @default(uuid())
+  month         String   // e.g., 'Jan'
+  revenue       Float    @default(0)
+  outsourceCost Float    @default(0)
+  otherCost     Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
-import { MockDB, Project } from '@/utils/db';
+import { Project } from '@/utils/db';
+import { api, ProjectsAPI, LeadsAPI } from '@/utils/api';
 
 interface ClientAccount {
   name: string;
@@ -46,13 +47,16 @@ export default function ClientPortal() {
 
   useEffect(() => {
     if (selectedClient) {
-      const allProjects = MockDB.getProjects();
-      const clientProjs = allProjects.filter(
-        (p) =>
-          p.clientEmail.toLowerCase() === selectedClient.email.toLowerCase() ||
-          p.clientName.toLowerCase() === selectedClient.name.split(' (')[0].toLowerCase()
-      );
-      setProjects(clientProjs);
+      const fetchProjects = async () => {
+        const allProjects = await ProjectsAPI.getAll() || [];
+        const clientProjs = allProjects.filter(
+          (p: any) =>
+            p.clientEmail.toLowerCase() === selectedClient.email.toLowerCase() ||
+            p.clientName.toLowerCase() === selectedClient.name.split(' (')[0].toLowerCase()
+        );
+        setProjects(clientProjs);
+      };
+      fetchProjects();
     } else {
       setProjects([]);
     }
@@ -70,12 +74,12 @@ export default function ClientPortal() {
     navigate('/login');
   };
 
-  const handleSupportSubmit = (e: React.FormEvent) => {
+  const handleSupportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supportMessage.trim()) return;
 
     // Simulate sending a support ticket by adding a mock contact lead in DB
-    MockDB.addLead({
+    await LeadsAPI.create({
       name: selectedClient?.name || 'Client Support',
       email: selectedClient?.email || 'support@client.com',
       phone: 'N/A',

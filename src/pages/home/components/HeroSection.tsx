@@ -34,7 +34,15 @@ export default function HeroSection() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <Link
-                to="/contact"
+                to="/"
+                state={{ scrollTo: 'projects' }}
+                onClick={(e) => {
+                  const el = document.getElementById('projects');
+                  if (el) {
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
                 className="gradient-bg text-white font-semibold px-7 py-3 rounded-full whitespace-nowrap hover:opacity-90 transition-all text-sm cursor-pointer"
               >
                 {t('hero.ctaPrimary')}

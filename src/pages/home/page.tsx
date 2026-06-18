@@ -4,6 +4,7 @@ import HeroSection from './components/HeroSection';
 import AboutSection from './components/AboutSection';
 import ServicesSection from './components/ServicesSection';
 import ProjectsSection from './components/ProjectsSection';
+import CareersSection from './components/CareersSection';
 import CtaSection from './components/CtaSection';
 import { useEffect } from 'react';
 
@@ -70,6 +71,7 @@ export default function Home() {
         <AboutSection />
         <ServicesSection />
         <ProjectsSection />
+        <CareersSection />
         <CtaSection />
       </main>
       <Footer />

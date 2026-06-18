@@ -29,7 +29,15 @@ export default function CtaSection() {
             {t('cta.primaryBtn')}
           </Link>
           <Link
-            to="/contact"
+            to="/"
+            state={{ scrollTo: 'projects' }}
+            onClick={(e) => {
+              const el = document.getElementById('projects');
+              if (el) {
+                e.preventDefault();
+                el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
             className="border border-gray-200 text-[#1C2526] font-semibold px-8 py-4 rounded-full whitespace-nowrap hover:border-[#2C3E50]/30 hover:text-[#2C3E50] transition-all text-sm cursor-pointer"
           >
             {t('cta.secondaryBtn')}

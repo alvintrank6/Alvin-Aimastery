@@ -17,6 +17,7 @@ const translations = {
     contact: 'Contact me',
     cta: 'Get In Touch',
     services: 'Services',
+    careers: 'Careers',
   },
 
   hero: {
@@ -619,6 +620,55 @@ const translations = {
     expectedRate: 'Expected Rate',
     hourlyRate: '/ hr',
     fixedPrice: 'fixed',
+  },
+
+  careers: {
+    badge: 'Collaboration & Careers',
+    title: 'Join Our Network of',
+    titleHighlight: 'Elite Developers',
+    subtitle: 'We are expanding our network of top-tier developers in AI, Web, Chatbots, and Workflow automation. Work remotely with transparent payouts and a professional workspace portal.',
+    exploreBtn: 'Register as Developer',
+    portalBtn: 'Developer Portal',
+    alreadyPartner: 'Already a partner? Log in to Workspace here',
+    perksTitle: 'Why Join Us?',
+    positionsTitle: 'Open Roles',
+    perks: [
+      {
+        title: 'Transparent Payouts',
+        desc: 'Clear Gross/Net breakdown, automatic business tax calculations, and real-time payout status tracking.',
+        icon: 'ri-money-dollar-circle-line'
+      },
+      {
+        title: '100% Remote Work',
+        desc: 'Work from anywhere with flexible schedules, prioritizing work-life balance and execution speed.',
+        icon: 'ri-home-office-line'
+      },
+      {
+        title: 'Cutting-Edge Projects',
+        desc: 'Direct experience building custom AI chatbot integrations, website designs, and cloud automations.',
+        icon: 'ri-lightbulb-line'
+      }
+    ],
+    positions: [
+      {
+        title: 'AI Automation Engineer (AI/n8n Specialist)',
+        type: 'Freelance / Full-time',
+        rate: 'Competitive project/hourly rates',
+        skills: ['n8n', 'Python', 'LLMs', 'Chatbots']
+      },
+      {
+        title: 'Frontend Developer (React/Next.js)',
+        type: 'Freelance / Full-time',
+        rate: 'Competitive rates based on level',
+        skills: ['React', 'Next.js', 'TailwindCSS', 'TypeScript']
+      },
+      {
+        title: 'Backend Developer (Node.js/NestJS)',
+        type: 'Freelance / Full-time',
+        rate: 'Competitive rates based on level',
+        skills: ['Node.js', 'NestJS', 'PostgreSQL', 'Docker']
+      }
+    ]
   }
 };
 

@@ -17,6 +17,7 @@ const translations = {
     contact: 'Liên hệ',
     cta: 'Liên Hệ Ngay',
     services: 'Dịch vụ',
+    careers: 'Tuyển dụng',
   },
 
   hero: {
@@ -619,6 +620,55 @@ const translations = {
     expectedRate: 'Mức giá mong muốn',
     hourlyRate: '/ giờ',
     fixedPrice: 'trọn gói',
+  },
+
+  careers: {
+    badge: 'Cơ hội hợp tác',
+    title: 'Gia nhập mạng lưới',
+    titleHighlight: 'Lập trình viên Elite',
+    subtitle: 'Chúng tôi đang tuyển dụng các tài năng công nghệ có kinh nghiệm mảng Web, AI, Chatbot và n8n Automation. Làm việc remote, thù lao minh bạch, quản lý dự án trực quan qua Portal.',
+    exploreBtn: 'Đăng Ký Làm Dev',
+    portalBtn: 'Không Gian Developer',
+    alreadyPartner: 'Đã là đối tác? Đăng nhập vào Workspace tại đây',
+    perksTitle: 'Quyền lợi khi đồng hành',
+    positionsTitle: 'Vị trí đang mở tuyển',
+    perks: [
+      {
+        title: 'Thù lao minh bạch',
+        desc: 'Tính toán lương Gross/Net chi tiết, tự động khấu trừ thuế suất và cập nhật tiến độ thanh toán trực tuyến.',
+        icon: 'ri-money-dollar-circle-line'
+      },
+      {
+        title: 'Làm việc 100% Remote',
+        desc: 'Tự do làm việc ở bất cứ đâu, quản lý thời gian linh hoạt, cân bằng cuộc sống và công việc.',
+        icon: 'ri-home-office-line'
+      },
+      {
+        title: 'Dự án đột phá',
+        desc: 'Cơ hội trực tiếp tham gia xây dựng hệ thống tự động hóa AI và các sản phẩm chất lượng cho khách hàng toàn cầu.',
+        icon: 'ri-lightbulb-line'
+      }
+    ],
+    positions: [
+      {
+        title: 'Kỹ sư Tự động hóa AI (AI/n8n Specialist)',
+        type: 'Freelance / Fulltime',
+        rate: 'Thù lao hấp dẫn theo dự án/giờ',
+        skills: ['n8n', 'Python', 'LLMs', 'Chatbots']
+      },
+      {
+        title: 'Lập trình viên Frontend (React/Next.js)',
+        type: 'Freelance / Fulltime',
+        rate: 'Thỏa thuận theo năng lực',
+        skills: ['React', 'Next.js', 'TailwindCSS', 'TypeScript']
+      },
+      {
+        title: 'Lập trình viên Backend (Node.js/NestJS)',
+        type: 'Freelance / Fulltime',
+        rate: 'Thỏa thuận theo năng lực',
+        skills: ['Node.js', 'NestJS', 'PostgreSQL', 'Docker']
+      }
+    ]
   }
 };
 

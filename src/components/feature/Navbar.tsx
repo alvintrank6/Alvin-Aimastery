@@ -33,6 +33,7 @@ export default function Navbar() {
   const navItems = [
     { label: t('navbar.projects'), id: 'projects' },
     { label: t('navbar.about'), id: 'about' },
+    { label: t('navbar.careers'), id: 'careers' },
   ];
 
   useEffect(() => {

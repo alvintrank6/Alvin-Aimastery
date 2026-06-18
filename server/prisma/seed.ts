@@ -36,8 +36,26 @@ async function main() {
     {
       email: 'minhdev@gmail.com',
       password: 'free123',
-      name: 'Developer',
-      role: 'freelancer',
+      name: 'Minh Dev',
+      role: 'developer',
+    },
+    {
+      email: 'anhtuan.dev@gmail.com',
+      password: 'free123',
+      name: 'Anh Tuấn',
+      role: 'developer',
+    },
+    {
+      email: 'baoanh.react@gmail.com',
+      password: 'free123',
+      name: 'Bảo Anh',
+      role: 'developer',
+    },
+    {
+      email: 'khanh.n8n@gmail.com',
+      password: 'free123',
+      name: 'Khánh Nguyễn',
+      role: 'developer',
     },
     {
       email: 'vana@techcorp.vn',
@@ -64,6 +82,76 @@ async function main() {
       },
     });
     console.log(`Upserted user: ${result.email} with role ${result.role}`);
+  }
+
+  // Seed developer profiles
+  const developersToSeed = [
+    {
+      email: 'minhdev@gmail.com',
+      name: 'Minh Dev',
+      skills: ['React', 'Node.js', 'n8n', 'Web'],
+      rateType: 'hourly',
+      rateValue: 20,
+      status: 'Approved',
+      title: 'Developer',
+    },
+    {
+      email: 'anhtuan.dev@gmail.com',
+      name: 'Anh Tuấn',
+      skills: ['Node.js', 'Express', 'PostgreSQL', 'Docker'],
+      rateType: 'hourly',
+      rateValue: 25,
+      status: 'Approved',
+      title: 'Backend Developer',
+    },
+    {
+      email: 'baoanh.react@gmail.com',
+      name: 'Bảo Anh',
+      skills: ['React', 'Next.js', 'TailwindCSS', 'Redux'],
+      rateType: 'hourly',
+      rateValue: 22,
+      status: 'Approved',
+      title: 'Frontend Developer',
+    },
+    {
+      email: 'khanh.n8n@gmail.com',
+      name: 'Khánh Nguyễn',
+      skills: ['n8n', 'Make.com', 'Zapier', 'Python'],
+      rateType: 'hourly',
+      rateValue: 30,
+      status: 'Approved',
+      title: 'AI Automation Specialist',
+    },
+  ];
+
+  for (const devData of developersToSeed) {
+    const devUser = await prisma.user.findUnique({
+      where: { email: devData.email }
+    });
+    if (devUser) {
+      await prisma.developer.upsert({
+        where: { email: devData.email },
+        update: {
+          name: devData.name,
+          skills: devData.skills,
+          rateType: devData.rateType,
+          rateValue: devData.rateValue,
+          status: devData.status,
+          title: devData.title,
+        },
+        create: {
+          id: devUser.id, // Match the user id!
+          email: devData.email,
+          name: devData.name,
+          skills: devData.skills,
+          rateType: devData.rateType,
+          rateValue: devData.rateValue,
+          status: devData.status,
+          title: devData.title,
+        }
+      });
+      console.log(`Upserted developer profile for ${devData.email}`);
+    }
   }
 
   console.log('Seeding finished.');

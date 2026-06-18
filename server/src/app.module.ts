@@ -5,7 +5,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { LeadsModule } from './leads/leads.module';
-import { FreelancersModule } from './freelancers/freelancers.module';
+import { DevelopersModule } from './developers/developers.module';
 import { ProjectsModule } from './projects/projects.module';
 import { PayoutsModule } from './payouts/payouts.module';
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -18,7 +18,7 @@ import { WebsocketInterceptor } from './websocket/websocket.interceptor';
     UsersModule,
     AuthModule,
     LeadsModule,
-    FreelancersModule,
+    DevelopersModule,
     ProjectsModule,
     PayoutsModule,
     AnalyticsModule,

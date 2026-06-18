@@ -18,10 +18,10 @@ export const LeadsAPI = {
   delete: (id: string) => api.delete(`/leads/${id}`).then(res => res.data),
 };
 
-export const FreelancersAPI = {
-  getAll: () => api.get('/freelancers').then(res => res.data),
-  create: (data: any) => api.post('/freelancers', data).then(res => res.data),
-  update: (id: string, data: any) => api.put(`/freelancers/${id}`, data).then(res => res.data),
+export const DevelopersAPI = {
+  getAll: () => api.get('/developers').then(res => res.data),
+  create: (data: any) => api.post('/developers', data).then(res => res.data),
+  update: (id: string, data: any) => api.put(`/developers/${id}`, data).then(res => res.data),
 };
 
 export const ProjectsAPI = {

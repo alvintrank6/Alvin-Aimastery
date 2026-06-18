@@ -21,7 +21,7 @@ export default function RegisterSelection() {
       borderColor: 'rgba(155, 42, 76, 0.15)'
     },
     {
-      id: 'freelancer',
+      id: 'developer',
       title: t('auth.partnerReg'),
       desc: t('auth.partnerRegDesc'),
       icon: 'ri-team-line',

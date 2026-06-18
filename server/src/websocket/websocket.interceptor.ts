@@ -24,8 +24,8 @@ export class WebsocketInterceptor implements NestInterceptor {
 
           if (url.includes('/leads')) {
             event = 'leads-updated';
-          } else if (url.includes('/freelancers')) {
-            event = 'freelancers-updated';
+          } else if (url.includes('/developers')) {
+            event = 'developers-updated';
           } else if (url.includes('/projects')) {
             event = 'projects-updated';
           } else if (url.includes('/payouts')) {

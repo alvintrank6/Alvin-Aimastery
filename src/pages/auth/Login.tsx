@@ -35,7 +35,7 @@ export default function Login() {
       icon: 'ri-user-settings-line',
     },
     {
-      role: 'freelancer',
+      role: 'developer',
       label: t('portals.roleFreelancer'),
       email: 'minhdev@gmail.com',
       password: 'free123',
@@ -93,7 +93,7 @@ export default function Login() {
         navigate('/admin');
       } else if (role === 'client') {
         navigate('/client-portal');
-      } else if (role === 'freelancer') {
+      } else if (role === 'developer') {
         navigate('/member-portal');
       } else {
         navigate('/');

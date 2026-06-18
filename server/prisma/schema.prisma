@@ -16,7 +16,7 @@ model User {
   email     String   @unique
   password  String
   name      String?
-  role      String   @default("client") // admin, manager, client, freelancer
+  role      String   @default("client") // admin, manager, client, developer
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -34,7 +34,7 @@ model Lead {
   updatedAt DateTime @updatedAt
 }
 
-model Freelancer {
+model Developer {
   id                String   @id @default(uuid())
   name              String
   email             String   @unique
@@ -61,7 +61,7 @@ model Project {
   clientEmail     String
   service         String
   status          String   @default("New") // New, In Progress, Client Review, Completed
-  assigneeId      String?  // References Freelancer.id or 'Unassigned'
+  assigneeId      String?  // References Developer.id or 'Unassigned'
   assigneeName    String?
   deadline        String
   brief           String
@@ -71,6 +71,7 @@ model Project {
   outsourceFee    Float
   taxRate         Float    @default(10)
   payoutStatus    String   @default("None") // None, Requested, Approved, Paid
+  subTasks        String?  @default("[]")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -79,8 +80,8 @@ model PayoutRequest {
   id              String   @id @default(uuid())
   projectId       String
   projectName     String
-  freelancerId    String
-  freelancerName  String
+  developerId     String
+  developerName   String
   amount          Float
   taxDeducted     Float
   netAmount       Float

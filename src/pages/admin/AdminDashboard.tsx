@@ -9,10 +9,10 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import {
-  Lead, Freelancer, Project, PayoutRequest,
+  Lead, Developer, Project, PayoutRequest,
   TrafficMetric, CampaignAlert, FinanceLog
 } from '@/utils/db';
-import { api, LeadsAPI, FreelancersAPI, ProjectsAPI, PayoutsAPI, AnalyticsAPI, SettingsAPI } from '@/utils/api';
+import { api, LeadsAPI, DevelopersAPI, ProjectsAPI, PayoutsAPI, AnalyticsAPI, SettingsAPI } from '@/utils/api';
 import { io } from 'socket.io-client';
 
 const COLORS = ['#2C3E50', '#9B2A4C', '#A8B5A0', '#D97706', '#2563EB'];
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
   // DB States
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
+  const [developers, setDevelopers] = useState<Developer[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
   const [trafficData, setTrafficData] = useState<TrafficMetric[]>([]);
@@ -50,17 +50,101 @@ export default function AdminDashboard() {
   const [showTwoFAModal, setShowTwoFAModal] = useState(false);
 
   // Form states
-  const [activeTab, setActiveTab] = useState<'marketing' | 'finance' | 'crm' | 'kanban' | 'payouts' | 'security'>('marketing');
+  const [activeTab, setActiveTab] = useState<'marketing' | 'finance' | 'crm' | 'projects_management' | 'payouts' | 'security'>('marketing');
+  const [activeProjectSubTab, setActiveProjectSubTab] = useState<'progress' | 'assign'>('progress');
+  const [activeKanbanStatus, setActiveKanbanStatus] = useState<'New' | 'In Progress' | 'Client Review' | 'Completed'>('New');
 
-  // CRM manual entry
-  const [newLeadName, setNewLeadName] = useState('');
-  const [newLeadEmail, setNewLeadEmail] = useState('');
-  const [newLeadPhone, setNewLeadPhone] = useState('');
-  const [newLeadCompany, setNewLeadCompany] = useState('');
-  const [newLeadService, setNewLeadService] = useState('web');
-  const [newLeadMessage, setNewLeadMessage] = useState('');
+  // Real-time notifications states
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('admin_read_notifications') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const markNotificationRead = (id: string) => {
+    setReadNotificationIds(prev => {
+      const next = prev.includes(id) ? prev : [...prev, id];
+      localStorage.setItem('admin_read_notifications', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const markAllNotificationsRead = (ids: string[]) => {
+    setReadNotificationIds(prev => {
+      const next = Array.from(new Set([...prev, ...ids]));
+      localStorage.setItem('admin_read_notifications', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (i18n.language === 'vi') {
+      if (diffMins < 1) return 'Vừa xong';
+      if (diffMins < 60) return `${diffMins} phút trước`;
+      if (diffHours < 24) return `${diffHours} giờ trước`;
+      return `${diffDays} ngày trước`;
+    } else {
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${diffDays}d ago`;
+    }
+  };
+
+  // Lead assignment states
+  const [assigningLead, setAssigningLead] = useState<Lead | null>(null);
+  const [assigneeDeveloperId, setAssigneeDeveloperId] = useState('Unassigned');
+  const [assignContractValue, setAssignContractValue] = useState<number>(1500);
+  const [assignOutsourceFee, setAssignOutsourceFee] = useState<number>(600);
+  const [assignDeadline, setAssignDeadline] = useState('2026-07-01');
+
+  const handleAssignLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assigningLead) return;
+
+    const assignedDeveloper = developers.find(f => f.id === assigneeDeveloperId);
+    const assigneeName = assignedDeveloper ? assignedDeveloper.name : 'None';
+
+    await ProjectsAPI.create({
+      name: `${assigningLead.company || 'Client'} - ${t(`services.list.${assigningLead.service}.title`, assigningLead.service)}`,
+      clientName: assigningLead.name,
+      clientEmail: assigningLead.email,
+      service: assigningLead.service,
+      status: 'New',
+      assigneeId: assigneeDeveloperId,
+      assigneeName,
+      deadline: assignDeadline,
+      brief: assigningLead.message,
+      contractValue: assignContractValue,
+      outsourceFee: assignOutsourceFee,
+      taxRate,
+      subTasks: JSON.stringify([])
+    });
+
+    await LeadsAPI.update(assigningLead.id, { status: 'Qualified' });
+
+    setAssigningLead(null);
+    setAssigneeDeveloperId('Unassigned');
+    setAssignContractValue(1500);
+    setAssignOutsourceFee(600);
+    showToast(
+      i18n.language === 'vi' ? 'Đã giao việc cho Developer thành công!' : 'Task successfully assigned to Developer!',
+      'success'
+    );
+    await loadData();
+  };
 
   // Kanban task assignment
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [taskName, setTaskName] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
@@ -71,8 +155,6 @@ export default function AdminDashboard() {
   const [deadline, setDeadline] = useState('2026-07-01');
   const [taskBrief, setTaskBrief] = useState('');
 
-  // Bulk CSV simulator message
-  const [csvMessage, setCsvMessage] = useState('');
 
   // Unified login check
   useEffect(() => {
@@ -125,10 +207,38 @@ export default function AdminDashboard() {
     const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
 
     socket.on('leads-updated', async () => {
-      setLeads(await LeadsAPI.getAll());
+      const updatedLeads = await LeadsAPI.getAll();
+      setLeads(prevLeads => {
+        if (prevLeads.length > 0) {
+          const newLeads = updatedLeads.filter(ul => !prevLeads.some(pl => pl.id === ul.id));
+          newLeads.forEach(latestLead => {
+            showToast(
+              i18n.language === 'vi'
+                ? `Khách hàng mới: ${latestLead.name} đã đăng ký dịch vụ ${t(`services.list.${latestLead.service}.title`, latestLead.service)}!`
+                : `New Client: ${latestLead.name} registered for ${t(`services.list.${latestLead.service}.title`, latestLead.service)}!`,
+              'success'
+            );
+          });
+        }
+        return updatedLeads;
+      });
     });
-    socket.on('freelancers-updated', async () => {
-      setFreelancers(await FreelancersAPI.getAll());
+    socket.on('developers-updated', async () => {
+      const updatedDevelopers = await DevelopersAPI.getAll();
+      setDevelopers(prevDevelopers => {
+        if (prevDevelopers.length > 0) {
+          const newDevelopers = updatedDevelopers.filter(uf => !prevDevelopers.some(pf => pf.id === uf.id));
+          newDevelopers.forEach(latestDeveloper => {
+            showToast(
+              i18n.language === 'vi'
+                ? `Ứng viên mới: ${latestDeveloper.name} ứng tuyển ${t(`developer.titles.${latestDeveloper.title}`, latestDeveloper.title || 'Developer')}!`
+                : `New Candidate: ${latestDeveloper.name} applied for ${t(`developer.titles.${latestDeveloper.title}`, latestDeveloper.title || 'Developer')}!`,
+              'success'
+            );
+          });
+        }
+        return updatedDevelopers;
+      });
     });
     socket.on('projects-updated', async () => {
       setProjects(await ProjectsAPI.getAll());
@@ -154,7 +264,7 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     setLeads(await LeadsAPI.getAll());
-    setFreelancers(await FreelancersAPI.getAll());
+    setDevelopers(await DevelopersAPI.getAll());
     setProjects(await ProjectsAPI.getAll());
     setPayouts(await PayoutsAPI.getAll());
     setTrafficData(await AnalyticsAPI.getTraffic(trafficFilter));
@@ -170,57 +280,23 @@ export default function AdminDashboard() {
     await loadData();
   };
 
-  // Approve freelance application
-  const handleApproveFreelancer = async (id: string, approve: boolean) => {
+  // Approve developer application
+  const handleApproveDeveloper = async (id: string, approve: boolean) => {
     if (role === 'manager') {
       showToast(t('admin.deniedApprove'), 'error');
       return;
     }
-    await FreelancersAPI.update(id, { status: approve ? 'Approved' : 'Rejected' });
+    await DevelopersAPI.update(id, { status: approve ? 'Approved' : 'Rejected' });
     await loadData();
   };
 
-  // Add customer lead manually
-  const handleAddLead = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await LeadsAPI.create({
-      name: newLeadName,
-      email: newLeadEmail,
-      phone: newLeadPhone,
-      company: newLeadCompany,
-      service: newLeadService,
-      message: newLeadMessage
-    });
-    await loadData();
-    // Reset inputs
-    setNewLeadName('');
-    setNewLeadEmail('');
-    setNewLeadPhone('');
-    setNewLeadCompany('');
-    setNewLeadMessage('');
-  };
 
-  // Import mock CSV data
-  const handleCsvImport = async () => {
-    const mockItems = [
-      { name: 'David Miller', email: 'david@growfast.co', phone: '+12025550144', company: 'GrowFast Co', service: 'n8n', message: 'Sync CRM leads to ActiveCampaign.' },
-      { name: 'Sophia Chen', email: 'sophia@techasia.org', phone: '+6591234567', company: 'TechAsia', service: 'app', message: 'Build cross-platform client app.' },
-      { name: 'Minh Huy', email: 'huy.minh@vietnambrand.vn', phone: '0905556677', company: 'VN Brands', service: 'landing', message: 'Product landing page design.' }
-    ];
 
-    for (const item of mockItems) {
-      await LeadsAPI.create(item);
-    }
-
-    setCsvMessage(t('admin.csvSuccess'));
-    await loadData();
-    setTimeout(() => setCsvMessage(''), 4000);
-  };
 
   // Reset database tool
   const handleResetDb = async () => {
     localStorage.removeItem('alvin_leads');
-    localStorage.removeItem('alvin_freelancers');
+    localStorage.removeItem('alvin_developers');
     localStorage.removeItem('alvin_projects');
     localStorage.removeItem('alvin_traffic');
     localStorage.removeItem('alvin_alerts');
@@ -232,10 +308,23 @@ export default function AdminDashboard() {
   };
 
   // Add Kanban Project
+  // Select lead to prefill task fields
+  const handleSelectLeadForTask = (leadId: string) => {
+    if (leadId === 'none') return;
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    setTaskName(`${lead.company || 'Khách lẻ'} - ${t(`services.list.${lead.service}.title`, lead.service)}`);
+    setClientName(lead.name);
+    setClientEmail(lead.email);
+    setTaskService(lead.service);
+    setTaskBrief(lead.message);
+  };
+
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    const assignedFreelancer = freelancers.find(f => f.id === assigneeId);
-    const assigneeName = assignedFreelancer ? assignedFreelancer.name : 'None';
+    const assignedDeveloper = developers.find(f => f.id === assigneeId);
+    const assigneeName = assignedDeveloper ? assignedDeveloper.name : 'None';
 
     await ProjectsAPI.create({
       name: taskName,
@@ -253,6 +342,10 @@ export default function AdminDashboard() {
     });
 
     await loadData();
+    // Redirect to Kanban Board
+    setActiveTab('projects_management');
+    setActiveProjectSubTab('progress');
+    setActiveKanbanStatus('New');
     // Reset Form
     setTaskName('');
     setClientName('');
@@ -302,9 +395,9 @@ export default function AdminDashboard() {
       return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,ID,Freelancer,Amount,Tax Deducted,Net Payout,Date\n";
+    let csvContent = "data:text/csv;charset=utf-8,ID,Developer,Amount,Tax Deducted,Net Payout,Date\n";
     pending.forEach(p => {
-      csvContent += `${p.id},${p.freelancerName},${p.amount},${p.taxDeducted},${p.netAmount},${p.date}\n`;
+      csvContent += `${p.id},${p.developerName},${p.amount},${p.taxDeducted},${p.netAmount},${p.date}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -348,6 +441,53 @@ export default function AdminDashboard() {
 
   // Calc general totals
   const totalLeads = leads.length;
+
+  // Derived notifications
+  const derivedNotifications = React.useMemo(() => {
+    const list: Array<{
+      id: string;
+      title: string;
+      desc: string;
+      time: Date;
+      type: 'lead' | 'developer';
+      targetTab: 'crm' | 'payouts';
+      item: any;
+    }> = [];
+
+    leads.forEach(l => {
+      list.push({
+        id: `lead-${l.id}`,
+        title: i18n.language === 'vi' ? 'Đăng ký dịch vụ mới' : 'New Service Sign-up',
+        desc: i18n.language === 'vi'
+          ? `${l.name} đã đăng ký dịch vụ ${t(`services.list.${l.service}.title`, l.service)}`
+          : `${l.name} signed up for ${t(`services.list.${l.service}.title`, l.service)}`,
+        time: new Date(l.createdAt || l.date),
+        type: 'lead',
+        targetTab: 'crm',
+        item: l
+      });
+    });
+
+    developers.forEach(f => {
+      list.push({
+        id: `developer-${f.id}`,
+        title: i18n.language === 'vi' ? 'Ứng tuyển Developer mới' : 'New Developer Application',
+        desc: i18n.language === 'vi'
+          ? `${f.name} đã ứng tuyển vị trí ${t(`developer.titles.${f.title}`, f.title || 'Developer')}`
+          : `${f.name} applied for ${t(`developer.titles.${f.title}`, f.title || 'Developer')}`,
+        time: new Date(f.createdAt || f.date),
+        type: 'developer',
+        targetTab: 'payouts',
+        item: f
+      });
+    });
+
+    // Sort by time descending
+    return list.sort((a, b) => b.time.getTime() - a.time.getTime());
+  }, [leads, developers, i18n.language, t]);
+
+  const unreadNotifications = derivedNotifications.filter(n => !readNotificationIds.includes(n.id));
+  const unreadCount = unreadNotifications.length;
   const totalRevenue = projects.reduce((acc, p) => acc + p.contractValue, 0);
   const totalOutsource = projects.reduce((acc, p) => acc + p.outsourceFee, 0);
   const netEarnings = totalRevenue - totalOutsource;
@@ -397,23 +537,102 @@ export default function AdminDashboard() {
 
               {/* Role switcher & RBAC simulation selector */}
               <div className="flex flex-wrap items-center gap-3">
+                {/* Real-time Notifications Bell */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="relative p-2 text-gray-500 hover:text-gray-800 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-center"
+                    title={i18n.language === 'vi' ? 'Thông báo' : 'Notifications'}
+                  >
+                    <i className="ri-notification-3-line text-lg" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-[#9B2A4C] text-white text-[8px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center animate-pulse">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {showNotifications && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                      <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 p-4 space-y-3">
+                        <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                          <span className="text-xs font-bold text-[#1C2526]">
+                            {i18n.language === 'vi' ? 'Thông báo gần đây' : 'Recent Notifications'}
+                          </span>
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={() => markAllNotificationsRead(derivedNotifications.map(n => n.id))}
+                              className="text-[10px] text-[#9B2A4C] hover:underline font-bold cursor-pointer"
+                            >
+                              {i18n.language === 'vi' ? 'Đã xem tất cả' : 'Mark all read'}
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="max-h-60 overflow-y-auto space-y-2 pr-1 scrollbar-thin divide-y divide-gray-50">
+                          {derivedNotifications.length === 0 ? (
+                            <p className="text-[10px] text-gray-400 italic text-center py-4">
+                              {i18n.language === 'vi' ? 'Không có thông báo nào' : 'No notifications yet'}
+                            </p>
+                          ) : (
+                            derivedNotifications.map((notification) => {
+                              const isRead = readNotificationIds.includes(notification.id);
+                              return (
+                                <div
+                                  key={notification.id}
+                                  onClick={() => {
+                                    markNotificationRead(notification.id);
+                                    setActiveTab(notification.targetTab);
+                                    setShowNotifications(false);
+                                  }}
+                                  className={`pt-2 first:pt-0 pb-2 flex items-start gap-2.5 cursor-pointer hover:bg-gray-50/50 p-1.5 rounded-xl transition-colors ${!isRead ? 'bg-[#9B2A4C]/5' : ''
+                                    }`}
+                                >
+                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-sm ${notification.type === 'lead'
+                                      ? 'bg-green-50 text-green-600'
+                                      : 'bg-blue-50 text-blue-600'
+                                    }`}>
+                                    <i className={notification.type === 'lead' ? 'ri-customer-service-line' : 'ri-user-add-line'} />
+                                  </div>
+                                  <div className="space-y-0.5 min-w-0 flex-grow">
+                                    <p className="text-[10px] font-bold text-[#1C2526] truncate flex items-center gap-1.5">
+                                      {notification.title}
+                                      {!isRead && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#9B2A4C]" />
+                                      )}
+                                    </p>
+                                    <p className="text-[9px] text-[#5A6A72] leading-normal line-clamp-2">
+                                      {notification.desc}
+                                    </p>
+                                    <p className="text-[8px] text-gray-400 font-medium">
+                                      {formatTimeAgo(notification.time)}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
                 <span className="text-xs font-bold text-[#5A6A72] uppercase tracking-wide">
                   {t('admin.currentRole')}:
                 </span>
                 <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-gray-50">
                   <button
                     onClick={() => handleSwitchRole('admin')}
-                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${
-                      role === 'admin' ? 'bg-white text-[#9B2A4C] shadow-sm' : 'text-gray-500 hover:text-gray-800'
-                    }`}
+                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${role === 'admin' ? 'bg-white text-[#9B2A4C] shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                      }`}
                   >
                     {t('portals.roleAdmin')}
                   </button>
                   <button
                     onClick={() => handleSwitchRole('manager')}
-                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${
-                      role === 'manager' ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-gray-500 hover:text-gray-800'
-                    }`}
+                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${role === 'manager' ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                      }`}
                   >
                     {t('portals.roleManager')}
                   </button>
@@ -429,940 +648,1153 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-        {/* Dashboard Overview Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#9B2A4C]/10 flex items-center justify-center text-[#9B2A4C] text-xl">
-              <i className="ri-contacts-book-line" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">CRM Leads</p>
-              <p className="text-2xl font-black text-[#1C2526]">{totalLeads}</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-500 text-xl">
-              <i className="ri-bank-card-line" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Contract Value</p>
-              <p className="text-2xl font-black text-[#1C2526]">${totalRevenue}</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 text-xl">
-              <i className="ri-refund-2-line" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Outsource Fees</p>
-              <p className="text-2xl font-black text-[#1C2526]">${totalOutsource}</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 text-xl">
-              <i className="ri-safe-2-line" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Net Profit Margin</p>
-              <p className="text-2xl font-black text-[#1C2526]">${netEarnings}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Dashboard Tabs & Navigation */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Sidebar Tabs */}
-          <div className="lg:col-span-3 space-y-2">
-            <button
-              onClick={() => setActiveTab('marketing')}
-              className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center gap-3 cursor-pointer ${
-                activeTab === 'marketing' ? 'gradient-bg text-white shadow' : 'bg-white text-[#5A6A72] border border-gray-100 hover:bg-gray-50'
-              }`}
-            >
-              <i className="ri-line-chart-line text-base" />
-              {t('admin.trafficAnalytics')}
-            </button>
-            <button
-              onClick={() => setActiveTab('finance')}
-              className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center gap-3 cursor-pointer ${
-                activeTab === 'finance' ? 'gradient-bg text-white shadow' : 'bg-white text-[#5A6A72] border border-gray-100 hover:bg-gray-50'
-              }`}
-            >
-              <i className="ri-file-excel-2-line text-base" />
-              {t('admin.financeReporting')}
-            </button>
-            <button
-              onClick={() => setActiveTab('crm')}
-              className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center gap-3 cursor-pointer ${
-                activeTab === 'crm' ? 'gradient-bg text-white shadow' : 'bg-white text-[#5A6A72] border border-gray-100 hover:bg-gray-50'
-              }`}
-            >
-              <i className="ri-user-follow-line text-base" />
-              {t('admin.crmManagement')}
-            </button>
-            <button
-              onClick={() => setActiveTab('kanban')}
-              className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center gap-3 cursor-pointer ${
-                activeTab === 'kanban' ? 'gradient-bg text-white shadow' : 'bg-white text-[#5A6A72] border border-gray-100 hover:bg-gray-50'
-              }`}
-            >
-              <i className="ri-kanban-view text-base" />
-              {t('admin.projectKanban')}
-            </button>
-            <button
-              onClick={() => setActiveTab('payouts')}
-              className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center justify-between cursor-pointer ${
-                activeTab === 'payouts' ? 'gradient-bg text-white shadow' : 'bg-white text-[#5A6A72] border border-gray-100 hover:bg-gray-50'
-              }`}
-            >
-              <span className="flex items-center gap-3">
-                <i className="ri-wallet-3-line text-base" />
-                {t('admin.outsourcePayouts')}
-              </span>
-              {payouts.filter(p => p.status === 'Pending').length > 0 && (
-                <span className="bg-[#9B2A4C] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
-                  {payouts.filter(p => p.status === 'Pending').length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('security')}
-              className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold text-sm transition-all flex items-center gap-3 cursor-pointer ${
-                activeTab === 'security' ? 'gradient-bg text-white shadow' : 'bg-white text-[#5A6A72] border border-gray-100 hover:bg-gray-50'
-              }`}
-            >
-              <i className="ri-key-line text-base" />
-              {t('admin.securityRBAC')}
-            </button>
-          </div>
-
-          {/* Active Tab Panel */}
-          <div className="lg:col-span-9 bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm min-h-[500px]">
-            {/* 1. MARKETING TAB */}
-            {activeTab === 'marketing' && (
-              <div className="space-y-8 animate-fadeIn">
-                <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                  <div className="flex items-center gap-4">
-                    <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.realtimeTraffic')}</h3>
-                    <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-0.5">
-                      <button
-                        onClick={() => setTrafficFilter('day')}
-                        className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'day' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
-                      >
-                        Day
-                      </button>
-                      <button
-                        onClick={() => setTrafficFilter('week')}
-                        className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'week' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
-                      >
-                        Week
-                      </button>
-                      <button
-                        onClick={() => setTrafficFilter('month')}
-                        className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'month' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
-                      >
-                        Month
-                      </button>
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-green-500 font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" />
-                    {t('admin.activeApis')}
-                  </span>
+            {/* Dashboard Overview Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#9B2A4C]/10 flex items-center justify-center text-[#9B2A4C] text-xl">
+                  <i className="ri-contacts-book-line" />
                 </div>
-
-                {/* Line Chart */}
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trafficData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="#8A97A0" />
-                      <YAxis tick={{ fontSize: 10 }} stroke="#8A97A0" />
-                      <Tooltip contentStyle={{ fontSize: 12 }} />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Line type="monotone" dataKey="visitors" stroke="#9B2A4C" name="Total Visitors" strokeWidth={2.5} activeDot={{ r: 6 }} />
-                      <Line type="monotone" dataKey="organic" stroke="#2C3E50" name="SEO Organic" strokeWidth={1.5} />
-                      <Line type="monotone" dataKey="facebook" stroke="#2563EB" name="Facebook" strokeWidth={1.5} />
-                      <Line type="monotone" dataKey="tiktok" stroke="#D97706" name="TikTok" strokeWidth={1.5} />
-                      <Line type="monotone" dataKey="youtube" stroke="#EF4444" name="YouTube" strokeWidth={1.5} />
-                      <Line type="monotone" dataKey="direct" stroke="#10B981" name="Browser" strokeWidth={1.5} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                  {/* Pie Chart */}
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-[#1C2526] text-sm">{t('admin.trafficSources')}</h4>
-                    <div className="h-56 flex items-center justify-center">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={pieChartData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={45}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {pieChartData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip contentStyle={{ fontSize: 11 }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="flex flex-col gap-2 shrink-0 pr-4">
-                        {pieChartData.map((d, index) => (
-                          <div key={d.name} className="flex items-center gap-2 text-[10px] font-bold text-gray-500">
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index] }} />
-                            <span>{d.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Campaign Alerts */}
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-[#1C2526] text-sm">{t('admin.alertsTitle')}</h4>
-                    <div className="space-y-3">
-                      {alerts.map(alert => (
-                        <div
-                          key={alert.id}
-                          className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 ${
-                            alert.status === 'active'
-                              ? 'bg-red-50/50 border-red-100'
-                              : 'bg-gray-50/50 border-gray-100 opacity-60'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
-                              alert.platform === 'TikTok' ? 'bg-black text-white' : 'bg-blue-100 text-blue-600'
-                            }`}>
-                              <i className={`ri-${alert.platform.toLowerCase()}-fill`} />
-                            </span>
-                            <div>
-                              <p className="text-xs font-bold text-[#1C2526]">{alert.campaignName}</p>
-                              <p className="text-[10px] text-gray-400">
-                                {t('admin.engagementDrop')}
-                                <span className="font-semibold text-red-500">-{alert.engagementDrop}%</span>
-                              </p>
-                            </div>
-                          </div>
-                          {alert.status === 'active' ? (
-                            <button
-                              onClick={() => handleResolveAlert(alert.id)}
-                              className="px-3 py-1 bg-[#2C3E50] text-white text-[10px] font-semibold rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-                            >
-                              {t('admin.resolve')}
-                            </button>
-                          ) : (
-                            <span className="text-[10px] font-bold text-green-500 flex items-center gap-0.5">
-                              <i className="ri-checkbox-circle-line" />
-                              Resolved
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 2. FINANCE TAB */}
-            {activeTab === 'finance' && (
-              <div className="space-y-8 animate-fadeIn">
-                <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                  <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.sheetsIntegration')}</h3>
-                  <span className="text-[10px] text-[#2C3E50] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 bg-[#2C3E50]/5 rounded-xl">
-                    <i className="ri-file-excel-fill text-green-600 text-sm" />
-                    {t('admin.sheetsActive')}
-                  </span>
-                </div>
-
-                {/* Finance charts */}
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={financeData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip contentStyle={{ fontSize: 11 }} />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="revenue" fill="#9B2A4C" name="Total Revenue ($)" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="outsourceCost" fill="#2C3E50" name="Outsource Expenses ($)" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="otherCost" fill="#A8B5A0" name="General Operations ($)" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Sheets Grid table representation */}
-                <div className="space-y-3">
-                  <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                    {t('admin.sheetsLedger')}
-                  </h4>
-                  <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                          <th className="p-3">Month</th>
-                          <th className="p-3 text-right">Revenue</th>
-                          <th className="p-3 text-right">Outsource Cost</th>
-                          <th className="p-3 text-right">Operating Cost</th>
-                          <th className="p-3 text-right">Gross Profit</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 text-gray-700">
-                        {financeData.map(log => {
-                          const gross = log.revenue - log.outsourceCost - log.otherCost;
-                          return (
-                            <tr key={log.month} className="hover:bg-gray-50/50">
-                              <td className="p-3 font-semibold text-[#1C2526]">{log.month}</td>
-                              <td className="p-3 text-right font-semibold text-green-600">${log.revenue}</td>
-                              <td className="p-3 text-right text-red-500">-${log.outsourceCost}</td>
-                              <td className="p-3 text-right text-gray-400">-${log.otherCost}</td>
-                              <td className="p-3 text-right font-bold text-[#9B2A4C]">${gross}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 3. CRM LEADS */}
-            {activeTab === 'crm' && (
-              <div className="space-y-8 animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
-                  <div>
-                    <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.crmDatabase')}</h3>
-                    <p className="text-xs text-gray-400">{t('admin.crmDesc')}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={handleCsvImport}
-                      className="px-4 py-2 border border-dashed border-[#9B2A4C]/30 text-[#9B2A4C] hover:bg-[#9B2A4C]/5 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <i className="ri-file-upload-line" />
-                      {t('admin.importCsv')}
-                    </button>
-                    <button
-                      onClick={handleResetDb}
-                      className="px-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <i className="ri-refresh-line" />
-                      {t('admin.resetDb')}
-                    </button>
-                  </div>
-                </div>
-
-                {csvMessage && (
-                  <div className="p-3 bg-green-50 text-green-700 rounded-xl border border-green-200 text-xs font-semibold">
-                    {csvMessage}
-                  </div>
-                )}
-
-                {/* CRM Leads Database */}
-                <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                        <th className="p-3">{t('admin.customerInfo')}</th>
-                        <th className="p-3">{t('admin.requestDetails')}</th>
-                        <th className="p-3">{t('admin.leadStatus')}</th>
-                        <th className="p-3 text-center">{t('common.actions')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 text-gray-700">
-                      {leads.map(lead => (
-                        <tr key={lead.id} className="hover:bg-gray-50/50 align-top">
-                          <td className="p-3 space-y-1">
-                            <p className="font-bold text-[#1C2526]">{lead.name}</p>
-                            <p className="text-[10px] text-gray-400">{lead.email}</p>
-                            <p className="text-[10px] text-gray-400">{lead.phone}</p>
-                            <p className="text-[10px] font-bold text-[#9B2A4C]">{lead.company}</p>
-                          </td>
-                          <td className="p-3 space-y-1 max-w-xs">
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-                              {i18n.exists(`services.list.${lead.service}.title`) ? t(`services.list.${lead.service}.title` as any) : lead.service}
-                            </span>
-                            <p className="text-[10px] text-[#5A6A72] leading-relaxed line-clamp-3">
-                              {lead.message}
-                            </p>
-                          </td>
-                          <td className="p-3">
-                            <select
-                              value={lead.status}
-                              onChange={async (e) => {
-                                await LeadsAPI.update(lead.id, { status: e.target.value });
-                                await loadData();
-                              }}
-                              className="bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-[10px] font-bold text-gray-700 focus:outline-none focus:border-[#9B2A4C]"
-                            >
-                              <option value="New">{t('admin.statusNew')}</option>
-                              <option value="Contacted">{t('admin.statusContacted')}</option>
-                              <option value="Qualified">{t('admin.statusQualified')}</option>
-                              <option value="Closed">{t('admin.statusClosed')}</option>
-                            </select>
-                          </td>
-                          <td className="p-3 text-center">
-                            <button
-                              onClick={async () => {
-                                await LeadsAPI.delete(lead.id);
-                                await loadData();
-                              }}
-                              className="text-red-500 hover:text-red-700 p-1 text-sm cursor-pointer"
-                              title="Delete Lead"
-                            >
-                              <i className="ri-delete-bin-6-line" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Lead manual add form */}
-                <form onSubmit={handleAddLead} className="p-6 rounded-3xl bg-[#F8F6F2]/50 border border-gray-200 space-y-4">
-                  <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                    {t('admin.addLeadManual')}
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <input
-                      type="text"
-                      required
-                      placeholder={t('admin.crmForm.name')}
-                      value={newLeadName}
-                      onChange={(e) => setNewLeadName(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                    <input
-                      type="email"
-                      required
-                      placeholder={t('admin.crmForm.email')}
-                      value={newLeadEmail}
-                      onChange={(e) => setNewLeadEmail(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                    <input
-                      type="tel"
-                      required
-                      placeholder={t('admin.crmForm.phone')}
-                      value={newLeadPhone}
-                      onChange={(e) => setNewLeadPhone(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      placeholder={t('admin.crmForm.company')}
-                      value={newLeadCompany}
-                      onChange={(e) => setNewLeadCompany(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                    <select
-                      value={newLeadService}
-                      onChange={(e) => setNewLeadService(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    >
-                      <option value="web">{t('services.list.web.title')}</option>
-                      <option value="chatbot">{t('services.list.chatbot.title')}</option>
-                      <option value="landing">{t('services.list.landing.title')}</option>
-                      <option value="workflow">{t('services.list.workflow.title')}</option>
-                      <option value="email">{t('services.list.email.title')}</option>
-                      <option value="n8n">{t('services.list.n8n.title')}</option>
-                      <option value="app">{t('services.list.app.title')}</option>
-                    </select>
-                  </div>
-                  <textarea
-                    rows={2}
-                    placeholder={t('admin.crmForm.messagePlaceholder')}
-                    value={newLeadMessage}
-                    onChange={(e) => setNewLeadMessage(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-[#2C3E50] text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
-                  >
-                    {t('admin.addLeadBtn')}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* 4. KANBAN PROJECT BOARD */}
-            {activeTab === 'kanban' && (
-              <div className="space-y-8 animate-fadeIn">
                 <div>
-                  <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.taskBoard')}</h3>
-                  <p className="text-xs text-gray-400">{t('admin.kanbanDesc')}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">CRM Leads</p>
+                  <p className="text-2xl font-black text-[#1C2526]">{totalLeads}</p>
                 </div>
+              </div>
 
-                {/* Columns */}
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
-                  {['New', 'In Progress', 'Client Review', 'Completed'].map(columnStatus => {
-                    const filtered = projects.filter(p => p.status === columnStatus);
-                    return (
-                      <div key={columnStatus} className="bg-[#F8F6F2]/60 border border-gray-200 rounded-2xl p-4 space-y-3 min-h-[300px] w-full md:w-[280px] shrink-0">
-                        <div className="flex justify-between items-center px-1">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                            {columnStatus === 'New' ? t('admin.statusNew') : columnStatus === 'In Progress' ? t('admin.statusInProgress') : columnStatus === 'Client Review' ? t('admin.statusClientReview') : t('admin.statusCompleted')}
-                          </span>
-                          <span className="bg-[#2C3E50]/5 text-[#2C3E50] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                            {filtered.length}
-                          </span>
+              <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-500 text-xl">
+                  <i className="ri-bank-card-line" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Contract Value</p>
+                  <p className="text-2xl font-black text-[#1C2526]">${totalRevenue}</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 text-xl">
+                  <i className="ri-refund-2-line" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Outsource Fees</p>
+                  <p className="text-2xl font-black text-[#1C2526]">${totalOutsource}</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 text-xl">
+                  <i className="ri-safe-2-line" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Net Profit Margin</p>
+                  <p className="text-2xl font-black text-[#1C2526]">${netEarnings}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dashboard Tabs & Navigation */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Sidebar Tabs */}
+              <div className="lg:col-span-3 bg-white rounded-3xl p-4 border border-gray-100 shadow-sm space-y-1">
+                <button
+                  onClick={() => setActiveTab('marketing')}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-3 cursor-pointer border-l-4 ${activeTab === 'marketing' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
+                    }`}
+                >
+                  <i className="ri-line-chart-line text-base" />
+                  {t('admin.trafficAnalytics')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('finance')}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-3 cursor-pointer border-l-4 ${activeTab === 'finance' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
+                    }`}
+                >
+                  <i className="ri-file-excel-2-line text-base" />
+                  {t('admin.financeReporting')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('crm')}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-3 cursor-pointer border-l-4 ${activeTab === 'crm' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
+                    }`}
+                >
+                  <i className="ri-user-follow-line text-base" />
+                  {t('admin.crmManagement')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('projects_management')}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-3 cursor-pointer border-l-4 ${activeTab === 'projects_management' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
+                    }`}
+                >
+                  <i className="ri-folder-shield-2-line text-base" />
+                  {i18n.language === 'vi' ? 'Quản Lý Dự Án' : 'Projects Management'}
+                </button>
+                <button
+                  onClick={() => setActiveTab('payouts')}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-between cursor-pointer border-l-4 ${activeTab === 'payouts' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
+                    }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <i className="ri-wallet-3-line text-base" />
+                    {t('admin.outsourcePayouts')}
+                  </span>
+                  {payouts.filter(p => p.status === 'Pending').length > 0 && (
+                    <span className="bg-[#9B2A4C] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
+                      {payouts.filter(p => p.status === 'Pending').length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('security')}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-3 cursor-pointer border-l-4 ${activeTab === 'security' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
+                    }`}
+                >
+                  <i className="ri-key-line text-base" />
+                  {t('admin.securityRBAC')}
+                </button>
+              </div>
+
+              {/* Active Tab Panel */}
+              <div className="lg:col-span-9 bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm min-h-[500px]">
+                {/* 1. MARKETING TAB */}
+                {activeTab === 'marketing' && (
+                  <div className="space-y-8 animate-fadeIn">
+                    <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                      <div className="flex items-center gap-4">
+                        <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.realtimeTraffic')}</h3>
+                        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-0.5">
+                          <button
+                            onClick={() => setTrafficFilter('day')}
+                            className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'day' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
+                          >
+                            Day
+                          </button>
+                          <button
+                            onClick={() => setTrafficFilter('week')}
+                            className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'week' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
+                          >
+                            Week
+                          </button>
+                          <button
+                            onClick={() => setTrafficFilter('month')}
+                            className={`text-[10px] font-bold px-3 py-1 rounded-md transition-all ${trafficFilter === 'month' ? 'bg-white shadow-sm text-[#9B2A4C]' : 'text-gray-500 hover:text-[#1C2526]'}`}
+                          >
+                            Month
+                          </button>
                         </div>
+                      </div>
+                      <span className="text-[10px] text-green-500 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" />
+                        {t('admin.activeApis')}
+                      </span>
+                    </div>
 
+                    {/* Line Chart */}
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={trafficData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="#8A97A0" />
+                          <YAxis tick={{ fontSize: 10 }} stroke="#8A97A0" />
+                          <Tooltip contentStyle={{ fontSize: 12 }} />
+                          <Legend wrapperStyle={{ fontSize: 11 }} />
+                          <Line type="monotone" dataKey="visitors" stroke="#9B2A4C" name="Total Visitors" strokeWidth={2.5} activeDot={{ r: 6 }} />
+                          <Line type="monotone" dataKey="organic" stroke="#2C3E50" name="SEO Organic" strokeWidth={1.5} />
+                          <Line type="monotone" dataKey="facebook" stroke="#2563EB" name="Facebook" strokeWidth={1.5} />
+                          <Line type="monotone" dataKey="tiktok" stroke="#D97706" name="TikTok" strokeWidth={1.5} />
+                          <Line type="monotone" dataKey="youtube" stroke="#EF4444" name="YouTube" strokeWidth={1.5} />
+                          <Line type="monotone" dataKey="direct" stroke="#10B981" name="Browser" strokeWidth={1.5} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                      {/* Pie Chart */}
+                      <div className="space-y-4">
+                        <h4 className="font-bold text-[#1C2526] text-sm">{t('admin.trafficSources')}</h4>
+                        <div className="h-56 flex items-center justify-center">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={pieChartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={45}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                              >
+                                {pieChartData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip contentStyle={{ fontSize: 11 }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="flex flex-col gap-2 shrink-0 pr-4">
+                            {pieChartData.map((d, index) => (
+                              <div key={d.name} className="flex items-center gap-2 text-[10px] font-bold text-gray-500">
+                                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[index] }} />
+                                <span>{d.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Campaign Alerts */}
+                      <div className="space-y-4">
+                        <h4 className="font-bold text-[#1C2526] text-sm">{t('admin.alertsTitle')}</h4>
                         <div className="space-y-3">
-                          {filtered.map(proj => (
-                            <div key={proj.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 hover:border-[#9B2A4C]/30 transition-colors">
-                              <div>
-                                <span className="text-[8px] font-bold text-[#9B2A4C] uppercase bg-[#9B2A4C]/5 px-1.5 py-0.5 rounded">
-                                  {i18n.exists(`services.list.${proj.service}.title`) ? t(`services.list.${proj.service}.title` as any) : proj.service}
+                          {alerts.map(alert => (
+                            <div
+                              key={alert.id}
+                              className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 ${alert.status === 'active'
+                                  ? 'bg-red-50/50 border-red-100'
+                                  : 'bg-gray-50/50 border-gray-100 opacity-60'
+                                }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${alert.platform === 'TikTok' ? 'bg-black text-white' : 'bg-blue-100 text-blue-600'
+                                  }`}>
+                                  <i className={`ri-${alert.platform.toLowerCase()}-fill`} />
                                 </span>
-                                <h4 className="text-xs font-bold text-[#1C2526] mt-1 line-clamp-1">{proj.name}</h4>
-                                <p className="text-[9px] text-gray-400">Client: {proj.clientName}</p>
-                              </div>
-
-                              <div className="space-y-1.5">
-                                <div className="flex justify-between text-[9px] text-gray-500 font-bold">
-                                  <span>{t('admin.assignee')}</span>
-                                  <span className="text-[#2C3E50]">{proj.assigneeName}</span>
-                                </div>
-                                <div className="flex justify-between text-[9px] text-gray-500 font-bold">
-                                  <span>{t('admin.deadline')}</span>
-                                  <span className="text-red-500">{proj.deadline}</span>
-                                </div>
-                                <div className="flex justify-between text-[9px] text-gray-500 font-bold">
-                                  <span>{t('admin.progress')}</span>
-                                  <span className="text-[#9B2A4C]">{proj.progress}%</span>
-                                </div>
-                                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                  <div className="h-full gradient-bg rounded-full" style={{ width: `${proj.progress}%` }} />
+                                <div>
+                                  <p className="text-xs font-bold text-[#1C2526]">{alert.campaignName}</p>
+                                  <p className="text-[10px] text-gray-400">
+                                    {t('admin.engagementDrop')}
+                                    <span className="font-semibold text-red-500">-{alert.engagementDrop}%</span>
+                                  </p>
                                 </div>
                               </div>
-
-                              {/* Simple Move Controller */}
-                              <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                              {alert.status === 'active' ? (
                                 <button
-                                  onClick={() => handleMoveCard(proj.id, proj.status, 'left')}
-                                  disabled={columnStatus === 'New'}
-                                  className="p-1 text-[#5A6A72] disabled:opacity-30 cursor-pointer"
+                                  onClick={() => handleResolveAlert(alert.id)}
+                                  className="px-3 py-1 bg-[#2C3E50] text-white text-[10px] font-semibold rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
                                 >
-                                  <i className="ri-arrow-left-s-line" />
+                                  {t('admin.resolve')}
                                 </button>
-                                <span className="text-[8px] font-bold text-[#5A6A72] uppercase">{t('admin.control')}</span>
-                                <button
-                                  onClick={() => handleMoveCard(proj.id, proj.status, 'right')}
-                                  disabled={columnStatus === 'Completed'}
-                                  className="p-1 text-[#5A6A72] disabled:opacity-30 cursor-pointer"
-                                >
-                                  <i className="ri-arrow-right-s-line" />
-                                </button>
-                              </div>
+                              ) : (
+                                <span className="text-[10px] font-bold text-green-500 flex items-center gap-0.5">
+                                  <i className="ri-checkbox-circle-line" />
+                                  Resolved
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* Add new project/Assign Task */}
-                <form onSubmit={handleAddTask} className="p-6 rounded-3xl bg-[#F8F6F2]/50 border border-gray-200 space-y-4">
-                  <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                    {t('admin.addTask')}
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <input
-                      type="text"
-                      required
-                      placeholder={t('admin.kanbanForm.projectName')}
-                      value={taskName}
-                      onChange={(e) => setTaskName(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                    <input
-                      type="text"
-                      required
-                      placeholder={t('admin.kanbanForm.clientName')}
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                    <input
-                      type="email"
-                      required
-                      placeholder={t('admin.kanbanForm.clientEmail')}
-                      value={clientEmail}
-                      onChange={(e) => setClientEmail(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
+                    </div>
                   </div>
+                )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                    <select
-                      value={taskService}
-                      onChange={(e) => setTaskService(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    >
-                      <option value="web">{t('services.list.web.title')}</option>
-                      <option value="chatbot">{t('services.list.chatbot.title')}</option>
-                      <option value="landing">{t('services.list.landing.title')}</option>
-                      <option value="workflow">{t('services.list.workflow.title')}</option>
-                      <option value="email">{t('services.list.email.title')}</option>
-                      <option value="n8n">{t('services.list.n8n.title')}</option>
-                      <option value="app">{t('services.list.app.title')}</option>
-                    </select>
+                {/* 2. FINANCE TAB */}
+                {activeTab === 'finance' && (
+                  <div className="space-y-8 animate-fadeIn">
+                    <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                      <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.sheetsIntegration')}</h3>
+                      <span className="text-[10px] text-[#2C3E50] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 bg-[#2C3E50]/5 rounded-xl">
+                        <i className="ri-file-excel-fill text-green-600 text-sm" />
+                        {t('admin.sheetsActive')}
+                      </span>
+                    </div>
 
-                    <select
-                      value={assigneeId}
-                      onChange={(e) => setAssigneeId(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    >
-                      <option value="Unassigned">{t('admin.kanbanForm.assignFreelancer')}</option>
-                      {freelancers.filter(f => f.status === 'Approved').map(f => (
-                        <option key={f.id} value={f.id}>{f.name}</option>
-                      ))}
-                    </select>
+                    {/* Finance charts */}
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={financeData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <Tooltip contentStyle={{ fontSize: 11 }} />
+                          <Legend wrapperStyle={{ fontSize: 11 }} />
+                          <Bar dataKey="revenue" fill="#9B2A4C" name="Total Revenue ($)" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="outsourceCost" fill="#2C3E50" name="Outsource Expenses ($)" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="otherCost" fill="#A8B5A0" name="General Operations ($)" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
 
-                    <input
-                      type="number"
-                      required
-                      placeholder={t('admin.kanbanForm.contractValue')}
-                      value={contractValue}
-                      onChange={(e) => setContractValue(parseInt(e.target.value) || 0)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-
-                    <input
-                      type="number"
-                      required
-                      placeholder={t('admin.kanbanForm.outsourceFee')}
-                      value={outsourceFee}
-                      onChange={(e) => setOutsourceFee(parseInt(e.target.value) || 0)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
+                    {/* Sheets Grid table representation */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
+                        {t('admin.sheetsLedger')}
+                      </h4>
+                      <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
+                              <th className="p-3">Month</th>
+                              <th className="p-3 text-right">Revenue</th>
+                              <th className="p-3 text-right">Outsource Cost</th>
+                              <th className="p-3 text-right">Operating Cost</th>
+                              <th className="p-3 text-right">Gross Profit</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 text-gray-700">
+                            {financeData.map(log => {
+                              const gross = log.revenue - log.outsourceCost - log.otherCost;
+                              return (
+                                <tr key={log.month} className="hover:bg-gray-50/50">
+                                  <td className="p-3 font-semibold text-[#1C2526]">{log.month}</td>
+                                  <td className="p-3 text-right font-semibold text-green-600">${log.revenue}</td>
+                                  <td className="p-3 text-right text-red-500">-${log.outsourceCost}</td>
+                                  <td className="p-3 text-right text-gray-400">-${log.otherCost}</td>
+                                  <td className="p-3 text-right font-bold text-[#9B2A4C]">${gross}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
                   </div>
+                )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                      type="date"
-                      required
-                      value={deadline}
-                      onChange={(e) => setDeadline(e.target.value)}
-                      className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                    <textarea
-                      rows={1}
-                      placeholder={t('admin.kanbanForm.briefPlaceholder')}
-                      value={taskBrief}
-                      onChange={(e) => setTaskBrief(e.target.value)}
-                      className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none"
-                    />
+                {/* 3. CRM LEADS */}
+                {activeTab === 'crm' && (
+                  <div className="space-y-8 animate-fadeIn">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
+                      <div>
+                        <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.crmDatabase')}</h3>
+                        <p className="text-xs text-gray-400">{t('admin.crmDesc')}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => {
+                            setActiveTab('projects_management');
+                            setActiveProjectSubTab('assign');
+                          }}
+                          className="px-4 py-2 gradient-bg text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow hover:opacity-95 transition-opacity cursor-pointer animate-pulse"
+                        >
+                          <i className="ri-add-line text-sm" />
+                          Tạo đơn hàng mới
+                        </button>
+                        <button
+                          onClick={handleResetDb}
+                          className="px-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <i className="ri-refresh-line" />
+                          {t('admin.resetDb')}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* CRM Leads Database */}
+                    <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
+                            <th className="p-3">{t('admin.customerInfo')}</th>
+                            <th className="p-3">{t('admin.requestDetails')}</th>
+                            <th className="p-3">{t('admin.leadStatus')}</th>
+                            <th className="p-3 text-center">{t('common.actions')}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 text-gray-700">
+                          {leads.map(lead => (
+                            <tr key={lead.id} className="hover:bg-gray-50/50 align-top">
+                              <td className="p-3 space-y-1">
+                                <p className="font-bold text-[#1C2526]">{lead.name}</p>
+                                <p className="text-[10px] text-gray-400">{lead.email}</p>
+                                <p className="text-[10px] text-gray-400">{lead.phone}</p>
+                                <p className="text-[10px] font-bold text-[#9B2A4C]">{lead.company}</p>
+                              </td>
+                              <td className="p-3 space-y-1 max-w-xs">
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                                  {i18n.exists(`services.list.${lead.service}.title`) ? t(`services.list.${lead.service}.title` as any) : lead.service}
+                                </span>
+                                <p className="text-[10px] text-[#5A6A72] leading-relaxed line-clamp-3">
+                                  {lead.message}
+                                </p>
+                              </td>
+                              <td className="p-3">
+                                <select
+                                  value={lead.status}
+                                  onChange={async (e) => {
+                                    await LeadsAPI.update(lead.id, { status: e.target.value });
+                                    await loadData();
+                                  }}
+                                  className="bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-[10px] font-bold text-gray-700 focus:outline-none focus:border-[#9B2A4C]"
+                                >
+                                  <option value="New">{t('admin.statusNew')}</option>
+                                  <option value="Contacted">{t('admin.statusContacted')}</option>
+                                  <option value="Qualified">{t('admin.statusQualified')}</option>
+                                  <option value="Closed">{t('admin.statusClosed')}</option>
+                                </select>
+                              </td>
+                              <td className="p-3 text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  {lead.status !== 'Qualified' && lead.status !== 'Closed' ? (
+                                    <button
+                                      onClick={() => {
+                                        setAssigningLead(lead);
+                                        setAssigneeDeveloperId(developers.filter(f => f.status === 'Approved')[0]?.id || 'Unassigned');
+                                      }}
+                                      className="px-2 py-1 bg-[#9B2A4C] text-white text-[10px] font-bold rounded hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-0.5"
+                                      title={i18n.language === 'vi' ? 'Giao việc cho Dev' : 'Assign to Dev'}
+                                    >
+                                      <i className="ri-user-add-line" />
+                                      {i18n.language === 'vi' ? 'Giao việc' : 'Assign'}
+                                    </button>
+                                  ) : null}
+                                  <button
+                                    onClick={async () => {
+                                      await LeadsAPI.delete(lead.id);
+                                      await loadData();
+                                    }}
+                                    className="text-red-500 hover:text-red-700 p-1 text-sm cursor-pointer"
+                                    title="Delete Lead"
+                                  >
+                                    <i className="ri-delete-bin-6-line" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
+                )}
 
-                  <button
-                    type="submit"
-                    className="bg-[#2C3E50] text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
-                  >
-                    {t('admin.createTaskBtn')}
-                  </button>
-                </form>
-              </div>
-            )}
+                {/* 4. PROJECTS MANAGEMENT */}
+                {activeTab === 'projects_management' && (
+                  <div className="space-y-6 animate-fadeIn">
+                    {/* Sub-tabs Selection */}
+                    <div className="flex border-b border-gray-100 pb-2 gap-6">
+                      <button
+                        onClick={() => setActiveProjectSubTab('progress')}
+                        className={`text-sm font-bold pb-2 transition-all border-b-2 cursor-pointer ${activeProjectSubTab === 'progress'
+                            ? 'border-[#9B2A4C] text-[#9B2A4C]'
+                            : 'border-transparent text-gray-400 hover:text-gray-600'
+                          }`}
+                      >
+                        {i18n.language === 'vi' ? 'Quản lý tiến độ' : 'Progress Management'}
+                      </button>
+                      <button
+                        onClick={() => setActiveProjectSubTab('assign')}
+                        className={`text-sm font-bold pb-2 transition-all border-b-2 cursor-pointer ${activeProjectSubTab === 'assign'
+                            ? 'border-[#9B2A4C] text-[#9B2A4C]'
+                            : 'border-transparent text-gray-400 hover:text-gray-600'
+                          }`}
+                      >
+                        {i18n.language === 'vi' ? 'Giao việc' : 'Assign Project'}
+                      </button>
+                    </div>
 
-            {/* 5. PAYMENTS REQUEST */}
-            {activeTab === 'payouts' && (
-              <div className="space-y-8 animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
-                  <div>
-                    <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.pendingPayments')}</h3>
-                    <p className="text-xs text-gray-400">{t('admin.payoutDesc')}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleExportPayoutsCsv}
-                      className="px-4 py-2 bg-[#2C3E50] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
-                    >
-                      <i className="ri-file-download-line" />
-                      {t('admin.exportPayouts')}
-                    </button>
-                  </div>
-                </div>
+                    {/* Sub-tab 1: Progress Management */}
+                    {activeProjectSubTab === 'progress' && (
+                      <div className="space-y-6 animate-fadeIn">
+                        <div>
+                          <h3 className="font-bold text-[#1C2526] text-lg">
+                            {i18n.language === 'vi' ? 'Bảng Tiến Độ Dự Án' : 'Project Kanban Board'}
+                          </h3>
+                          <p className="text-xs text-gray-400">
+                            {i18n.language === 'vi' ? 'Sắp xếp và điều phối tiến độ công việc của developer trực quan theo từng trạng thái.' : t('admin.kanbanDesc')}
+                          </p>
+                        </div>
 
-                <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                        <th className="p-3">{t('admin.payoutHeaders.freelancerName')}</th>
-                        <th className="p-3">{t('admin.payoutHeaders.projectInfo')}</th>
-                        <th className="p-3 text-right">{t('admin.payoutHeaders.feeRate')}</th>
-                        <th className="p-3 text-right">{t('admin.payoutHeaders.tax')} ({taxRate}%)</th>
-                        <th className="p-3 text-right">{t('admin.payoutHeaders.netPayout')}</th>
-                        <th className="p-3">{t('common.status')}</th>
-                        <th className="p-3 text-center">{t('common.actions')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 text-gray-700">
-                      {payouts.map(p => (
-                        <tr key={p.id} className="hover:bg-gray-50/50">
-                          <td className="p-3 font-semibold text-[#1C2526]">{p.freelancerName}</td>
-                          <td className="p-3 text-[10px] text-gray-500 max-w-xs truncate">{p.projectName}</td>
-                          <td className="p-3 text-right font-bold text-[#2C3E50]">${p.amount}</td>
-                          <td className="p-3 text-right text-red-500">-${p.taxDeducted}</td>
-                          <td className="p-3 text-right font-bold text-[#9B2A4C]">${p.netAmount}</td>
-                          <td className="p-3">
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                              p.status === 'Paid'
-                                ? 'bg-green-50 text-green-600'
-                                : p.status === 'Approved'
-                                ? 'bg-blue-50 text-blue-600'
-                                : 'bg-yellow-50 text-yellow-600'
-                            }`}>
-                              {p.status === 'Paid' ? t('admin.paid') : p.status === 'Approved' ? t('admin.statusApproved') : t('admin.statusPending')}
-                            </span>
-                          </td>
-                          <td className="p-3 text-center space-x-2">
-                            {p.status === 'Pending' && (
+                        {/* Status Tabs Switcher */}
+                        <div className="flex flex-wrap border-b border-gray-100 gap-1 sm:gap-2 pt-2">
+                          {(['New', 'In Progress', 'Client Review', 'Completed'] as const).map(status => {
+                            const count = projects.filter(p => p.status === status).length;
+                            const isActive = activeKanbanStatus === status;
+                            return (
                               <button
-                                onClick={() => handleApprovePayout(p.id)}
+                                key={status}
+                                onClick={() => setActiveKanbanStatus(status)}
+                                className={`flex items-center gap-2 px-4 py-3 text-xs font-extrabold transition-all border-b-2 cursor-pointer ${isActive
+                                    ? status === 'New' ? 'border-[#D97706] text-[#D97706] bg-[#D97706]/5' :
+                                      status === 'In Progress' ? 'border-blue-500 text-blue-500 bg-blue-500/5' :
+                                        status === 'Client Review' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' :
+                                          'border-green-500 text-green-500 bg-green-500/5'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50/50'
+                                  } rounded-t-xl`}
+                              >
+                                <span className={`w-2 h-2 rounded-full ${status === 'New' ? 'bg-[#D97706]' :
+                                    status === 'In Progress' ? 'bg-blue-500' :
+                                      status === 'Client Review' ? 'bg-[#9B2A4C]' : 'bg-green-500'
+                                  }`} />
+                                <span>
+                                  {status === 'New' ? t('admin.statusNew') :
+                                    status === 'In Progress' ? t('admin.statusInProgress') :
+                                      status === 'Client Review' ? t('admin.statusClientReview') :
+                                        t('admin.statusCompleted')}
+                                </span>
+                                <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-full ${isActive
+                                    ? status === 'New' ? 'bg-[#D97706]/10 text-[#D97706]' :
+                                      status === 'In Progress' ? 'bg-blue-500/10 text-blue-500' :
+                                        status === 'Client Review' ? 'bg-[#9B2A4C]/10 text-[#9B2A4C]' :
+                                          'bg-green-500/10 text-green-500'
+                                    : 'bg-gray-100 text-gray-500'
+                                  }`}>
+                                  {count}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Projects Grid for Selected Status */}
+                        <div className="pt-2">
+                          {(() => {
+                            const filtered = projects.filter(p => p.status === activeKanbanStatus);
+                            if (filtered.length === 0) {
+                              return (
+                                <div className="py-16 text-center text-gray-400 italic text-xs">
+                                  {i18n.language === 'vi' ? 'Không có dự án nào ở trạng thái này' : 'No projects in this status'}
+                                </div>
+                              );
+                            }
+                            return (
+                              <div className="divide-y divide-gray-100">
+                                {filtered.map(proj => {
+                                  // Calculate subtasks info
+                                  let subTasksList: any[] = [];
+                                  try {
+                                    subTasksList = JSON.parse(proj.subTasks || '[]');
+                                  } catch {
+                                    subTasksList = [];
+                                  }
+                                  const totalSubTasks = subTasksList.length;
+                                  const completedSubTasks = subTasksList.filter((t: any) => t.completed).length;
+
+                                  return (
+                                    <div
+                                      key={proj.id}
+                                      className="py-6 first:pt-2 last:pb-2 space-y-4 transition-all duration-200"
+                                    >
+                                      {/* Main Row: Flexible layout for flat look */}
+                                      <div className="flex flex-col md:flex-row gap-6 items-start justify-between w-full">
+
+                                        {/* Left: Project Title, ID, Service, Client */}
+                                        <div className="space-y-2 min-w-0 flex-1">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-[9px] font-extrabold text-[#9B2A4C] uppercase bg-[#9B2A4C]/5 px-2 py-0.5 rounded-md tracking-wider">
+                                              {i18n.exists(`services.list.${proj.service}.title`) ? t(`services.list.${proj.service}.title` as any) : proj.service}
+                                            </span>
+                                            <span className="text-[9px] font-bold text-gray-400">
+                                              #{proj.id.substring(0, 5)}
+                                            </span>
+                                          </div>
+                                          <div>
+                                            <h4 className="text-sm font-bold text-[#1C2526] leading-snug" title={proj.name}>
+                                              {proj.name}
+                                            </h4>
+                                            <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                                              <i className="ri-user-star-line text-[12px]" />
+                                              <span>Client: <strong className="text-[#5A6A72] font-semibold">{proj.clientName}</strong></span>
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        {/* Middle: Details Grid (Assignee, Deadline, Money) */}
+                                        <div className="grid grid-cols-2 sm:flex sm:items-center gap-x-6 gap-y-3 text-[11px] text-[#5A6A72] shrink-0 w-full sm:w-auto">
+                                          <div className="space-y-1 sm:min-w-[100px]">
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                                              {i18n.language === 'vi' ? 'Dev đảm nhận' : 'Developer'}
+                                            </p>
+                                            <div className="flex items-center gap-1.5 font-medium text-gray-750">
+                                              <i className="ri-user-3-line text-[#8A97A0]" />
+                                              <select
+                                                value={proj.assigneeId || 'Unassigned'}
+                                                onChange={async (e) => {
+                                                  const newAssigneeId = e.target.value;
+                                                  const dev = developers.find(f => f.id === newAssigneeId);
+                                                  const newAssigneeName = dev ? dev.name : 'None';
+                                                  await ProjectsAPI.update(proj.id, {
+                                                    ...proj,
+                                                    assigneeId: newAssigneeId,
+                                                    assigneeName: newAssigneeName
+                                                  });
+                                                  await loadData();
+                                                  showToast(
+                                                    i18n.language === 'vi'
+                                                      ? 'Đã cập nhật người thực hiện dự án thành công!'
+                                                      : 'Project assignee successfully updated!',
+                                                    'success'
+                                                  );
+                                                }}
+                                                className={`bg-transparent border-none font-semibold text-[11px] focus:outline-none cursor-pointer hover:text-[#9B2A4C] p-0 max-w-[120px] ${(proj.assigneeId || 'Unassigned') === 'Unassigned' ? 'text-gray-400' : 'text-gray-750'
+                                                  }`}
+                                              >
+                                                <option value="Unassigned" className="text-gray-400">Unassigned</option>
+                                                {developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => (
+                                                  <option key={f.id} value={f.id} className="text-gray-750">{f.name}</option>
+                                                ))}
+                                              </select>
+                                            </div>
+                                          </div>
+
+                                          <div className="space-y-1 sm:min-w-[90px]">
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Deadline</p>
+                                            <div className="flex items-center gap-1.5 font-bold text-red-500/80">
+                                              <i className="ri-calendar-todo-line text-[#8A97A0]" />
+                                              <span>{proj.deadline}</span>
+                                            </div>
+                                          </div>
+
+                                          <div className="space-y-1 sm:min-w-[80px]">
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Hợp đồng</p>
+                                            <div className="flex items-center gap-1.5 font-bold text-green-600">
+                                              <i className="ri-money-dollar-circle-line" />
+                                              <span>${proj.contractValue}</span>
+                                            </div>
+                                          </div>
+
+                                          <div className="space-y-1 sm:min-w-[80px]">
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Thù lao</p>
+                                            <div className="flex items-center gap-1.5 font-bold text-[#9B2A4C]">
+                                              <i className="ri-wallet-line" />
+                                              <span>${proj.outsourceFee}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Right: Progress & Card Movement */}
+                                        <div className="w-full md:w-56 space-y-3 shrink-0">
+                                          {/* Progress Indicator */}
+                                          <div className="space-y-1">
+                                            <div className="flex justify-between items-center text-[10px]">
+                                              <span className="text-gray-400 font-medium">Tiến độ</span>
+                                              <span className="font-bold text-[#9B2A4C]">{proj.progress}%</span>
+                                            </div>
+                                            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                              <div
+                                                className="h-full rounded-full transition-all duration-500"
+                                                style={{
+                                                  width: `${proj.progress}%`,
+                                                  background: proj.progress === 100 ? '#10B981' : 'linear-gradient(90deg, #9B2A4C, #2C3E50)'
+                                                }}
+                                              />
+                                            </div>
+                                          </div>
+
+                                          {/* Card Mover */}
+                                          <div className="flex justify-between items-center pt-1">
+                                            <span className="text-[9px] font-bold text-[#5A6A72] uppercase tracking-wider">
+                                              Di chuyển thẻ
+                                            </span>
+                                            <div className="flex items-center gap-1.5">
+                                              <button
+                                                onClick={() => handleMoveCard(proj.id, proj.status, 'left')}
+                                                disabled={activeKanbanStatus === 'New'}
+                                                className="w-6 h-6 rounded-full bg-[#F8F6F2] border border-gray-200 text-gray-500 hover:text-[#9B2A4C] hover:border-[#9B2A4C]/30 hover:bg-[#9B2A4C]/5 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:hover:border-gray-200 cursor-pointer flex items-center justify-center transition-all duration-150"
+                                                title="Sang trái"
+                                              >
+                                                <i className="ri-arrow-left-s-line text-xs font-bold" />
+                                              </button>
+                                              <button
+                                                onClick={() => handleMoveCard(proj.id, proj.status, 'right')}
+                                                disabled={activeKanbanStatus === 'Completed'}
+                                                className="w-6 h-6 rounded-full bg-[#F8F6F2] border border-gray-200 text-gray-500 hover:text-[#9B2A4C] hover:border-[#9B2A4C]/30 hover:bg-[#9B2A4C]/5 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:hover:border-gray-200 cursor-pointer flex items-center justify-center transition-all duration-150"
+                                                title="Sang phải"
+                                              >
+                                                <i className="ri-arrow-right-s-line text-xs font-bold" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                      </div>
+
+                                      {/* Subtasks nested section below the main info row */}
+                                      {totalSubTasks > 0 && (
+                                        <div className="pt-3.5 border-t border-dashed border-gray-150 space-y-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-extrabold text-gray-400 uppercase tracking-wider">
+                                              {i18n.language === 'vi' ? 'Đầu việc timeline' : 'Subtasks timeline'}
+                                            </span>
+                                            <span className="text-[9px] font-bold bg-[#2C3E50]/5 px-1.5 py-0.2 rounded text-gray-500">
+                                              {completedSubTasks}/{totalSubTasks}
+                                            </span>
+                                          </div>
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
+                                            {subTasksList.map((st: any) => (
+                                              <div key={st.id} className="flex items-center justify-between gap-2 text-[10px] text-gray-500 font-medium py-1 border-b border-gray-100/60 last:border-b-0">
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                  <i className={st.completed ? "ri-checkbox-circle-fill text-green-500 text-[11px]" : "ri-checkbox-blank-circle-line text-gray-300 text-[11px]"} />
+                                                  <span className={`truncate leading-tight ${st.completed ? 'line-through text-gray-400' : 'text-gray-700 font-medium'}`} title={st.title}>
+                                                    {st.title}
+                                                  </span>
+                                                </div>
+                                                <span className="text-[8px] font-bold text-red-500/80 bg-red-50 px-1 py-0.2 rounded shrink-0">{st.deadline}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sub-tab 2: Assign Task / Create Project */}
+                    {activeProjectSubTab === 'assign' && (
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="font-bold text-[#1C2526] text-lg">
+                            {i18n.language === 'vi' ? 'Giao Việc & Tạo Dự Án Mới' : 'Assign Project & Create Task'}
+                          </h3>
+                          <p className="text-xs text-gray-400">
+                            {i18n.language === 'vi' ? 'Tạo dự án mới, giao việc cho developer và điền thù lao, deadline.' : 'Create a new project, assign to developer, contract value and outsource fee.'}
+                          </p>
+                        </div>
+
+                        <form onSubmit={handleAddTask} className="space-y-5 pt-4 border-t border-gray-100">
+                          <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
+                            {t('admin.addTask')}
+                          </h4>
+
+                          {/* Prefill from request */}
+                          <div className="space-y-1.5">
+                            <label className="block text-[10px] font-extrabold text-[#5A6A72] uppercase tracking-wide">
+                              {i18n.language === 'vi' ? 'Điền nhanh thông tin từ Yêu cầu / Lead của khách' : 'Prefill from CRM Client Request'}
+                            </label>
+                            <select
+                              onChange={(e) => handleSelectLeadForTask(e.target.value)}
+                              defaultValue="none"
+                              className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                            >
+                              <option value="none">-- {i18n.language === 'vi' ? 'Chọn yêu cầu gửi từ khách hàng' : 'Select client request'} --</option>
+                              {leads.map(l => (
+                                <option key={l.id} value={l.id}>
+                                  {l.name} - {l.company || 'Khách lẻ'} ({i18n.exists(`services.list.${l.service}.title`) ? t(`services.list.${l.service}.title` as any) : l.service}) [{l.status}]
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Tên dự án *' : 'Project Name *'}
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                placeholder={t('admin.kanbanForm.projectName')}
+                                value={taskName}
+                                onChange={(e) => setTaskName(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Tên khách hàng *' : 'Client Name *'}
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                placeholder={t('admin.kanbanForm.clientName')}
+                                value={clientName}
+                                onChange={(e) => setClientName(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Email khách hàng *' : 'Client Email *'}
+                              </label>
+                              <input
+                                type="email"
+                                required
+                                placeholder={t('admin.kanbanForm.clientEmail')}
+                                value={clientEmail}
+                                onChange={(e) => setClientEmail(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Dịch vụ yêu cầu *' : 'Requested Service *'}
+                              </label>
+                              <select
+                                value={taskService}
+                                onChange={(e) => setTaskService(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                              >
+                                <option value="web">{t('services.list.web.title')}</option>
+                                <option value="chatbot">{t('services.list.chatbot.title')}</option>
+                                <option value="landing">{t('services.list.landing.title')}</option>
+                                <option value="workflow">{t('services.list.workflow.title')}</option>
+                                <option value="email">{t('services.list.email.title')}</option>
+                                <option value="n8n">{t('services.list.n8n.title')}</option>
+                                <option value="app">{t('services.list.app.title')}</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Dev đảm nhận *' : 'Assign Developer *'}
+                              </label>
+                              <select
+                                value={assigneeId}
+                                onChange={(e) => setAssigneeId(e.target.value)}
+                                className={`w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] ${assigneeId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
+                                  }`}
+                              >
+                                <option value="Unassigned" className="text-gray-400 font-normal">{t('admin.kanbanForm.assignDeveloper')}</option>
+                                {developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => (
+                                  <option key={f.id} value={f.id} className="text-[#1C2526] font-semibold">{f.name}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
+                              </label>
+                              <input
+                                type="number"
+                                required
+                                placeholder={t('admin.kanbanForm.contractValue')}
+                                value={contractValue}
+                                onChange={(e) => setContractValue(parseInt(e.target.value) || 0)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
+                              </label>
+                              <input
+                                type="number"
+                                required
+                                placeholder={t('admin.kanbanForm.outsourceFee')}
+                                value={outsourceFee}
+                                onChange={(e) => setOutsourceFee(parseInt(e.target.value) || 0)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Hạn bàn giao (Deadline) *' : 'Project Deadline *'}
+                              </label>
+                              <input
+                                type="date"
+                                required
+                                value={deadline}
+                                onChange={(e) => setDeadline(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] text-[#1C2526] font-semibold"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Mô tả yêu cầu / Brief' : 'Brief / Details'}
+                              </label>
+                              <textarea
+                                rows={1}
+                                placeholder={t('admin.kanbanForm.briefPlaceholder')}
+                                value={taskBrief}
+                                onChange={(e) => setTaskBrief(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none"
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="bg-[#2C3E50] text-white font-bold px-4.5 py-2.5 rounded-xl text-xs hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
+                          >
+                            {t('admin.createTaskBtn')}
+                          </button>
+                        </form>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 5. PAYMENTS REQUEST */}
+                {activeTab === 'payouts' && (
+                  <div className="space-y-8 animate-fadeIn">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
+                      <div>
+                        <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.pendingPayments')}</h3>
+                        <p className="text-xs text-gray-400">{t('admin.payoutDesc')}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleExportPayoutsCsv}
+                          className="px-4 py-2 bg-[#2C3E50] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
+                        >
+                          <i className="ri-file-download-line" />
+                          {t('admin.exportPayouts')}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
+                            <th className="p-3">{t('admin.payoutHeaders.developerName')}</th>
+                            <th className="p-3">{t('admin.payoutHeaders.projectInfo')}</th>
+                            <th className="p-3 text-right">{t('admin.payoutHeaders.feeRate')}</th>
+                            <th className="p-3 text-right">{t('admin.payoutHeaders.tax')} ({taxRate}%)</th>
+                            <th className="p-3 text-right">{t('admin.payoutHeaders.netPayout')}</th>
+                            <th className="p-3">{t('common.status')}</th>
+                            <th className="p-3 text-center">{t('common.actions')}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 text-gray-700">
+                          {payouts.map(p => (
+                            <tr key={p.id} className="hover:bg-gray-50/50">
+                              <td className="p-3 font-semibold text-[#1C2526]">{p.developerName}</td>
+                              <td className="p-3 text-[10px] text-gray-500 max-w-xs truncate">{p.projectName}</td>
+                              <td className="p-3 text-right font-bold text-[#2C3E50]">${p.amount}</td>
+                              <td className="p-3 text-right text-red-500">-${p.taxDeducted}</td>
+                              <td className="p-3 text-right font-bold text-[#9B2A4C]">${p.netAmount}</td>
+                              <td className="p-3">
+                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Paid'
+                                    ? 'bg-green-50 text-green-600'
+                                    : p.status === 'Approved'
+                                      ? 'bg-blue-50 text-blue-600'
+                                      : 'bg-yellow-50 text-yellow-600'
+                                  }`}>
+                                  {p.status === 'Paid' ? t('admin.paid') : p.status === 'Approved' ? t('admin.statusApproved') : t('admin.statusPending')}
+                                </span>
+                              </td>
+                              <td className="p-3 text-center space-x-2">
+                                {p.status === 'Pending' && (
+                                  <button
+                                    onClick={() => handleApprovePayout(p.id)}
+                                    disabled={role === 'manager'}
+                                    className="px-2.5 py-1 bg-[#2C3E50] text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                                  >
+                                    {t('admin.approve')}
+                                  </button>
+                                )}
+                                {p.status === 'Approved' && (
+                                  <button
+                                    onClick={() => handleMarkPaid(p.id)}
+                                    disabled={role === 'manager'}
+                                    className="px-2.5 py-1 bg-green-500 text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                                  >
+                                    {t('admin.markPaidBtn')}
+                                  </button>
+                                )}
+                                {p.status === 'Paid' && (
+                                  <span className="text-[10px] text-gray-400 font-semibold">{t('admin.done')}</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+
+                          {payouts.length === 0 && (
+                            <tr>
+                              <td colSpan={7} className="p-6 text-center text-gray-400 italic">
+                                {t('admin.noPayoutRequests')}
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Freelancer approvals pending list */}
+                    <div className="space-y-4 pt-4">
+                      <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
+                        {t('admin.pendingDevelopers')}
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {developers.filter(f => f.status === 'Pending').map(free => (
+                          <div key={free.id} className="py-4 border-b border-gray-100 last:border-0 space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h5 className="text-xs font-bold text-[#1C2526]">{free.name}</h5>
+                                <p className="text-[10px] text-gray-400">{free.email}</p>
+                                {free.dateOfBirth && (
+                                  <p className="text-[10px] text-[#5A6A72] mt-0.5">
+                                    <span className="font-semibold">{t('developer.dobLabel')}:</span> {free.dateOfBirth}
+                                  </p>
+                                )}
+                                {free.title && (
+                                  <p className="text-[10px] font-bold text-[#9B2A4C] mt-0.5">
+                                    {t(`developer.titles.${free.title}` as any, free.title)}{' '}
+                                    {free.yearsOfExperience && (
+                                      <span className="text-gray-400 font-normal">
+                                        • {t(`developer.experience.${free.yearsOfExperience}` as any, free.yearsOfExperience)}
+                                      </span>
+                                    )}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-[8px] font-bold bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded uppercase">
+                                {t('admin.statusPending')}
+                              </span>
+                            </div>
+                            <div className="text-[10px] space-y-1 text-gray-500">
+                              {(!free.title && free.yearsOfExperience) && (
+                                <p>
+                                  <span className="font-semibold">{t('developer.yearsLabel')}:</span>{' '}
+                                  {t(`developer.experience.${free.yearsOfExperience}` as any, free.yearsOfExperience)}
+                                </p>
+                              )}
+                              <p><span className="font-semibold">{t('admin.skills')}:</span> {free.skills.join(', ')}</p>
+
+                              {free.englishProficiency && (
+                                <p>
+                                  <span className="font-semibold">{t('developer.englishLabel')}:</span>{' '}
+                                  {t(`developer.englishLevels.${free.englishProficiency}` as any, free.englishProficiency)}
+                                </p>
+                              )}
+
+                              {free.availability && (
+                                <p>
+                                  <span className="font-semibold">{t('developer.availabilityLabel')}:</span>{' '}
+                                  {t(`developer.availabilityOptions.${free.availability}` as any, free.availability)}
+                                </p>
+                              )}
+
+                              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                                <p>
+                                  <span className="font-semibold">{t('admin.portfolio')}:</span>{' '}
+                                  <a href={free.portfolio} target="_blank" rel="noreferrer" className="text-[#9B2A4C] hover:underline truncate inline-block max-w-[130px] align-bottom">
+                                    {free.portfolio}
+                                  </a>
+                                </p>
+                                {free.cvLink && (
+                                  <p>
+                                    <span className="font-semibold">{t('developer.cvLabel').split(' ')[0] || 'CV'}:</span>{' '}
+                                    <a href={free.cvLink} target="_blank" rel="noreferrer" className="text-[#9B2A4C] hover:underline truncate inline-block max-w-[130px] align-bottom font-bold">
+                                      <i className="ri-attachment-line mr-0.5" />
+                                      {i18n.language === 'vi' ? 'Xem CV' : 'View CV'}
+                                    </a>
+                                  </p>
+                                )}
+                              </div>
+
+                              <p>
+                                <span className="font-semibold">{t('admin.expectedRate')}:</span>{' '}
+                                {i18n.language === 'vi'
+                                  ? `${free.rateValue.toLocaleString('vi-VN')} vnđ ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`
+                                  : `$${free.rateValue} ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`}
+                              </p>
+
+                              {free.shortBio && (
+                                <div className="mt-2 pl-3 border-l-2 border-[#9B2A4C]/30 text-[10px] text-[#5A6A72] leading-relaxed italic">
+                                  "{free.shortBio}"
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex gap-2 justify-end pt-1">
+                              <button
+                                onClick={() => handleApproveDeveloper(free.id, false)}
                                 disabled={role === 'manager'}
-                                className="px-2.5 py-1 bg-[#2C3E50] text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                                className="px-2.5 py-1 border border-red-200 text-red-500 text-[10px] font-bold rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors cursor-pointer"
+                              >
+                                {t('admin.decline')}
+                              </button>
+                              <button
+                                onClick={() => handleApproveDeveloper(free.id, true)}
+                                disabled={role === 'manager'}
+                                className="px-2.5 py-1 bg-green-500 text-white text-[10px] font-bold rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors cursor-pointer"
                               >
                                 {t('admin.approve')}
                               </button>
-                            )}
-                            {p.status === 'Approved' && (
-                              <button
-                                onClick={() => handleMarkPaid(p.id)}
-                                disabled={role === 'manager'}
-                                className="px-2.5 py-1 bg-green-500 text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
-                              >
-                                {t('admin.markPaidBtn')}
-                              </button>
-                            )}
-                            {p.status === 'Paid' && (
-                              <span className="text-[10px] text-gray-400 font-semibold">{t('admin.done')}</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-
-                      {payouts.length === 0 && (
-                        <tr>
-                          <td colSpan={7} className="p-6 text-center text-gray-400 italic">
-                            {t('admin.noPayoutRequests')}
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Freelancer approvals pending list */}
-                <div className="space-y-4 pt-4">
-                  <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                    {t('admin.pendingFreelancers')}
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {freelancers.filter(f => f.status === 'Pending').map(free => (
-                      <div key={free.id} className="p-4 rounded-2xl bg-[#F8F6F2]/50 border border-gray-200 space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h5 className="text-xs font-bold text-[#1C2526]">{free.name}</h5>
-                            <p className="text-[10px] text-gray-400">{free.email}</p>
-                            {free.dateOfBirth && (
-                              <p className="text-[10px] text-[#5A6A72] mt-0.5">
-                                <span className="font-semibold">{t('developer.dobLabel')}:</span> {free.dateOfBirth}
-                              </p>
-                            )}
-                            {free.title && (
-                              <p className="text-[10px] font-bold text-[#9B2A4C] mt-0.5">
-                                {t(`developer.titles.${free.title}` as any, free.title)}{' '}
-                                {free.yearsOfExperience && (
-                                  <span className="text-gray-400 font-normal">
-                                    • {t(`developer.experience.${free.yearsOfExperience}` as any, free.yearsOfExperience)}
-                                  </span>
-                                )}
-                              </p>
-                            )}
-                          </div>
-                          <span className="text-[8px] font-bold bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded uppercase">
-                            {t('admin.statusPending')}
-                          </span>
-                        </div>
-                        <div className="text-[10px] space-y-1 text-gray-500">
-                          {(!free.title && free.yearsOfExperience) && (
-                            <p>
-                              <span className="font-semibold">{t('developer.yearsLabel')}:</span>{' '}
-                              {t(`developer.experience.${free.yearsOfExperience}` as any, free.yearsOfExperience)}
-                            </p>
-                          )}
-                          <p><span className="font-semibold">{t('admin.skills')}:</span> {free.skills.join(', ')}</p>
-                          
-                          {free.englishProficiency && (
-                            <p>
-                              <span className="font-semibold">{t('developer.englishLabel')}:</span>{' '}
-                              {t(`developer.englishLevels.${free.englishProficiency}` as any, free.englishProficiency)}
-                            </p>
-                          )}
-
-                          {free.availability && (
-                            <p>
-                              <span className="font-semibold">{t('developer.availabilityLabel')}:</span>{' '}
-                              {t(`developer.availabilityOptions.${free.availability}` as any, free.availability)}
-                            </p>
-                          )}
-
-                          <div className="flex flex-wrap gap-x-3 gap-y-1">
-                            <p>
-                              <span className="font-semibold">{t('admin.portfolio')}:</span>{' '}
-                              <a href={free.portfolio} target="_blank" rel="noreferrer" className="text-[#9B2A4C] hover:underline truncate inline-block max-w-[130px] align-bottom">
-                                {free.portfolio}
-                              </a>
-                            </p>
-                            {free.cvLink && (
-                              <p>
-                                <span className="font-semibold">{t('developer.cvLabel').split(' ')[0] || 'CV'}:</span>{' '}
-                                <a href={free.cvLink} target="_blank" rel="noreferrer" className="text-[#9B2A4C] hover:underline truncate inline-block max-w-[130px] align-bottom font-bold">
-                                  <i className="ri-attachment-line mr-0.5" />
-                                  {i18n.language === 'vi' ? 'Xem CV' : 'View CV'}
-                                </a>
-                              </p>
-                            )}
-                          </div>
-
-                          <p>
-                            <span className="font-semibold">{t('admin.expectedRate')}:</span>{' '}
-                            {i18n.language === 'vi'
-                              ? `${free.rateValue.toLocaleString('vi-VN')} vnđ ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`
-                              : `$${free.rateValue} ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`}
-                          </p>
-
-                          {free.shortBio && (
-                            <div className="mt-2 p-2.5 bg-white/70 border border-gray-100 rounded-xl text-[10px] text-[#5A6A72] leading-relaxed italic shadow-inner">
-                              "{free.shortBio}"
                             </div>
-                          )}
+                          </div>
+                        ))}
+
+                        {developers.filter(f => f.status === 'Pending').length === 0 && (
+                          <p className="text-xs text-gray-400 italic">{t('admin.noPendingDevelopers')}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. SECURITY & RBAC CONFIGURATION */}
+                {activeTab === 'security' && (
+                  <div className="space-y-8 animate-fadeIn">
+                    <div>
+                      <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.rbacConfigure')}</h3>
+                      <p className="text-xs text-gray-400">{t('admin.rbacConfigureDesc')}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                      {/* Tax Configuration */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#9B2A4C]/10 text-[#9B2A4C] flex items-center justify-center text-lg">
+                            <i className="ri-percent-line" />
+                          </div>
+                          <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
+                            {t('admin.taxConfigure')}
+                          </h4>
                         </div>
-                        <div className="flex gap-2 justify-end pt-1">
-                          <button
-                            onClick={() => handleApproveFreelancer(free.id, false)}
+                        <p className="text-xs text-[#5A6A72] leading-relaxed">
+                          {t('admin.taxRateExplain')}
+                        </p>
+                        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5">
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
                             disabled={role === 'manager'}
-                            className="px-2.5 py-1 border border-red-200 text-red-500 text-[10px] font-bold rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors cursor-pointer"
-                          >
-                            {t('admin.decline')}
-                          </button>
+                            value={taxRate}
+                            onChange={handleTaxChange}
+                            className="bg-transparent border-none outline-none w-full text-sm font-bold text-[#1C2526] disabled:opacity-50"
+                          />
+                          <span className="text-sm font-bold text-gray-400">%</span>
+                        </div>
+                      </div>
+
+                      {/* 2FA Configuration */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-lg">
+                            <i className="ri-shield-keyhole-line" />
+                          </div>
+                          <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
+                            {t('admin.securityStatus')}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-[#5A6A72] leading-relaxed">
+                          {t('admin.securityExplain')}
+                        </p>
+                        <div className="flex items-center justify-between pt-2">
+                          <span className="text-xs font-semibold text-gray-500">{t('admin.enable2fa')}</span>
                           <button
-                            onClick={() => handleApproveFreelancer(free.id, true)}
+                            onClick={handleToggle2FA}
                             disabled={role === 'manager'}
-                            className="px-2.5 py-1 bg-green-500 text-white text-[10px] font-bold rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors cursor-pointer"
+                            className={`w-12 h-6 rounded-full p-1 transition-all duration-300 disabled:opacity-50 cursor-pointer ${twoFA ? 'bg-[#9B2A4C] flex justify-end' : 'bg-gray-300 flex justify-start'
+                              }`}
                           >
-                            {t('admin.approve')}
+                            <span className="w-4 h-4 bg-white rounded-full shadow-sm" />
                           </button>
                         </div>
                       </div>
-                    ))}
+                    </div>
 
-                    {freelancers.filter(f => f.status === 'Pending').length === 0 && (
-                      <p className="text-xs text-gray-400 italic">{t('admin.noPendingFreelancers')}</p>
-                    )}
+                    {/* Password Encryption notice */}
+                    <div className="pl-4 border-l-2 border-yellow-500 text-xs text-[#5A6A72] space-y-1 py-1">
+                      <p className="font-bold text-[#2C3E50] flex items-center gap-1">
+                        <i className="ri-lock-line" />
+                        {t('admin.encNoticeTitle')}
+                      </p>
+                      <p className="leading-relaxed text-[11px]">
+                        {t('admin.encNoticeDesc')}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-            )}
-
-            {/* 6. SECURITY & RBAC CONFIGURATION */}
-            {activeTab === 'security' && (
-              <div className="space-y-8 animate-fadeIn">
-                <div>
-                  <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.rbacConfigure')}</h3>
-                  <p className="text-xs text-gray-400">{t('admin.rbacConfigureDesc')}</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Tax Configuration */}
-                  <div className="p-6 rounded-3xl bg-[#F8F6F2]/50 border border-gray-200 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#9B2A4C]/10 text-[#9B2A4C] flex items-center justify-center text-lg">
-                        <i className="ri-percent-line" />
-                      </div>
-                      <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                        {t('admin.taxConfigure')}
-                      </h4>
-                    </div>
-                    <p className="text-xs text-[#5A6A72] leading-relaxed">
-                      {t('admin.taxRateExplain')}
-                    </p>
-                    <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5">
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        disabled={role === 'manager'}
-                        value={taxRate}
-                        onChange={handleTaxChange}
-                        className="bg-transparent border-none outline-none w-full text-sm font-bold text-[#1C2526] disabled:opacity-50"
-                      />
-                      <span className="text-sm font-bold text-gray-400">%</span>
-                    </div>
-                  </div>
-
-                  {/* 2FA Configuration */}
-                  <div className="p-6 rounded-3xl bg-[#F8F6F2]/50 border border-gray-200 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-lg">
-                        <i className="ri-shield-keyhole-line" />
-                      </div>
-                      <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                        {t('admin.securityStatus')}
-                      </h4>
-                    </div>
-                    <p className="text-xs text-[#5A6A72] leading-relaxed">
-                      {t('admin.securityExplain')}
-                    </p>
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs font-semibold text-gray-500">{t('admin.enable2fa')}</span>
-                      <button
-                        onClick={handleToggle2FA}
-                        disabled={role === 'manager'}
-                        className={`w-12 h-6 rounded-full p-1 transition-all duration-300 disabled:opacity-50 cursor-pointer ${
-                          twoFA ? 'bg-[#9B2A4C] flex justify-end' : 'bg-gray-300 flex justify-start'
-                        }`}
-                      >
-                        <span className="w-4 h-4 bg-white rounded-full shadow-sm" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Password Encryption notice */}
-                <div className="p-4 rounded-2xl bg-yellow-50/50 border border-yellow-100 text-xs text-[#5A6A72] space-y-1">
-                  <p className="font-bold text-[#2C3E50] flex items-center gap-1">
-                    <i className="ri-lock-line" />
-                    {t('admin.encNoticeTitle')}
-                  </p>
-                  <p className="leading-relaxed text-[11px]">
-                    {t('admin.encNoticeDesc')}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-        </>
+            </div>
+          </>
         )}
       </main>
 
@@ -1407,6 +1839,119 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* GIAO VIEC MODAL */}
+      {assigningLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full border border-gray-100 shadow-2xl space-y-6 animate-scaleUp">
+            <div className="text-center space-y-2">
+              <h3 className="font-bold text-[#1C2526] text-lg">
+                {i18n.language === 'vi' ? 'Giao Việc Cho Developer' : 'Assign Lead to Developer'}
+              </h3>
+              <p className="text-xs text-gray-400">
+                {i18n.language === 'vi' ? 'Chuyển yêu cầu dịch vụ của khách hàng thành dự án cho Dev.' : 'Convert client request into an active project for a developer.'}
+              </p>
+            </div>
+
+            {/* Info details */}
+            <div className="bg-[#F8F6F2] p-4 rounded-2xl border border-gray-100 space-y-2 text-xs">
+              <p className="font-bold text-[#1C2526]">{assigningLead.company || 'Client Organization'}</p>
+              <div className="grid grid-cols-2 gap-2 text-gray-500">
+                <p><span className="font-semibold text-gray-700">{i18n.language === 'vi' ? 'Khách hàng' : 'Client'}:</span> {assigningLead.name}</p>
+                <p><span className="font-semibold text-gray-700">{i18n.language === 'vi' ? 'Dịch vụ' : 'Service'}:</span> {t(`services.list.${assigningLead.service}.title`, assigningLead.service)}</p>
+              </div>
+              <div className="h-px bg-gray-200" />
+              <p className="text-gray-400 italic text-[11px] leading-relaxed">
+                "{assigningLead.message}"
+              </p>
+            </div>
+
+            <form onSubmit={handleAssignLead} className="space-y-4">
+              {/* Select Assignee */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                  {i18n.language === 'vi' ? 'Chọn Developer thực hiện *' : 'Assign Developer *'}
+                </label>
+                <select
+                  required
+                  value={assigneeDeveloperId}
+                  onChange={(e) => setAssigneeDeveloperId(e.target.value)}
+                  className={`w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] ${assigneeDeveloperId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
+                    }`}
+                >
+                  <option value="Unassigned" className="text-gray-400 font-normal">{i18n.language === 'vi' ? 'Chọn Developer' : 'Select Developer'}</option>
+                  {developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => (
+                    <option key={f.id} value={f.id} className="text-[#1C2526] font-semibold">{f.name} ({f.title || 'Developer'})</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Price Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                    {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    value={assignContractValue}
+                    onChange={(e) => setAssignContractValue(parseInt(e.target.value) || 0)}
+                    className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                    {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    value={assignOutsourceFee}
+                    onChange={(e) => setAssignOutsourceFee(parseInt(e.target.value) || 0)}
+                    className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                  />
+                </div>
+              </div>
+
+              {/* Deadline */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                  {i18n.language === 'vi' ? 'Hạn bàn giao (Deadline) *' : 'Project Deadline *'}
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={assignDeadline}
+                  onChange={(e) => setAssignDeadline(e.target.value)}
+                  className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] text-[#1C2526] font-semibold"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setAssigningLead(null)}
+                  className="w-1/2 py-2.5 border border-gray-200 text-gray-500 font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={assigneeDeveloperId === 'Unassigned'}
+                  className="w-1/2 py-2.5 gradient-bg text-white font-bold text-xs rounded-xl hover:opacity-95 shadow disabled:opacity-50 transition-all cursor-pointer"
+                >
+                  {i18n.language === 'vi' ? 'Giao việc' : 'Assign Task'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+
 
       <Footer />
     </div>

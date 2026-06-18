@@ -10,9 +10,11 @@ export interface Lead {
   message: string;
   status: 'New' | 'Contacted' | 'Qualified' | 'Closed';
   date: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface Freelancer {
+export interface Developer {
   id: string;
   name: string;
   email: string;
@@ -29,6 +31,8 @@ export interface Freelancer {
   availability?: string;
   shortBio?: string;
   dateOfBirth?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Project {
@@ -38,7 +42,7 @@ export interface Project {
   clientEmail: string;
   service: string;
   status: 'New' | 'In Progress' | 'Client Review' | 'Completed';
-  assigneeId: string; // freelancerId or 'Unassigned'
+  assigneeId: string; // developerId or 'Unassigned'
   assigneeName: string;
   deadline: string;
   brief: string;
@@ -48,14 +52,15 @@ export interface Project {
   outsourceFee: number;
   taxRate: number; // e.g. 10
   payoutStatus: 'None' | 'Requested' | 'Approved' | 'Paid';
+  subTasks?: string;
 }
 
 export interface PayoutRequest {
   id: string;
   projectId: string;
   projectName: string;
-  freelancerId: string;
-  freelancerName: string;
+  developerId: string;
+  developerName: string;
   amount: number; // outsourceFee
   taxDeducted: number;
   netAmount: number;
@@ -124,13 +129,13 @@ const DEFAULT_LEADS: Lead[] = [
   }
 ];
 
-const DEFAULT_FREELANCERS: Freelancer[] = [
+const DEFAULT_DEVELOPERS: Developer[] = [
   {
     id: 'free-1',
-    name: 'Tran Freelancer',
-    email: 'tranfree@gmail.com',
+    name: 'Tran Developer',
+    email: 'trandev@gmail.com',
     skills: ['n8n', 'Workflow', 'Web'],
-    portfolio: 'https://github.com/tranfree-portfolio',
+    portfolio: 'https://github.com/trandev-portfolio',
     rateType: 'hourly',
     rateValue: 25,
     status: 'Approved',
@@ -178,6 +183,13 @@ const DEFAULT_PROJECTS: Project[] = [
     outsourceFee: 1500,
     taxRate: 10,
     payoutStatus: 'None',
+    subTasks: JSON.stringify([
+      { id: 'st-1', title: 'Thiết kế UI/UX trên Figma', description: 'Thiết kế layout Dashboard chi tiết bao gồm Dark mode và Light mode.', deadline: '2026-06-25', completed: true },
+      { id: 'st-2', title: 'Xây dựng khung giao diện React & Tailwind', description: 'Tạo cấu trúc các component, Sidebar, Header và layout tổng thể.', deadline: '2026-06-30', completed: true },
+      { id: 'st-3', title: 'Tích hợp biểu đồ Recharts', description: 'Hiển thị dữ liệu CRM giả lập lên biểu đồ cột và đường.', deadline: '2026-07-05', completed: true },
+      { id: 'st-4', title: 'Kết nối API Backend', description: 'Lấy dữ liệu thực tế từ cơ sở dữ liệu Postgres qua REST API.', deadline: '2026-07-10', completed: false },
+      { id: 'st-5', title: 'Kiểm thử và sửa lỗi', description: 'Kiểm tra responsive trên di động và tối ưu hóa hiệu năng tải trang.', deadline: '2026-07-15', completed: false }
+    ])
   },
   {
     id: 'proj-2',
@@ -187,15 +199,21 @@ const DEFAULT_PROJECTS: Project[] = [
     service: 'n8n',
     status: 'Client Review',
     assigneeId: 'free-1',
-    assigneeName: 'Tran Freelancer',
+    assigneeName: 'Tran Developer',
     deadline: '2026-06-20',
     brief: 'Create a flow: when a deal is marked WON in HubSpot, send beautiful message in Slack channels with details.',
-    progress: 90,
+    progress: 75,
     deliverablesUrl: 'https://n8n.agency.com/workflow/223',
     contractValue: 1200,
     outsourceFee: 500,
     taxRate: 10,
     payoutStatus: 'Requested',
+    subTasks: JSON.stringify([
+      { id: 'st-6', title: 'Cấu hình Webhook HubSpot', description: 'Đăng ký URL webhook trên HubSpot để nhận sự kiện deal WON.', deadline: '2026-06-12', completed: true },
+      { id: 'st-7', title: 'Xử lý dữ liệu deal WON trong n8n', description: 'Sử dụng node Set/Code để lọc các thông tin cần thiết: tên khách hàng, giá trị deal.', deadline: '2026-06-15', completed: true },
+      { id: 'st-8', title: 'Thiết kế giao diện tin nhắn Slack', description: 'Sử dụng Block Kit Builder để tạo layout tin nhắn chuyên nghiệp kèm logo.', deadline: '2026-06-18', completed: true },
+      { id: 'st-9', title: 'Kiểm thử đầu cuối (End-to-End)', description: 'Chạy thử nghiệm toàn bộ luồng từ HubSpot sang Slack và sửa lỗi nếu có.', deadline: '2026-06-20', completed: false }
+    ])
   },
   {
     id: 'proj-3',
@@ -214,6 +232,11 @@ const DEFAULT_PROJECTS: Project[] = [
     outsourceFee: 600,
     taxRate: 10,
     payoutStatus: 'None',
+    subTasks: JSON.stringify([
+      { id: 'st-10', title: 'Nghiên cứu yêu cầu & đối thủ', description: 'Thu thập thông tin dịch vụ của spa và tham khảo các mẫu spa cao cấp.', deadline: '2026-06-22', completed: false },
+      { id: 'st-11', title: 'Thiết kế layout Figma', description: 'Vẽ wireframe và layout chi tiết cho Landing page.', deadline: '2026-06-25', completed: false },
+      { id: 'st-12', title: 'Lập trình HTML/CSS & JS', description: 'Chuyển Figma sang code responsive, tích hợp form đặt lịch.', deadline: '2026-06-30', completed: false }
+    ])
   },
   {
     id: 'proj-4',
@@ -223,7 +246,7 @@ const DEFAULT_PROJECTS: Project[] = [
     service: 'chatbot',
     status: 'Completed',
     assigneeId: 'free-1',
-    assigneeName: 'Tran Freelancer',
+    assigneeName: 'Tran Developer',
     deadline: '2026-06-05',
     brief: 'Configure Chatbot using Flowise and link it with WhatsApp API to answering basic customer questions.',
     progress: 100,
@@ -232,6 +255,11 @@ const DEFAULT_PROJECTS: Project[] = [
     outsourceFee: 800,
     taxRate: 10,
     payoutStatus: 'Paid',
+    subTasks: JSON.stringify([
+      { id: 'st-13', title: 'Thiết lập Agent Flowise', description: 'Tạo flow chatbot, kết nối với model GPT-4o.', deadline: '2026-05-28', completed: true },
+      { id: 'st-14', title: 'Xây dựng Knowledge Base', description: 'Cung cấp tài liệu đào tạo chatbot về dịch vụ của TechCorp.', deadline: '2026-06-01', completed: true },
+      { id: 'st-15', title: 'Tích hợp WhatsApp API', description: 'Kết nối webhook của WhatsApp Business API với hệ thống.', deadline: '2026-06-05', completed: true }
+    ])
   }
 ];
 
@@ -281,8 +309,8 @@ const DEFAULT_PAYOUTS: PayoutRequest[] = [
     id: 'pay-1',
     projectId: 'proj-2',
     projectName: 'n8n HubSpot-Slack Sync',
-    freelancerId: 'free-1',
-    freelancerName: 'Tran Freelancer',
+    developerId: 'free-1',
+    developerName: 'Tran Developer',
     amount: 500,
     taxDeducted: 50,
     netAmount: 450,
@@ -293,8 +321,8 @@ const DEFAULT_PAYOUTS: PayoutRequest[] = [
     id: 'pay-2',
     projectId: 'proj-4',
     projectName: 'Lead Generation Chatbot',
-    freelancerId: 'free-1',
-    freelancerName: 'Tran Freelancer',
+    developerId: 'free-1',
+    developerName: 'Tran Developer',
     amount: 800,
     taxDeducted: 80,
     netAmount: 720,
@@ -308,8 +336,8 @@ export class MockDB {
     if (!localStorage.getItem('alvin_leads')) {
       localStorage.setItem('alvin_leads', JSON.stringify(DEFAULT_LEADS));
     }
-    if (!localStorage.getItem('alvin_freelancers')) {
-      localStorage.setItem('alvin_freelancers', JSON.stringify(DEFAULT_FREELANCERS));
+    if (!localStorage.getItem('alvin_developers')) {
+      localStorage.setItem('alvin_developers', JSON.stringify(DEFAULT_DEVELOPERS));
     }
     if (!localStorage.getItem('alvin_projects')) {
       localStorage.setItem('alvin_projects', JSON.stringify(DEFAULT_PROJECTS));
@@ -365,29 +393,29 @@ export class MockDB {
     localStorage.setItem('alvin_leads', JSON.stringify(filtered));
   }
 
-  // Freelancers
-  static getFreelancers(): Freelancer[] {
+  // Developers
+  static getDevelopers(): Developer[] {
     this.init();
-    return JSON.parse(localStorage.getItem('alvin_freelancers') || '[]');
+    return JSON.parse(localStorage.getItem('alvin_developers') || '[]');
   }
 
-  static addFreelancer(freelancer: Omit<Freelancer, 'id' | 'status' | 'date'>): Freelancer {
-    const freelancers = this.getFreelancers();
-    const newFree: Freelancer = {
-      ...freelancer,
+  static addDeveloper(developer: Omit<Developer, 'id' | 'status' | 'date'>): Developer {
+    const developers = this.getDevelopers();
+    const newDev: Developer = {
+      ...developer,
       id: `free-${Date.now()}`,
       status: 'Pending',
       date: new Date().toISOString().replace('T', ' ').substring(0, 16),
     };
-    freelancers.unshift(newFree);
-    localStorage.setItem('alvin_freelancers', JSON.stringify(freelancers));
-    return newFree;
+    developers.unshift(newDev);
+    localStorage.setItem('alvin_developers', JSON.stringify(developers));
+    return newDev;
   }
 
-  static updateFreelancerStatus(id: string, status: Freelancer['status']) {
-    const freelancers = this.getFreelancers();
-    const updated = freelancers.map(f => f.id === id ? { ...f, status } : f);
-    localStorage.setItem('alvin_freelancers', JSON.stringify(updated));
+  static updateDeveloperStatus(id: string, status: Developer['status']) {
+    const developers = this.getDevelopers();
+    const updated = developers.map(d => d.id === id ? { ...d, status } : d);
+    localStorage.setItem('alvin_developers', JSON.stringify(updated));
   }
 
   // Projects
@@ -442,8 +470,8 @@ export class MockDB {
       id: `pay-${Date.now()}`,
       projectId: project.id,
       projectName: project.name,
-      freelancerId: project.assigneeId,
-      freelancerName: project.assigneeName,
+      developerId: project.assigneeId,
+      developerName: project.assigneeName,
       amount,
       taxDeducted,
       netAmount,

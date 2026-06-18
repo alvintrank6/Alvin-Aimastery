@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
-import { FreelancersAPI } from '@/utils/api';
+import { DevelopersAPI } from '@/utils/api';
 import { useToast } from '@/components/common/ToastContext';
 
 const SKILLS_OPTIONS = ['n8n', 'Web', 'App', 'Workflow', 'Landing', 'Email Auto', 'Copywriting', 'SEO', 'React', 'Node.js', 'Python', 'DevOps', 'PostgreSQL', 'Docker'];
@@ -93,7 +93,7 @@ export default function Register() {
     setSubmitting(true);
 
     try {
-      await FreelancersAPI.create({
+      await DevelopersAPI.create({
         name,
         email,
         skills: selectedSkills,

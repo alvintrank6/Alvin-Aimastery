@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
-import { Project, Freelancer } from '@/utils/db';
-import { api, FreelancersAPI, ProjectsAPI, PayoutsAPI, SettingsAPI } from '@/utils/api';
+import { Project, Developer } from '@/utils/db';
+import { api, DevelopersAPI, ProjectsAPI, PayoutsAPI, SettingsAPI } from '@/utils/api';
 import { io } from 'socket.io-client';
 
 export default function MemberPortal() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
-  const [selectedFreelancer, setSelectedFreelancer] = useState<Freelancer | null>(null);
+  const [developers, setDevelopers] = useState<Developer[]>([]);
+  const [selectedDeveloper, setSelectedDeveloper] = useState<Developer | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [taxRate, setTaxRate] = useState(10);
 
@@ -21,47 +21,35 @@ export default function MemberPortal() {
   const [tempDeliverables, setTempDeliverables] = useState<string>('');
   const [isUnapproved, setIsUnapproved] = useState<boolean>(false);
 
+  // Sub-task states
+  const [activeSubTaskProjId, setActiveSubTaskProjId] = useState<string | null>(null);
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState('');
+  const [newSubTaskDesc, setNewSubTaskDesc] = useState('');
+  const [newSubTaskDeadline, setNewSubTaskDeadline] = useState('');
+
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('user_logged_in') === 'true';
     const role = sessionStorage.getItem('user_role');
     const email = sessionStorage.getItem('user_email');
 
-    if (!isLoggedIn || role !== 'freelancer') {
+    if (!isLoggedIn || role !== 'developer') {
       navigate('/login');
       return;
     }
 
     if (email) {
       const fetchInit = async () => {
-        const allList = await FreelancersAPI.getAll() || [];
+        const allList = await DevelopersAPI.getAll() || [];
         const list = allList.filter((f: any) => f.status === 'Approved');
-        setFreelancers(list);
+        setDevelopers(list);
         setTaxRate(await SettingsAPI.get('taxRate') || 10);
 
         const matched = list.find((f: any) => f.email.toLowerCase() === email.toLowerCase());
         if (matched) {
-          setSelectedFreelancer(matched);
+          setSelectedDeveloper(matched);
           setIsUnapproved(false);
         } else {
-          const pendingMatched = allList.find((f: any) => f.email.toLowerCase() === email.toLowerCase());
-          if (pendingMatched && pendingMatched.status !== 'Approved') {
-            setIsUnapproved(true);
-          } else {
-            const loggedName = sessionStorage.getItem('user_name') || 'Freelancer';
-            const loggedId = sessionStorage.getItem('user_id') || 'free-1';
-            setSelectedFreelancer({
-              id: loggedId,
-              name: loggedName,
-              email,
-              skills: [],
-              portfolio: '',
-              rateType: 'hourly',
-              rateValue: 0,
-              status: 'Approved',
-              date: '',
-            });
-            setIsUnapproved(false);
-          }
+          setIsUnapproved(true);
         }
       };
       fetchInit();
@@ -69,22 +57,22 @@ export default function MemberPortal() {
   }, [navigate]);
 
   const loadProjects = useCallback(async () => {
-    if (!selectedFreelancer) return;
+    if (!selectedDeveloper) return;
     const allProjects = await ProjectsAPI.getAll() || [];
-    const myProjs = allProjects.filter((p: any) => p.assigneeId === selectedFreelancer.id);
+    const myProjs = allProjects.filter((p: any) => p.assigneeId === selectedDeveloper.id);
     setProjects(myProjs);
-  }, [selectedFreelancer]);
+  }, [selectedDeveloper]);
 
   useEffect(() => {
-    if (selectedFreelancer) {
+    if (selectedDeveloper) {
       loadProjects();
     } else {
       setProjects([]);
     }
-  }, [selectedFreelancer, loadProjects]);
+  }, [selectedDeveloper, loadProjects]);
 
   useEffect(() => {
-    if (!selectedFreelancer) return;
+    if (!selectedDeveloper) return;
 
     const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
 
@@ -106,7 +94,7 @@ export default function MemberPortal() {
     return () => {
       socket.disconnect();
     };
-  }, [selectedFreelancer, loadProjects]);
+  }, [selectedDeveloper, loadProjects]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('user_logged_in');
@@ -114,7 +102,7 @@ export default function MemberPortal() {
     sessionStorage.removeItem('user_email');
     sessionStorage.removeItem('user_name');
     sessionStorage.removeItem('user_id');
-    setSelectedFreelancer(null);
+    setSelectedDeveloper(null);
     setEditingProjId(null);
     navigate('/login');
   };
@@ -127,19 +115,13 @@ export default function MemberPortal() {
 
   const handleSaveProgress = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFreelancer || !editingProjId) return;
+    if (!selectedDeveloper || !editingProjId) return;
 
     const allProjects = await ProjectsAPI.getAll() || [];
     const projIndex = allProjects.findIndex((p: any) => p.id === editingProjId);
     if (projIndex !== -1) {
       const proj = allProjects[projIndex];
-      proj.progress = tempProgress;
       proj.deliverablesUrl = tempDeliverables;
-
-      // Auto update status if progress is 100% and it is in progress
-      if (tempProgress === 100 && proj.status !== 'Completed') {
-        proj.status = 'Client Review';
-      }
 
       await ProjectsAPI.update(proj.id, proj);
       await loadProjects();
@@ -147,8 +129,120 @@ export default function MemberPortal() {
     }
   };
 
+  const handleToggleSubTask = async (projId: string, subTaskId: string) => {
+    const allProjects = await ProjectsAPI.getAll() || [];
+    const proj = allProjects.find((p: any) => p.id === projId);
+    if (!proj) return;
+
+    let subTasksList: any[] = [];
+    try {
+      subTasksList = JSON.parse(proj.subTasks || '[]');
+    } catch {
+      subTasksList = [];
+    }
+
+    subTasksList = subTasksList.map((st: any) =>
+      st.id === subTaskId ? { ...st, completed: !st.completed } : st
+    );
+
+    const completedCount = subTasksList.filter((st: any) => st.completed).length;
+    const totalCount = subTasksList.length;
+    const nextProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    proj.subTasks = JSON.stringify(subTasksList);
+    proj.progress = nextProgress;
+
+    if (nextProgress === 100 && proj.status !== 'Completed') {
+      proj.status = 'Client Review';
+    } else if (nextProgress < 100 && proj.status === 'Client Review') {
+      proj.status = 'In Progress';
+    }
+
+    await ProjectsAPI.update(proj.id, proj);
+    await loadProjects();
+  };
+
+  const handleAddSubTask = async (e: React.FormEvent, projId: string) => {
+    e.preventDefault();
+    if (!newSubTaskTitle.trim()) return;
+
+    const allProjects = await ProjectsAPI.getAll() || [];
+    const proj = allProjects.find((p: any) => p.id === projId);
+    if (!proj) return;
+
+    let subTasksList: any[] = [];
+    try {
+      subTasksList = JSON.parse(proj.subTasks || '[]');
+    } catch {
+      subTasksList = [];
+    }
+
+    const newSub: any = {
+      id: `sub-${Date.now()}`,
+      title: newSubTaskTitle,
+      description: newSubTaskDesc,
+      deadline: newSubTaskDeadline || proj.deadline,
+      completed: false,
+    };
+
+    subTasksList.push(newSub);
+
+    const completedCount = subTasksList.filter((st: any) => st.completed).length;
+    const totalCount = subTasksList.length;
+    const nextProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    proj.subTasks = JSON.stringify(subTasksList);
+    proj.progress = nextProgress;
+
+    if (nextProgress === 100 && proj.status !== 'Completed') {
+      proj.status = 'Client Review';
+    } else if (nextProgress < 100 && proj.status === 'Client Review') {
+      proj.status = 'In Progress';
+    }
+
+    await ProjectsAPI.update(proj.id, proj);
+    await loadProjects();
+
+    // Reset form states
+    setNewSubTaskTitle('');
+    setNewSubTaskDesc('');
+    setNewSubTaskDeadline('');
+    setActiveSubTaskProjId(null);
+  };
+
+  const handleDeleteSubTask = async (projId: string, subTaskId: string) => {
+    const allProjects = await ProjectsAPI.getAll() || [];
+    const proj = allProjects.find((p: any) => p.id === projId);
+    if (!proj) return;
+
+    let subTasksList: any[] = [];
+    try {
+      subTasksList = JSON.parse(proj.subTasks || '[]');
+    } catch {
+      subTasksList = [];
+    }
+
+    subTasksList = subTasksList.filter((st: any) => st.id !== subTaskId);
+
+    const completedCount = subTasksList.filter((st: any) => st.completed).length;
+    const totalCount = subTasksList.length;
+    const nextProgress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    proj.subTasks = JSON.stringify(subTasksList);
+    proj.progress = nextProgress;
+
+    if (nextProgress === 100 && proj.status !== 'Completed') {
+      proj.status = 'Client Review';
+    } else if (nextProgress < 100 && proj.status === 'Client Review') {
+      proj.status = 'In Progress';
+    }
+
+    await ProjectsAPI.update(proj.id, proj);
+    await loadProjects();
+  };
+
   const handleRequestPayment = async (proj: Project) => {
-    if (!selectedFreelancer) return;
+    if (!selectedDeveloper) return;
     await PayoutsAPI.create({ projectId: proj.id, amount: proj.outsourceFee });
     await loadProjects();
   };
@@ -167,7 +261,7 @@ export default function MemberPortal() {
               <div className="space-y-2">
                 <h2 className="text-xl font-black text-[#1C2526]">{t('portals.memberPortal')}</h2>
                 <p className="text-sm text-gray-500 leading-relaxed">
-                  {t('member.noFreelancersFound')}
+                  {t('member.noDevelopersFound')}
                 </p>
               </div>
               <div className="pt-2">
@@ -185,7 +279,7 @@ export default function MemberPortal() {
                 {t('portals.logout')}
               </button>
             </div>
-          ) : !selectedFreelancer ? (
+          ) : !selectedDeveloper ? (
             <div className="flex flex-col items-center justify-center py-20">
               <i className="ri-loader-4-line animate-spin text-4xl text-[#9B2A4C]" />
               <p className="text-xs text-[#8A97A0] mt-2">Loading workspace...</p>
@@ -197,11 +291,11 @@ export default function MemberPortal() {
               <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-sm">
-                    {selectedFreelancer.name[0]}
+                    {selectedDeveloper.name[0]}
                   </div>
                   <div>
-                    <h1 className="text-xl font-black text-[#1C2526]">{selectedFreelancer.name}</h1>
-                    <p className="text-xs text-[#5A6A72]">{selectedFreelancer.email}</p>
+                    <h1 className="text-xl font-black text-[#1C2526]">{selectedDeveloper.name}</h1>
+                    <p className="text-xs text-[#5A6A72]">{selectedDeveloper.email}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -250,8 +344,8 @@ export default function MemberPortal() {
                         </div>
 
                         {/* Brief */}
-                        <div className="bg-[#F8F6F2]/70 rounded-2xl p-4 border border-gray-100 text-xs">
-                          <h4 className="font-bold text-[#2C3E50] mb-1.5 uppercase tracking-wide">
+                        <div className="pl-4 border-l-2 border-gray-200 text-xs">
+                          <h4 className="font-extrabold text-[#2C3E50] mb-1 uppercase tracking-wide text-[10px]">
                             {t('member.brief')}
                           </h4>
                           <p className="text-[#5A6A72] leading-relaxed whitespace-pre-line">{proj.brief}</p>
@@ -271,27 +365,166 @@ export default function MemberPortal() {
                         </div>
 
                         {/* Actions */}
+                        {/* Sub-tasks Timeline & Checklist */}
+                        <div className="pt-4 border-t border-gray-100 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-bold text-[#1C2526] uppercase tracking-wider flex items-center gap-1.5">
+                              <i className="ri-git-commit-line text-[#9B2A4C]" />
+                              Kế hoạch &amp; Đầu việc phụ (Sub-tasks)
+                            </h4>
+                            <button
+                              onClick={() => {
+                                if (activeSubTaskProjId === proj.id) {
+                                  setActiveSubTaskProjId(null);
+                                } else {
+                                  setActiveSubTaskProjId(proj.id);
+                                  setNewSubTaskTitle('');
+                                  setNewSubTaskDesc('');
+                                  setNewSubTaskDeadline(proj.deadline);
+                                }
+                              }}
+                              className="text-[10px] font-bold text-[#9B2A4C] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <i className="ri-add-line" />
+                              {activeSubTaskProjId === proj.id ? 'Hủy' : 'Thêm đầu việc'}
+                            </button>
+                          </div>
+
+                          {/* Sub-tasks List */}
+                          {(() => {
+                            let subTasksList: any[] = [];
+                            try {
+                              subTasksList = JSON.parse(proj.subTasks || '[]');
+                            } catch {
+                              subTasksList = [];
+                            }
+
+                            return (
+                              <div className="space-y-2.5">
+                                {subTasksList.length === 0 ? (
+                                  <p className="text-xs text-gray-400 italic py-4 text-center">
+                                    Chưa có kế hoạch chi tiết. Hãy thêm các đầu việc phụ để bắt đầu!
+                                  </p>
+                                ) : (
+                                  subTasksList.map((st: any) => (
+                                    <div
+                                      key={st.id}
+                                      className="flex items-start justify-between py-3 border-b border-gray-100 last:border-b-0 gap-3 transition-colors"
+                                    >
+                                      <div className="flex items-start gap-2.5 min-w-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleToggleSubTask(proj.id, st.id)}
+                                          className={`mt-0.5 w-4.5 h-4.5 rounded-md border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${st.completed
+                                              ? 'bg-green-500 border-transparent text-white'
+                                              : 'bg-white border-gray-300 hover:border-[#9B2A4C]'
+                                            }`}
+                                        >
+                                          {st.completed && <i className="ri-check-line text-xs font-bold" />}
+                                        </button>
+                                        <div className="space-y-0.5">
+                                          <p className={`text-xs font-bold text-[#2C3E50] leading-normal ${st.completed ? 'line-through text-gray-400' : ''}`}>
+                                            {st.title}
+                                          </p>
+                                          {st.description && (
+                                            <p className={`text-[10px] text-gray-500 leading-relaxed whitespace-pre-line ${st.completed ? 'line-through text-gray-400' : ''}`}>
+                                              {st.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <span className="text-[9px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                          <i className="ri-calendar-line text-[10px]" />
+                                          {st.deadline}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteSubTask(proj.id, st.id)}
+                                          className="text-gray-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
+                                          title="Xóa đầu việc"
+                                        >
+                                          <i className="ri-delete-bin-line text-xs" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            );
+                          })()}
+
+                          {/* Add Sub-task Form */}
+                          {activeSubTaskProjId === proj.id && (
+                            <form
+                              onSubmit={(e) => handleAddSubTask(e, proj.id)}
+                              className="pt-4 border-t border-dashed border-gray-200 space-y-3 animate-fadeIn"
+                            >
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="block text-[10px] font-bold text-[#5A6A72] uppercase">
+                                    Tên đầu việc *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    required
+                                    value={newSubTaskTitle}
+                                    onChange={(e) => setNewSubTaskTitle(e.target.value)}
+                                    placeholder="Ví dụ: Thiết kế giao diện"
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="block text-[10px] font-bold text-[#5A6A72] uppercase">
+                                    Hạn chót *
+                                  </label>
+                                  <input
+                                    type="date"
+                                    required
+                                    value={newSubTaskDeadline}
+                                    onChange={(e) => setNewSubTaskDeadline(e.target.value)}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="block text-[10px] font-bold text-[#5A6A72] uppercase">
+                                  Chi tiết công việc / Mô tả
+                                </label>
+                                <textarea
+                                  rows={2}
+                                  value={newSubTaskDesc}
+                                  onChange={(e) => setNewSubTaskDesc(e.target.value)}
+                                  placeholder="Mô tả cụ thể nhiệm vụ cần thực hiện..."
+                                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none"
+                                />
+                              </div>
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveSubTaskProjId(null)}
+                                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 font-semibold text-xs hover:bg-gray-50 transition-colors"
+                                >
+                                  Hủy
+                                </button>
+                                <button
+                                  type="submit"
+                                  className="px-3 py-1.5 rounded-lg gradient-bg text-white font-bold text-xs shadow hover:opacity-95 transition-opacity"
+                                >
+                                  Thêm đầu việc
+                                </button>
+                              </div>
+                            </form>
+                          )}
+                        </div>
+
                         {editingProjId === proj.id ? (
                           <form onSubmit={handleSaveProgress} className="space-y-4 pt-4 border-t border-gray-100">
                             <h4 className="text-xs font-bold text-[#1C2526] uppercase">
-                              {t('member.updateProgress')}
+                              Cập nhật liên kết sản phẩm bàn giao
                             </h4>
                             <div className="space-y-3">
-                              {/* Slider */}
-                              <div className="flex items-center gap-4">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  value={tempProgress}
-                                  onChange={(e) => setTempProgress(parseInt(e.target.value))}
-                                  className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#9B2A4C]"
-                                />
-                                <span className="text-sm font-bold text-[#9B2A4C] w-10 text-right">
-                                  {tempProgress}%
-                                </span>
-                              </div>
-
                               {/* Work deliverables url */}
                               <div className="space-y-1">
                                 <label className="block text-[10px] font-bold text-[#5A6A72] uppercase">
@@ -318,7 +551,7 @@ export default function MemberPortal() {
                                   type="submit"
                                   className="px-4 py-2 rounded-xl gradient-bg text-white font-bold text-xs shadow hover:opacity-95 transition-opacity"
                                 >
-                                  {t('member.saveProgress')}
+                                  Lưu liên kết
                                 </button>
                               </div>
                             </div>
@@ -329,7 +562,7 @@ export default function MemberPortal() {
                               onClick={() => handleStartEdit(proj)}
                               className="px-4 py-2 border border-[#2C3E50]/20 text-[#2C3E50] font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
                             >
-                              {t('member.updateProgressBtn')}
+                              Cập nhật link sản phẩm
                             </button>
 
                             {/* Payout actions */}
@@ -410,12 +643,12 @@ export default function MemberPortal() {
                             <span className="text-[10px] uppercase font-bold text-gray-400">{t('common.status')}</span>
                             <span
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${proj.payoutStatus === 'Paid'
-                                  ? 'bg-green-50 text-green-600'
-                                  : proj.payoutStatus === 'Approved'
-                                    ? 'bg-blue-50 text-blue-600'
-                                    : proj.payoutStatus === 'Requested'
-                                      ? 'bg-yellow-50 text-yellow-600'
-                                      : 'bg-gray-100 text-gray-500'
+                                ? 'bg-green-50 text-green-600'
+                                : proj.payoutStatus === 'Approved'
+                                  ? 'bg-blue-50 text-blue-600'
+                                  : proj.payoutStatus === 'Requested'
+                                    ? 'bg-yellow-50 text-yellow-600'
+                                    : 'bg-gray-100 text-gray-500'
                                 }`}
                             >
                               {proj.payoutStatus === 'Paid'

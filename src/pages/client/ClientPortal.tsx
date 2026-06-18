@@ -235,13 +235,68 @@ export default function ClientPortal() {
                             </div>
                           </div>
 
+                          {/* Sub-tasks / Timeline Section for Client */}
+                          <div className="pt-4 border-t border-gray-100 space-y-3">
+                            <h4 className="text-xs font-bold text-[#1C2526] uppercase tracking-wider flex items-center gap-1.5">
+                              <i className="ri-list-check-2 text-[#9B2A4C]" />
+                              Kế hoạch &amp; Tiến độ chi tiết
+                            </h4>
+                            {(() => {
+                              let subTasksList: any[] = [];
+                              try {
+                                subTasksList = JSON.parse(proj.subTasks || '[]');
+                              } catch {
+                                subTasksList = [];
+                              }
+
+                              if (subTasksList.length === 0) {
+                                return (
+                                  <p className="text-xs text-gray-400 italic">
+                                    Đang chờ lập trình viên lập kế hoạch chi tiết (Timeline)...
+                                  </p>
+                                );
+                              }
+
+                              return (
+                                <div className="divide-y divide-gray-100">
+                                  {subTasksList.map((st: any) => (
+                                    <div
+                                      key={st.id}
+                                      className="flex items-start justify-between py-2.5 gap-3 animate-fadeIn"
+                                    >
+                                      <div className="flex items-start gap-2 min-w-0">
+                                        <span className={`mt-0.5 text-sm shrink-0 ${st.completed ? 'text-green-500' : 'text-gray-300'}`}>
+                                          <i className={st.completed ? "ri-checkbox-circle-fill" : "ri-checkbox-blank-circle-line"} />
+                                        </span>
+                                        <div className="space-y-0.5">
+                                          <p className={`text-xs font-bold text-[#2C3E50] leading-normal ${st.completed ? 'line-through text-gray-400' : ''}`}>
+                                            {st.title}
+                                          </p>
+                                          {st.description && (
+                                            <p className={`text-[10px] text-gray-500 leading-relaxed whitespace-pre-line ${st.completed ? 'line-through text-gray-400' : ''}`}>
+                                              {st.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <span className="text-[9px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-lg shrink-0 flex items-center gap-0.5">
+                                        <i className="ri-calendar-line" />
+                                        {st.deadline}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
+
                           {/* Deliverables Section */}
-                          <div className="bg-[#F8F6F2]/70 rounded-2xl p-4 border border-gray-100 space-y-3">
+                          <div className="pt-4 border-t border-gray-100 space-y-3">
                             <h4 className="text-xs font-bold text-[#1C2526] uppercase">
                               {t('client.deliverables')}
                             </h4>
                             {proj.deliverablesUrl ? (
-                              <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200">
+                              <div className="flex items-center justify-between py-2 border-b border-gray-100/50">
                                 <div className="flex items-center gap-2">
                                   <i className="ri-file-code-line text-lg text-[#9B2A4C]" />
                                   <span className="text-xs font-semibold text-gray-600 truncate max-w-xs md:max-w-sm">

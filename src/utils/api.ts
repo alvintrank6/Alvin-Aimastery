@@ -14,6 +14,7 @@ export const api = axios.create({
 export const LeadsAPI = {
   getAll: () => api.get('/leads').then(res => res.data),
   create: (data: any) => api.post('/leads', data).then(res => res.data),
+  importBulk: (data: any[]) => api.post('/leads/bulk', data).then(res => res.data),
   update: (id: string, data: any) => api.put(`/leads/${id}`, data).then(res => res.data),
   delete: (id: string) => api.delete(`/leads/${id}`).then(res => res.data),
 };
@@ -22,6 +23,7 @@ export const DevelopersAPI = {
   getAll: () => api.get('/developers').then(res => res.data),
   create: (data: any) => api.post('/developers', data).then(res => res.data),
   update: (id: string, data: any) => api.put(`/developers/${id}`, data).then(res => res.data),
+  delete: (id: string) => api.delete(`/developers/${id}`).then(res => res.data),
 };
 
 export const ProjectsAPI = {
@@ -48,4 +50,10 @@ export const SettingsAPI = {
   getAll: () => api.get('/settings').then(res => res.data),
   get: (key: string) => api.get(`/settings/${key}`).then(res => res.data?.value),
   update: (key: string, data: any) => api.put(`/settings/${key}`, data).then(res => res.data),
+};
+
+export const UsersAPI = {
+  getAll: () => api.get('/users').then(res => res.data),
+  update: (id: string, data: any) => api.put(`/users/${id}`, data).then(res => res.data),
+  delete: (id: string) => api.delete(`/users/${id}`).then(res => res.data),
 };

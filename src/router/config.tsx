@@ -4,11 +4,12 @@ import Home from "../pages/home/page";
 import ContactPage from "../pages/contact/page";
 import ServicePage from "../pages/services/ServicePage";
 import Register from "../pages/developer/Register";
-import ClientPortal from "../pages/client/ClientPortal";
 import MemberPortal from "../pages/member/MemberPortal";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import Login from "../pages/auth/Login";
 import RegisterSelection from "../pages/auth/RegisterSelection";
+import ClientPortal from "../pages/client/ClientPortal";
+import ClientRegister from "../pages/client/ClientRegister";
 
 const routes: RouteObject[] = [
   {
@@ -28,12 +29,16 @@ const routes: RouteObject[] = [
     element: <Register />,
   },
   {
-    path: "/client-portal",
-    element: <ClientPortal />,
+    path: "/client/register",
+    element: <ClientRegister />,
   },
   {
     path: "/member-portal",
     element: <MemberPortal />,
+  },
+  {
+    path: "/client-portal",
+    element: <ClientPortal />,
   },
   {
     path: "/admin",

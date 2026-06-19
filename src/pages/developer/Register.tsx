@@ -5,6 +5,7 @@ import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import { DevelopersAPI } from '@/utils/api';
 import { useToast } from '@/components/common/ToastContext';
+import CustomSelect from '@/components/common/Select';
 
 const SKILLS_OPTIONS = ['n8n', 'Web', 'App', 'Workflow', 'Landing', 'Email Auto', 'Copywriting', 'SEO', 'React', 'Node.js', 'Python', 'DevOps', 'PostgreSQL', 'Docker'];
 
@@ -19,6 +20,7 @@ export default function Register() {
   // Form Field States
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [title, setTitle] = useState('frontend');
   const [yearsOfExperience, setYearsOfExperience] = useState('mid');
@@ -54,6 +56,10 @@ export default function Register() {
       }
       if (!email.trim() || !email.includes('@')) {
         showToast(isVi ? 'Vui lòng nhập Email hợp lệ' : 'Please enter a valid Email', 'warning');
+        return false;
+      }
+      if (!phone.trim()) {
+        showToast(isVi ? 'Vui lòng nhập Số điện thoại' : 'Please enter your Phone Number', 'warning');
         return false;
       }
       if (!dateOfBirth) {
@@ -96,6 +102,7 @@ export default function Register() {
       await DevelopersAPI.create({
         name,
         email,
+        phone,
         skills: selectedSkills,
         portfolio,
         rateType,
@@ -159,6 +166,7 @@ export default function Register() {
                     setStep(1);
                     setName('');
                     setEmail('');
+                    setPhone('');
                     setDateOfBirth('');
                     setPortfolio('');
                     setCvLink('');
@@ -257,6 +265,21 @@ export default function Register() {
                         />
                       </div>
 
+                      {/* Phone */}
+                      <div>
+                        <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">
+                          {isVi ? 'Số điện thoại *' : 'Phone Number *'}
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder={isVi ? 'Nhập số điện thoại của bạn' : 'Enter your phone number'}
+                          className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] transition-colors"
+                        />
+                      </div>
+
                       {/* Date of Birth */}
                       <div>
                         <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">
@@ -276,23 +299,19 @@ export default function Register() {
                         <label className="block text-xs font-bold text-[#1C2526] mb-1.5 uppercase">
                           {t('developer.titleLabel')}
                         </label>
-                        <div className="relative">
-                          <select
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] transition-colors appearance-none text-[#1C2526] font-semibold cursor-pointer"
-                          >
-                            <option value="frontend">{t('developer.titles.frontend')}</option>
-                            <option value="backend">{t('developer.titles.backend')}</option>
-                            <option value="fullstack">{t('developer.titles.fullstack')}</option>
-                            <option value="ai">{t('developer.titles.ai')}</option>
-                            <option value="uiux">{t('developer.titles.uiux')}</option>
-                            <option value="devops">{t('developer.titles.devops')}</option>
-                          </select>
-                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                            <i className="ri-arrow-down-s-line text-sm" />
-                          </div>
-                        </div>
+                        <CustomSelect
+                          value={title}
+                          onChange={(val) => setTitle(val)}
+                          options={[
+                            { value: 'frontend', label: t('developer.titles.frontend') },
+                            { value: 'backend', label: t('developer.titles.backend') },
+                            { value: 'fullstack', label: t('developer.titles.fullstack') },
+                            { value: 'ai', label: t('developer.titles.ai') },
+                            { value: 'uiux', label: t('developer.titles.uiux') },
+                            { value: 'devops', label: t('developer.titles.devops') },
+                          ]}
+                          selectClassName="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer text-[#1C2526] font-semibold"
+                        />
                       </div>
 
                       {/* Years of Experience buttons */}

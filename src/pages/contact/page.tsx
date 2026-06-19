@@ -3,6 +3,8 @@ import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import { useTranslation } from 'react-i18next';
 import ContactOrbit from './components/ContactOrbit';
+import { LeadsAPI } from '@/utils/api';
+import CustomSelect from '@/components/common/Select';
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -58,9 +60,13 @@ function ContactJsonLd() {
 }
 
 export default function ContactPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [formState, setFormState] = useState<FormState>('idle');
   const [charCount, setCharCount] = useState(0);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [customSubject, setCustomSubject] = useState('');
+
+  const servicesKeys = ['web', 'chatbot', 'landing', 'workflow', 'email', 'n8n', 'app'];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,26 +76,30 @@ export default function ContactPage() {
 
     setFormState('submitting');
 
-    const data = new URLSearchParams();
     const formData = new FormData(form);
-    formData.forEach((value, key) => {
-      data.append(key, value as string);
-    });
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const phone = formData.get('phone') as string;
+    const subject = formData.get('subject') as string;
+
+    const payload = {
+      name,
+      email,
+      phone,
+      company: '',
+      service: subject || 'General Inquiry',
+      message,
+    };
 
     try {
-      const res = await fetch('https://readdy.ai/api/form/d7girbmi0ais34q5m500', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: data.toString(),
-      });
-      if (res.ok) {
-        setFormState('success');
-        form.reset();
-        setCharCount(0);
-      } else {
-        setFormState('error');
-      }
-    } catch {
+      await LeadsAPI.create(payload);
+      setFormState('success');
+      form.reset();
+      setSelectedSubject('');
+      setCustomSubject('');
+      setCharCount(0);
+    } catch (err) {
+      console.error('Failed to submit contact lead:', err);
       setFormState('error');
     }
   };
@@ -186,42 +196,60 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div>
-                        <label className="block text-[#1C2526] text-sm font-medium mb-2">
-                          {t('contact.form.phoneLabel')} <span className="text-[#2C3E50]">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          required
-                          placeholder={t('contact.form.phonePlaceholder')}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[#1C2526] text-sm font-medium mb-2">
-                          {t('contact.form.companyLabel')}
-                        </label>
-                        <input
-                          type="text"
-                          name="company"
-                          placeholder={t('contact.form.companyPlaceholder')}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-[#1C2526] text-sm font-medium mb-2">
+                        {t('contact.form.phoneLabel')} <span className="text-[#2C3E50]">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        required
+                        placeholder={t('contact.form.phonePlaceholder')}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-[#1C2526] text-sm font-medium mb-2">
                         {t('contact.form.subjectLabel')}
                       </label>
-                      <input
-                        type="text"
-                        name="subject"
-                        placeholder={t('contact.form.subjectPlaceholder')}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
-                      />
+                      <div className="relative">
+                        <CustomSelect
+                          value={selectedSubject}
+                          onChange={(val) => {
+                            setSelectedSubject(val);
+                            if (val !== 'custom') {
+                              setCustomSubject('');
+                            }
+                          }}
+                          placeholder={i18n.language === 'vi' ? 'Chọn dịch vụ cần hỗ trợ...' : 'Select service to request...'}
+                          options={[
+                            ...servicesKeys.map((key) => {
+                              const title = t(`services.list.${key}.title`);
+                              return { value: title, label: title };
+                            }),
+                            {
+                              value: 'custom',
+                              label: i18n.language === 'vi' ? 'Khác (Tự nhập)...' : 'Other (Type manually)...'
+                            }
+                          ]}
+                          selectClassName="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm transition-all flex justify-between items-center cursor-pointer select-none text-[#1C2526] font-medium"
+                        />
+                      </div>
+
+                      {selectedSubject === 'custom' && (
+                        <div className="mt-3 animate-dropdown-in">
+                          <input
+                            type="text"
+                            name="subject"
+                            required
+                            value={customSubject}
+                            onChange={(e) => setCustomSubject(e.target.value)}
+                            placeholder={t('contact.form.subjectPlaceholder')}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div>

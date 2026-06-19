@@ -10,9 +10,19 @@ export class AuthController {
   async login(@Body() signInDto: Record<string, any>) {
     const user = await this.authService.validateUser(signInDto.email, signInDto.password);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác.');
     }
-    return this.authService.login(user);
+    return this.authService.handleLogin2FA(user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-2fa')
+  async verify2FA(@Body() body: Record<string, any>) {
+    const { tempToken, code } = body;
+    if (!tempToken || !code) {
+      throw new UnauthorizedException('Thiếu mã OTP hoặc mã phiên đăng nhập.');
+    }
+    return this.authService.verify2FA(tempToken, code);
   }
 
   @Post('register')

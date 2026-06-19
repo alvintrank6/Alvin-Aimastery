@@ -20,6 +20,19 @@ export default function Navbar() {
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
 
+  const [userState, setUserState] = useState<{ loggedIn: boolean; role: string | null; name: string | null }>({
+    loggedIn: false,
+    role: null,
+    name: null
+  });
+
+  useEffect(() => {
+    const loggedIn = sessionStorage.getItem('user_logged_in') === 'true';
+    const role = sessionStorage.getItem('user_role');
+    const name = sessionStorage.getItem('user_name');
+    setUserState({ loggedIn, role, name });
+  }, [location.pathname, authDropdownOpen]);
+
   const servicesList = [
     { id: 'web', icon: 'ri-global-line', textColor: 'text-blue-500', bgColor: 'bg-blue-50' },
     { id: 'chatbot', icon: 'ri-chat-voice-line', textColor: 'text-emerald-500', bgColor: 'bg-emerald-50' },
@@ -230,22 +243,82 @@ export default function Navbar() {
                   : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
               }`}
             >
-              <Link
-                to="/login"
-                onClick={() => setAuthDropdownOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all"
-              >
-                <i className="ri-login-box-line text-base text-[#9B2A4C]" />
-                {t('portals.signIn')}
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setAuthDropdownOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all"
-              >
-                <i className="ri-user-add-line text-base text-[#9B2A4C]" />
-                {i18n.language === 'vi' ? 'Đăng Ký' : 'Register'}
-              </Link>
+              {userState.loggedIn ? (
+                <>
+                  <div className="px-4 py-2 border-b border-gray-100 text-left">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                      {i18n.language === 'vi' ? 'Xin chào' : 'Welcome'}
+                    </p>
+                    <p className="text-xs font-black text-[#1C2526] truncate">{userState.name || 'User'}</p>
+                  </div>
+                  {userState.role === 'client' && (
+                    <Link
+                      to="/client-portal"
+                      onClick={() => setAuthDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all mt-1"
+                    >
+                      <i className="ri-dashboard-3-line text-base text-[#9B2A4C]" />
+                      {i18n.language === 'vi' ? 'Cổng khách hàng' : 'Client Portal'}
+                    </Link>
+                  )}
+                  {userState.role === 'developer' && (
+                    <Link
+                      to="/member-portal"
+                      onClick={() => setAuthDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all mt-1"
+                    >
+                      <i className="ri-code-box-line text-base text-[#9B2A4C]" />
+                      {i18n.language === 'vi' ? 'Cổng Freelancer' : 'Member Portal'}
+                    </Link>
+                  )}
+                  {(userState.role === 'admin' || userState.role === 'manager') && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setAuthDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all mt-1"
+                    >
+                      <i className="ri-admin-line text-base text-[#9B2A4C]" />
+                      {i18n.language === 'vi' ? 'Trang quản trị' : 'Admin Dashboard'}
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      sessionStorage.removeItem('user_logged_in');
+                      sessionStorage.removeItem('user_role');
+                      sessionStorage.removeItem('user_email');
+                      sessionStorage.removeItem('user_name');
+                      sessionStorage.removeItem('user_id');
+                      sessionStorage.removeItem('admin_logged_in');
+                      sessionStorage.removeItem('admin_role');
+                      setAuthDropdownOpen(false);
+                      navigate('/login');
+                    }}
+                    className="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-all mt-1 cursor-pointer"
+                  >
+                    <i className="ri-logout-box-r-line text-base" />
+                    {i18n.language === 'vi' ? 'Đăng xuất' : 'Sign Out'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setAuthDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all"
+                  >
+                    <i className="ri-login-box-line text-base text-[#9B2A4C]" />
+                    {t('portals.signIn')}
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setAuthDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all"
+                  >
+                    <i className="ri-user-add-line text-base text-[#9B2A4C]" />
+                    {i18n.language === 'vi' ? 'Đăng Ký' : 'Register'}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 

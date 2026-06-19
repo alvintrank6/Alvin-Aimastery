@@ -12,6 +12,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { SettingsModule } from './settings/settings.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { WebsocketInterceptor } from './websocket/websocket.interceptor';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { WebsocketInterceptor } from './websocket/websocket.interceptor';
     AnalyticsModule,
     SettingsModule,
     WebsocketModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

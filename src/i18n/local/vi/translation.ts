@@ -24,13 +24,42 @@ const translations = {
     badge: '✦ Sẵn sàng nhận dự án',
     name: 'Alvin',
     surname: 'Tran',
-    role: 'Marketer | Chuyên gia Tự động hóa AI | Chiến lược Truyền thông',
-    bio: 'Tôi là một marketer 20 tuổi với thành tích đã được chứng minh trong việc mở rộng quy mô doanh nghiệp thông qua chiến lược sáng tạo và công nghệ thông minh. Từ việc thúc đẩy tăng trưởng bùng nổ tại ByeBye Pimple đến lãnh đạo Senn Cosmetics và định hình sự hiện diện kỹ thuật số tại Beta Home Viet Nam, tôi chuyên kết hợp kiến thức marketing với tự động hóa AI để mang lại kết quả thực tế và có thể đo lường.',
-    ctaPrimary: 'Xem Công Việc Của Tôi',
+    role: 'Sáng lập Alvin Agency | Chuyên gia Tự động hóa AI & Marketing',
+    bio: 'Chào mừng bạn đến với Alvin Agency – nền tảng cung cấp dịch vụ Web, Chatbot AI và Tự động hóa quy trình chuyên nghiệp. Được điều hành bởi Alvin Tran cùng mạng lưới lập trình viên Elite, chúng tôi giúp các doanh nghiệp tối ưu chi phí vận hành và tăng trưởng doanh số thông qua các giải pháp thông minh. Tại đây, bạn có thể dễ dàng đặt dịch vụ và làm việc trực tiếp với đội ngũ phát triển.',
+    ctaPrimary: 'Khám Phá Dịch Vụ',
     ctaSecondary: 'Liên Hệ Ngay',
     locationLabel: 'Đang sinh sống tại',
     locationValue: 'Hà Nội, Việt Nam',
-    openToWork: 'Sẵn sàng làm việc',
+    openToWork: 'Sẵn sàng nhận dự án',
+  },
+
+  ecosystem: {
+    badge: '✦ Lộ trình & Vai Trò',
+    title: 'Đây là trang web gì &',
+    titleHighlight: 'Bạn làm gì ở đây?',
+    subtitle: 'Alvin Agency là một hệ sinh thái khép kín giúp kết nối doanh nghiệp (Khách hàng) với đội ngũ phát triển tài năng (Lập trình viên) dưới sự quản trị và đảm bảo chất lượng từ Alvin Tran.',
+    client: {
+      title: 'Bạn là Khách Hàng?',
+      desc: 'Doanh nghiệp hoặc cá nhân cần xây dựng Landing Page, Website bán hàng, Chatbot AI chăm sóc khách hàng tự động 24/7, hoặc thiết lập luồng tự động hóa n8n.',
+      stepTitle: 'Quy trình hoạt động:',
+      step1: 'Tìm hiểu các dịch vụ cốt lõi và xem các Trình giả lập (Simulator) trực quan.',
+      step2: 'Gửi yêu cầu dự án qua biểu mẫu liên hệ hoặc các trang chi tiết dịch vụ.',
+      step3: 'Đội ngũ của chúng tôi sẽ tiếp nhận, thiết lập kế hoạch và bàn giao sản phẩm hoàn thiện theo đúng hạn chót cam kết.',
+      cta: 'Đặt dịch vụ & Liên hệ',
+    },
+    developer: {
+      title: 'Bạn là Lập Trình Viên?',
+      desc: 'Lập trình viên Frontend (React/Next.js), Backend (Node.js/NestJS), hoặc kỹ sư Tự động hóa AI muốn gia nhập mạng lưới outsourcing chất lượng cao.',
+      stepTitle: 'Quy trình hoạt động:',
+      step1: 'Nộp hồ sơ (CV, Portfolio, Kỹ năng, Mức lương mong muốn) tại trang đăng ký đối tác.',
+      step2: 'Sau khi được Admin phê duyệt, bạn sẽ được cấp quyền vào Không Gian Lập Trình Viên (Developer Workspace).',
+      step3: 'Xem danh sách task được giao, cập nhật tiến độ phần trăm, gửi link sản phẩm hoàn thiện, và theo dõi doanh thu thù lao Gross/Net (tự động khấu trừ thuế suất doanh nghiệp).',
+      cta: 'Gia nhập đội ngũ đối tác',
+    },
+    demoTitle: 'Trải Nghiệm Nhanh Các Cổng Dashboard Giả Lập',
+    demoDesc: 'Hệ thống của Alvin Agency đã tích hợp sẵn các giao diện quản trị và phân quyền (RBAC). Bạn có thể thử nghiệm ngay bằng cách đăng nhập nhanh với các tài khoản Demo có sẵn dưới đây.',
+    devPortalBtn: 'Cổng Lập Trình Viên',
+    adminPortalBtn: 'Cổng Quản Trị Super Admin',
   },
 
   about: {
@@ -198,36 +227,232 @@ const translations = {
         title: 'Thiết Kế & Phát Triển Website',
         desc: 'Website tốc độ cao, giao diện tối ưu UI/UX, hỗ trợ SEO 100/100, xây dựng bằng Next.js và React.',
         details: 'Chúng tôi xây dựng các website hiện đại, chuẩn SEO và có hiệu năng vượt trội. Tập trung vào trải nghiệm khách hàng để tối đa tỷ lệ chuyển đổi đơn hàng. Phù hợp cho Startups, Doanh nghiệp lớn và Cửa hàng E-commerce.',
+        process: [
+          {
+            title: 'Bước 1: Thu Thập Yêu Cầu & Thiết Kế Wireframe',
+            desc: 'Chúng tôi phân tích chi tiết mô hình kinh doanh, hành vi khách hàng mục tiêu để phác thảo sơ đồ cấu trúc (Wireframe) tối ưu cho việc điều hướng.'
+          },
+          {
+            title: 'Bước 2: Thiết Kế Giao Diện UI/UX Tương Tác',
+            desc: 'Tạo bản thiết kế giao diện hiện đại, trực quan trên Figma. Cung cấp bản mẫu tương tác (interactive prototype) để bạn click thử nghiệm trước khi code.'
+          },
+          {
+            title: 'Bước 3: Lập Trình Frontend & Backend',
+            desc: 'Viết code sạch, chuẩn SEO sử dụng React, Next.js cho frontend và Node.js cho backend. Đảm bảo cấu trúc code dễ bảo trì và mở rộng.'
+          },
+          {
+            title: 'Bước 4: Tối Ưu Tốc Độ & Cấu Hình SEO',
+            desc: 'Nén tài nguyên tối đa, tối ưu hóa database, thiết lập lazy-loading và CDN để đạt điểm số Google PageSpeed tối đa (tới 100/100).'
+          },
+          {
+            title: 'Bước 5: Kiểm Thử & Bàn Giao Hệ Thống',
+            desc: 'Chạy thử nghiệm toàn diện trên các thiết bị, triển khai lên hosting (Vercel/AWS), bàn giao mã nguồn và hướng dẫn quản trị chi tiết.'
+          }
+        ],
+        whyUs: [
+          'Tốc độ tải trang đạt điểm tối đa 100/100 Core Web Vitals',
+          'Thiết kế responsive tương thích hoàn hảo từ di động đến máy tính',
+          'Bố cục UI tùy biến độc quyền, hiện đại và cao cấp',
+          'Tích hợp CMS thông minh giúp dễ dàng cập nhật nội dung tự động'
+        ]
       },
       chatbot: {
         title: 'Tích Hợp Chatbot & Trợ Lý AI',
         desc: 'Hệ thống chăm sóc khách hàng và thu thập leads tự động 24/7 thông qua LLMs thông minh.',
         details: 'Tự động hóa kênh hỗ trợ khách hàng với các Agent AI tiên tiến. Chatbot tích hợp trực tiếp trên WhatsApp, Facebook Messenger và Slack, tự động trả lời chuyên nghiệp và nhanh chóng.',
+        process: [
+          {
+            title: 'Bước 1: Thiết Lập Kịch Bản & Persona cho Bot',
+            desc: 'Xác định giọng điệu, cá tính của trợ lý ảo và thu thập bộ câu hỏi thường gặp (FAQs) sát với thực tế vận hành.'
+          },
+          {
+            title: 'Bước 2: Xây Dựng Kho Kiến Thức & Kết Nối RAG',
+            desc: 'Nạp tài liệu nghiệp vụ, hướng dẫn sản phẩm của doanh nghiệp vào cơ sở dữ liệu vector. Cấu hình RAG giúp trợ lý AI trả lời chính xác, tránh nói nhảm.'
+          },
+          {
+            title: 'Bước 3: Phát Triển Logic Tác Vụ & Tích Hợp API',
+            desc: 'Lập trình các luồng xử lý thông minh (Agentic workflow), kết nối các APIs bên thứ ba để bot tự động tra cứu đơn hàng, đặt lịch cho khách.'
+          },
+          {
+            title: 'Bước 4: Chạy Mô Phỏng & Tinh Chỉnh Câu Trả Lời',
+            desc: 'Chạy hàng ngàn đoạn hội thoại giả lập để phát hiện lỗi logic, tinh chỉnh prompt và bộ lọc an toàn trước khi chạy chính thức.'
+          },
+          {
+            title: 'Bước 5: Triển Khai Đa Kênh & Báo Cáo Analytics',
+            desc: 'Tích hợp chatbot lên Website, Messenger, WhatsApp, Zalo. Cài đặt trang dashboard đo lường tỷ lệ chuyển đổi và hỗ trợ tự động.'
+          }
+        ],
+        whyUs: [
+          'Tự động giải đáp thành công tới hơn 90% câu hỏi của khách hàng',
+          'Thời gian phản hồi tức thì dưới 2 giây giúp giữ chân khách tối đa',
+          'Cơ chế tự chuyển hướng (handoff) thông minh sang nhân viên khi cần',
+          'Tích hợp đa nền tảng đồng bộ (Web, Messenger, Zalo, Slack)'
+        ]
       },
       landing: {
         title: 'Thiết Kế Landing Page',
         desc: 'Landing page tối ưu hóa chuyển đổi, nội dung thu hút giúp thúc đẩy doanh số và thu leads.',
         details: 'Thiết kế landing page chuyên nghiệp hướng tới mục tiêu bán hàng. Kết hợp hoàn hảo giữa thông điệp truyền thông, giao diện cuốn hút, và tốc độ tải trang cực nhanh dưới 1 giây.',
+        process: [
+          {
+            title: 'Bước 1: Nghiên Cứu Insight & Viết Nội Dung (Copywriting)',
+            desc: 'Nghiên cứu sâu nỗi đau của khách hàng để xây dựng thông điệp giật tít thu hút (hooks) và nội dung bán hàng có tính chuyển đổi cao.'
+          },
+          {
+            title: 'Bước 2: Thiết Kế UI/UX Trên Figma',
+            desc: 'Sáng tạo giao diện bắt mắt, phối màu hài hòa chuẩn thương hiệu, sắp xếp các khối thông tin dẫn dắt tâm lý mua hàng.'
+          },
+          {
+            title: 'Bước 3: Lập Trình Landing Page Tối Ưu Tốc Độ',
+            desc: 'Chuyển đổi thiết kế sang code React/TailwindCSS hoặc các nền tảng kéo thả tối ưu, đảm bảo mượt mà và tương thích di động.'
+          },
+          {
+            title: 'Bước 4: Cài Đặt Tracking & Đo Lường Chuyển Đổi',
+            desc: 'Tích hợp Google Analytics (GA4), Facebook Pixel, TikTok Pixel để đo lường chính xác hành vi click nút và điền biểu mẫu.'
+          },
+          {
+            title: 'Bước 5: Chạy A/B Testing & Tối Ưu Tỷ Lệ Đổi',
+            desc: 'Thử nghiệm các phiên bản tiêu đề, màu nút khác nhau để tìm ra phương án tối ưu nhất, mang lại ROI tối đa cho chiến dịch quảng cáo.'
+          }
+        ],
+        whyUs: [
+          'Tỷ lệ chuyển đổi khách hàng tiềm năng trung bình trên 15%',
+          'Cấu trúc thông tin được phân cấp chặt chẽ để kích thích mua hàng',
+          'Tải trang siêu tốc dưới 1 giây giúp giảm thiểu tỷ lệ thoát trang',
+          'Tối ưu hóa mã nguồn hiển thị hoàn hảo cho quảng cáo Facebook/Google'
+        ]
       },
       workflow: {
         title: 'Tự Động Hóa Workflow',
         desc: 'Liên kết các ứng dụng doanh nghiệp và tự động hóa công việc lặp đi lặp lại hàng ngày.',
         details: 'Kết nối CRM, mạng xã hội, cơ sở dữ liệu và email. Chúng tôi thiết lập các quy trình tự động hóa chạy 24/7 giúp loại bỏ sai sót thủ công và tiết kiệm hàng trăm giờ làm việc.',
+        process: [
+          {
+            title: 'Bước 1: Khảo Sát & Vẽ Sơ Đồ Quy Trình Thủ Công',
+            desc: 'Đánh giá các đầu việc lặp đi lặp lại hàng ngày của doanh nghiệp, xác định các điểm nghẽn và phác thảo sơ đồ tự động hóa tối ưu.'
+          },
+          {
+            title: 'Bước 2: Xác Thực APIs & Lựa Chọn Công Cụ',
+            desc: 'Kiểm tra tài liệu API của các ứng dụng cần kết nối (CRM, Mail, Drive...) và lựa chọn nền tảng tự động hóa phù hợp (Zapier/Make).'
+          },
+          {
+            title: 'Bước 3: Cấu Hình Luồng Chạy & Xử Lý Lỗi Tự Động',
+            desc: 'Xây dựng các bước truyền nhận dữ liệu, thiết lập nhánh xử lý lỗi (error handling) để hệ thống tự sửa lỗi hoặc gửi cảnh báo khi API ngắt kết nối.'
+          },
+          {
+            title: 'Bước 4: Kiểm Thử Đồng Bộ Dữ Liệu Thực Tế',
+            desc: 'Chạy thử nghiệm các kịch bản với dữ liệu giả lập để đảm bảo dữ liệu chảy mượt mà giữa các hệ thống, không bị trùng lặp hay mất mát.'
+          },
+          {
+            title: 'Bước 5: Kích Hoạt & Cài Đặt Cảnh Báo Giám Sát',
+            desc: 'Đưa hệ thống vào vận hành chính thức, thiết lập cảnh báo đẩy tự động qua Slack hoặc Telegram khi có sự cố luồng chạy để xử lý kịp thời.'
+          }
+        ],
+        whyUs: [
+          'Loại bỏ hoàn toàn các lỗi sai sót do nhập liệu thủ công của con người',
+          'Tiết kiệm lên tới 40 giờ làm việc thủ công mỗi tuần cho đội ngũ',
+          'Đồng bộ hóa dữ liệu thời gian thực giữa hàng chục ứng dụng khác nhau',
+          'Hệ thống tự động ghi nhật ký (logs) và cảnh báo tức thời khi có lỗi'
+        ]
       },
       email: {
         title: 'Email Marketing Tự Động',
         desc: 'Hệ thống phễu email chăm sóc khách hàng, phân loại leads và tối ưu tỷ lệ quay lại mua hàng.',
         details: 'Biến khách hàng tiềm năng thành người mua trung thành. Thiết lập các chiến dịch email tự động kích hoạt theo hành vi (quên giỏ hàng, chuỗi chào mừng, tái tương tác) với template đẹp mắt.',
+        process: [
+          {
+            title: 'Bước 1: Đánh Giá & Làm Sạch Danh Sách Người Đăng Ký',
+            desc: 'Lọc và loại bỏ các email ảo, email không hoạt động để cải thiện uy tín gửi thư của tên miền doanh nghiệp.'
+          },
+          {
+            title: 'Bước 2: Lập Chiến Lược Phễu & Chuỗi Email Tự Động',
+            desc: 'Lên kịch bản chi tiết cho các chiến dịch tự động kích hoạt theo hành vi: Welcome series, Abandoned cart, Re-engagement, Post-purchase.'
+          },
+          {
+            title: 'Bước 3: Thiết Kế Template Email Responsive',
+            desc: 'Thiết kế các mẫu email đẹp mắt, hiện đại, tối ưu bố cục hiển thị hoàn hảo trên các ứng dụng Gmail, Outlook ở cả mobile và PC.'
+          },
+          {
+            title: 'Bước 4: Viết Nội Dung & Tối Ưu Hóa CTA',
+            desc: 'Viết dòng tiêu đề (subject) cuốn hút kích thích mở mail, và thiết kế nút kêu gọi hành động (CTA) rõ ràng thúc đẩy click mua hàng.'
+          },
+          {
+            title: 'Bước 5: Kiểm Tra Chỉ Số & Thử Nghiệm A/B',
+            desc: 'Đo lường tỷ lệ mở, click, doanh thu chuyển đổi từ email. Chạy thử nghiệm A/B trên tiêu đề và thời gian gửi để tối đa hóa hiệu quả.'
+          }
+        ],
+        whyUs: [
+          'Tăng trưởng doanh thu từ kênh email marketing thêm 30%+',
+          'Hệ thống gửi tin tự động cá nhân hóa theo từng hành vi mua sắm',
+          'Đảm bảo tỷ lệ thư vào hộp thư chính (Inbox) cao nhất, hạn chế Spam',
+          'Chăm sóc và giữ chân khách hàng cũ hiệu quả với chi phí bằng 0'
+        ]
       },
       n8n: {
         title: 'Xây Dựng Hệ Thống n8n',
         desc: 'Tích hợp node n8n tùy biến và tự lưu trữ (self-hosted) hạ tầng tự động hóa cho doanh nghiệp.',
         details: 'Xây dựng, triển khai và bảo trì các quy trình tự động hóa trên nền tảng n8n. Tận dụng tối đa sự linh hoạt của n8n để xử lý dữ liệu phức tạp, file Excel, API và webhook với chi phí tối ưu.',
+        process: [
+          {
+            title: 'Bước 1: Thiết Lập Hạ Tầng Máy Chủ VPS',
+            desc: 'Cài đặt hệ điều hành và docker hóa nền tảng n8n tự lưu trữ (self-hosted) trên các máy chủ đám mây riêng biệt để đảm bảo an toàn thông tin.'
+          },
+          {
+            title: 'Bước 2: Cấu Hình Cơ Sở Dữ Liệu & Sao Lưu Định Kỳ',
+            desc: 'Liên kết n8n với PostgreSQL để lưu trữ logs giao dịch, thiết lập tự động backup hệ thống hàng ngày lên Google Drive hoặc S3.'
+          },
+          {
+            title: 'Bước 3: Lập Trình Các Node n8n Tùy Biến',
+            desc: 'Xây dựng các workflow đa luồng, xử lý tệp tin Excel, CSV, PDF tự động và tương tác với các webhook bảo mật.'
+          },
+          {
+            title: 'Bước 4: Viết Code Xử Lý Dữ Liệu Tùy Biến (JavaScript)',
+            desc: 'Nhúng các đoạn code JS trong node n8n để biến đổi cấu trúc dữ liệu JSON phức tạp, đáp ứng chính xác yêu cầu của API đích.'
+          },
+          {
+            title: 'Bước 5: Lên Lịch Cron & Kết Nối Hệ Thống',
+            desc: 'Cài đặt thời gian tự động kích hoạt (Cronjob) và hoàn thiện các cổng đón webhook để hệ thống vận hành trơn tru 24/7.'
+          }
+        ],
+        whyUs: [
+          'Không tốn phí chạy tác vụ (node-execution cost) giúp tiết kiệm hàng ngàn USD',
+          'Dữ liệu doanh nghiệp được bảo mật tuyệt đối 100% trên server riêng',
+          'Khả năng tùy biến xử lý dữ liệu vô hạn bằng code JavaScript/Python',
+          'Hạ tầng self-hosted cực kỳ ổn định, dễ dàng scale tài nguyên khi cần'
+        ]
       },
       app: {
         title: 'Xây Dựng Ứng Dụng (App)',
         desc: 'Phát triển ứng dụng Web và Mobile tùy biến theo chính xác logic và quy trình kinh doanh của bạn.',
         details: 'Đồng hành từ ý tưởng đến đưa app lên cửa hàng ứng dụng Google Play & App Store. Sử dụng các công nghệ React Native, Flutter và Serverless giúp vận hành ổn định và dễ dàng nâng cấp.',
+        process: [
+          {
+            title: 'Bước 1: Thiết Kế Kiến Trúc & Thiết Lập Database',
+            desc: 'Thiết lập mô hình dữ liệu (relational database schemas), thiết kế kiến trúc hệ thống và lập kế hoạch mở rộng tải người dùng.'
+          },
+          {
+            title: 'Bước 2: Thiết Kế Giao Diện Figma (Hi-Fi Prototype)',
+            desc: 'Vẽ giao diện các màn hình app chi tiết, tối ưu trải nghiệm vuốt chạm chuẩn thiết kế iOS và Android.'
+          },
+          {
+            title: 'Bước 3: Lập Trình Frontend App Di Động',
+            desc: 'Sử dụng React Native hoặc Flutter để phát triển giao diện ứng dụng, đảm bảo hoạt động mượt mà với hiệu năng tương đương app gốc.'
+          },
+          {
+            title: 'Bước 4: Phát Triển Hệ Thống API & Xác Thực OAuth',
+            desc: 'Xây dựng backend API an toàn, tích hợp các cơ chế đăng nhập nhanh bằng tài khoản Google, Apple, Facebook.'
+          },
+          {
+            title: 'Bước 5: Thử Nghiệm Alpha/Beta & Đăng Tải Lên Store',
+            desc: 'Kiểm thử qua TestFlight & Google Beta. Hoàn tất các thủ tục đăng tải ứng dụng lên App Store và Google Play Store.'
+          }
+        ],
+        whyUs: [
+          'Ứng dụng chạy mượt mà, tối ưu hiệu năng và trải nghiệm người dùng',
+          'Sử dụng một cơ sở mã nguồn (single codebase) giúp tối ưu thời gian phát triển',
+          'Cơ chế lưu trữ cục bộ hỗ trợ người dùng trải nghiệm offline tiện lợi',
+          'Tích hợp hệ thống thông báo đẩy (push notifications) thông minh'
+        ]
       }
     },
     showcase: {
@@ -240,6 +465,8 @@ const translations = {
         prod2: 'Retinol Booster',
         desktop: 'Máy tính',
         mobile: 'Di động',
+        light: 'Chế độ Sáng',
+        dark: 'Chế độ Tối',
       },
       chatbot: {
         title: 'Trình giả lập Trợ lý AI Chatbot',
@@ -298,22 +525,47 @@ const translations = {
         welcomeBtn: 'Khám phá sản phẩm bán chạy',
       },
       app: {
-        title: 'Bản dựng thử nghiệm ứng dụng Mobile',
-        welcomeTitle: 'Trạm AI Chat',
-        welcomeDesc: 'Trợ lý chatbot hỗ trợ khách hàng đa kênh tích hợp.',
-        welcomeBtn: 'Bắt đầu',
-        storeTitle: 'Cửa hàng Ứng dụng Tiện ích',
-        plugin1: 'Gói plugin Chatbot AI',
-        plugin2: 'Đồng bộ node n8n',
-        checkoutBtn: 'Thanh toán',
-        userTitle: 'Thiết lập Tài khoản',
-        userDesc: 'Đã xác thực: user@agency.com',
-        gatewaySecured: 'Cổng Thanh Toán Đã Bảo Mật',
-        screens: {
-          welcome: 'Chào mừng',
-          shop: 'Cửa hàng',
-          profile: 'Hồ sơ',
-        }
+        title: 'Trình giả lập ứng dụng Smart Home',
+        welcomeTitle: 'Hệ thống Smart Home AI',
+        welcomeDesc: 'Quản lý thiết bị điện, nhiệt độ và an ninh thông minh từ xa.',
+        welcomeBtn: 'Khởi động',
+        statusConnected: 'Đã kết nối',
+        roomLiving: 'Phòng Khách',
+        roomTemp: 'Nhiệt độ hiện tại: {{temp}}°C',
+        deviceLights: 'Hệ Thống Đèn',
+        lightsOn: 'Đang Bật',
+        lightsOff: 'Đang Tắt',
+        deviceAc: 'Điều Hòa Không Khí',
+        acModeCool: 'Chế độ Làm mát (Cool)',
+        setTemp: 'Đặt Nhiệt Độ',
+        mediaChill: 'Chill Vibes',
+        mediaLofi: 'Lo-fi Beat Radio',
+        tabDevices: 'Thiết bị',
+        tabScenes: 'Kịch bản',
+        tabSecurity: 'An ninh',
+        sceneTitle: 'Kịch Bản Tự Động',
+        sceneCinema: 'Xem Phim',
+        sceneCinemaDesc: 'AC 21°C • Tắt Đèn',
+        sceneSleep: 'Ngủ Ngon',
+        sceneSleepDesc: 'AC 23°C • Tắt Hết',
+        sceneWelcome: 'Về Nhà',
+        sceneWelcomeDesc: 'AC 24°C • Bật Đèn',
+        sceneParty: 'Tiệc Tùng',
+        scenePartyDesc: 'AC 22°C • Đèn Disco',
+        sceneFocus: 'Tập Trung',
+        sceneFocusDesc: 'AC 24°C • Bật Đèn',
+        sceneHint: 'Chạm vào kịch bản để áp dụng cấu hình tự động cho các thiết bị thông minh ngay lập tức.',
+        secCamTitle: 'CAM 01 - LIVE',
+        secRoom: 'Phòng Khách',
+        secDoorLock: 'Khóa Cửa Chính',
+        secLocked: 'Đã khóa an toàn',
+        secUnlocked: 'Đang mở khóa',
+        secLocking: 'Đang xử lý...',
+        secBtnOpen: 'Mở Khóa',
+        secBtnClose: 'Khóa Lại',
+        secLogs: 'Nhật Ký An Ninh',
+        secLogMotion: '• Phát hiện chuyển động (Cam 01)',
+        secLogLocked: '• Cửa chính đã được khóa',
       },
       general: {
         title: 'Dự án Mẫu & Trường hợp Tham khảo',
@@ -372,9 +624,9 @@ const translations = {
     loginTitle: 'Cổng Kết Nối Hệ Thống',
     loginSubtitle: 'Vui lòng chọn hệ thống tương ứng để truy cập không gian làm việc.',
     registerTitle: 'Gia Nhập Alvin Agency',
-    registerSubtitle: 'Bạn muốn đăng ký dịch vụ để bắt đầu chiến dịch hay đăng ký làm lập trình viên?',
-    clientBooking: 'Thuê Dịch Vụ / Đặt Lịch',
-    clientBookingDesc: 'Gửi yêu cầu dự án của bạn để các chuyên gia của chúng tôi tư vấn trực tiếp.',
+    registerSubtitle: 'Bạn muốn đăng ký tài khoản khách để làm việc hay đăng ký làm lập trình viên?',
+    clientBooking: 'Đăng Ký Tài Khoản Khách',
+    clientBookingDesc: 'Tạo tài khoản khách để đăng nhập Cổng khách hàng, theo dõi tiến độ dự án, thù lao và tệp tài liệu.',
     partnerReg: 'Đăng Ký Làm Lập Trình Viên',
     partnerRegDesc: 'Gia nhập mạng lưới các nhà phát triển và chuyên gia tự động hóa AI hàng đầu.',
     noAccount: 'Chưa có tài khoản?',
@@ -504,13 +756,14 @@ const translations = {
 
   admin: {
     title: 'Trung Tâm Điều Hành',
-    subtitle: 'Quản lý toàn bộ chỉ số Traffic, Doanh Thu, CRM Khách Hàng, Kanban Board và Yêu Cầu Chi Trả.',
+    subtitle: 'Quản lý toàn bộ chỉ số Traffic, Doanh Thu, Quản Lý Đơn Hàng, Bảng Kanban và Yêu Cầu Chi Trả.',
     trafficAnalytics: 'Phân Tích Traffic & Marketing',
-    financeReporting: 'Tài Chính & Báo Cáo Google Sheets',
-    crmManagement: 'CRM Quản Lý Khách Hàng',
+    financeReporting: 'Báo Cáo Tài Chính & Doanh Thu',
+    crmManagement: 'Quản Lý Đơn Hàng',
     projectKanban: 'Bảng Kanban Dự Án & Chiến Dịch',
     outsourcePayouts: 'Yêu Cầu Thanh Toán Lập Trình Viên',
     securityRBAC: 'Phân Quyền & Bảo Mật Hệ Thống',
+    accountManagement: 'Quản Lý Tài Khoản',
     realtimeTraffic: 'Lượng Truy Cập Thời Gian Thực (APIs)',
     trafficSources: 'Phân Bổ Nguồn Traffic',
     alertsTitle: 'Cảnh Báo Chiến Dịch Social',
@@ -519,10 +772,10 @@ const translations = {
     income: 'Tổng Doanh Thu',
     outsourceExpense: 'Chi Phí Lập Trình Viên',
     netProfit: 'Lợi Nhuận Ròng',
-    sheetsIntegration: 'Đọc Dữ Liệu Google Sheets',
+    sheetsIntegration: 'Báo Cáo Tài Chính Tự Động',
     addLeadManual: 'Thêm Khách Hàng CRM (Thủ Công)',
     importCsv: 'Import Hàng Loạt từ CSV/Excel',
-    crmDatabase: 'Cơ Sở Dữ Liệu CRM Leads',
+    crmDatabase: 'Danh Sách Đơn Hàng',
     addTask: 'Tạo Dự Án Mới & Giao Việc',
     taskBoard: 'Bảng Kanban Quản Lý Dự Án',
     pendingPayments: 'Danh Sách Chờ Chi Trả',
@@ -554,9 +807,9 @@ const translations = {
     demoManager: 'Quản lý',
     logoutBtn: 'Đăng xuất',
     activeApis: 'Đã kết nối với GA4 & Social APIs',
-    sheetsActive: 'API Google Sheets Đang Hoạt Động',
-    sheetsLedger: 'Bảng Tính Trực Tiếp: Báo Cáo Doanh Thu',
-    crmDesc: 'Theo dõi và chốt hợp đồng với các khách hàng tiềm năng.',
+    sheetsActive: 'Dữ Liệu Hệ Thống (Real-time)',
+    sheetsLedger: 'Bảng Tổng Hợp Doanh Thu & Chi Phí Thực Tế',
+    crmDesc: 'Theo dõi và xử lý các đơn hàng / yêu cầu từ khách hàng tiềm năng.',
     addLeadBtn: 'Thêm Khách Hàng',
     kanbanDesc: 'Sắp xếp và điều phối tiến độ công việc của developer trực quan.',
     control: 'Điều khiển',

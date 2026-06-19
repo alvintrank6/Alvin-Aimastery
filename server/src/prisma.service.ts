@@ -17,7 +17,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         connectionString = JSON.parse(decoded).databaseUrl;
       }
     }
-    const pool = new Pool({ connectionString });
+    let cleanUrl = connectionString;
+    if (connectionString) {
+      try {
+        const parsed = new URL(connectionString);
+        parsed.searchParams.delete('sslmode');
+        cleanUrl = parsed.toString();
+      } catch (e) {}
+    }
+    const pool = new Pool({
+      connectionString: cleanUrl,
+      ssl: connectionString?.includes('localhost') || connectionString?.includes('127.0.0.1')
+        ? false
+        : { rejectUnauthorized: false }
+    });
     const adapter = new PrismaPg(pool);
     super({ adapter });
   }

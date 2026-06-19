@@ -1,6 +1,7 @@
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import HeroSection from './components/HeroSection';
+import EcosystemSection from './components/EcosystemSection';
 import AboutSection from './components/AboutSection';
 import ServicesSection from './components/ServicesSection';
 import ProjectsSection from './components/ProjectsSection';
@@ -68,6 +69,7 @@ export default function Home() {
       <Navbar />
       <main>
         <HeroSection />
+        <EcosystemSection />
         <AboutSection />
         <ServicesSection />
         <ProjectsSection />
@@ -77,4 +79,4 @@ export default function Home() {
       <Footer />
     </div>
   );
-}
+}

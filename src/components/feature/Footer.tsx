@@ -54,9 +54,6 @@ export default function Footer() {
                 <Link to="/" className="hover:text-[#9B2A4C] transition-colors">Home</Link>
               </li>
               <li>
-                <Link to="/client-portal" className="hover:text-[#9B2A4C] transition-colors">{t('portals.clientPortal')}</Link>
-              </li>
-              <li>
                 <Link to="/member-portal" className="hover:text-[#9B2A4C] transition-colors">{t('portals.memberPortal')}</Link>
               </li>
               <li>

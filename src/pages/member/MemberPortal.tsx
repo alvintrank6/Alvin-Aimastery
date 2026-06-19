@@ -370,7 +370,7 @@ export default function MemberPortal() {
                           <div className="flex items-center justify-between">
                             <h4 className="text-xs font-bold text-[#1C2526] uppercase tracking-wider flex items-center gap-1.5">
                               <i className="ri-git-commit-line text-[#9B2A4C]" />
-                              Kế hoạch &amp; Đầu việc phụ (Sub-tasks)
+                              {i18n.language === 'vi' ? 'Kế hoạch & Đầu việc phụ (Sub-tasks)' : 'Plan & Sub-tasks'}
                             </h4>
                             <button
                               onClick={() => {
@@ -386,7 +386,7 @@ export default function MemberPortal() {
                               className="text-[10px] font-bold text-[#9B2A4C] hover:underline flex items-center gap-1 cursor-pointer"
                             >
                               <i className="ri-add-line" />
-                              {activeSubTaskProjId === proj.id ? 'Hủy' : 'Thêm đầu việc'}
+                              {activeSubTaskProjId === proj.id ? (i18n.language === 'vi' ? 'Hủy' : 'Cancel') : (i18n.language === 'vi' ? 'Thêm đầu việc' : 'Add Sub-task')}
                             </button>
                           </div>
 
@@ -403,7 +403,7 @@ export default function MemberPortal() {
                               <div className="space-y-2.5">
                                 {subTasksList.length === 0 ? (
                                   <p className="text-xs text-gray-400 italic py-4 text-center">
-                                    Chưa có kế hoạch chi tiết. Hãy thêm các đầu việc phụ để bắt đầu!
+                                    {i18n.language === 'vi' ? 'Chưa có kế hoạch chi tiết. Hãy thêm các đầu việc phụ để bắt đầu!' : 'No detailed plan yet. Please add sub-tasks to get started!'}
                                   </p>
                                 ) : (
                                   subTasksList.map((st: any) => (
@@ -443,7 +443,7 @@ export default function MemberPortal() {
                                           type="button"
                                           onClick={() => handleDeleteSubTask(proj.id, st.id)}
                                           className="text-gray-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
-                                          title="Xóa đầu việc"
+                                          title={i18n.language === 'vi' ? 'Xóa đầu việc' : 'Delete sub-task'}
                                         >
                                           <i className="ri-delete-bin-line text-xs" />
                                         </button>
@@ -464,20 +464,20 @@ export default function MemberPortal() {
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1">
                                   <label className="block text-[10px] font-bold text-[#5A6A72] uppercase">
-                                    Tên đầu việc *
+                                    {i18n.language === 'vi' ? 'Tên đầu việc *' : 'Sub-task title *'}
                                   </label>
                                   <input
                                     type="text"
                                     required
                                     value={newSubTaskTitle}
                                     onChange={(e) => setNewSubTaskTitle(e.target.value)}
-                                    placeholder="Ví dụ: Thiết kế giao diện"
+                                    placeholder={i18n.language === 'vi' ? 'Ví dụ: Thiết kế giao diện' : 'e.g. Design UI'}
                                     className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C]"
                                   />
                                 </div>
                                 <div className="space-y-1">
                                   <label className="block text-[10px] font-bold text-[#5A6A72] uppercase">
-                                    Hạn chót *
+                                    {i18n.language === 'vi' ? 'Hạn chót *' : 'Deadline *'}
                                   </label>
                                   <input
                                     type="date"
@@ -490,13 +490,13 @@ export default function MemberPortal() {
                               </div>
                               <div className="space-y-1">
                                 <label className="block text-[10px] font-bold text-[#5A6A72] uppercase">
-                                  Chi tiết công việc / Mô tả
+                                  {i18n.language === 'vi' ? 'Chi tiết công việc / Mô tả' : 'Task description'}
                                 </label>
                                 <textarea
                                   rows={2}
                                   value={newSubTaskDesc}
                                   onChange={(e) => setNewSubTaskDesc(e.target.value)}
-                                  placeholder="Mô tả cụ thể nhiệm vụ cần thực hiện..."
+                                  placeholder={i18n.language === 'vi' ? 'Mô tả cụ thể nhiệm vụ cần thực hiện...' : 'Specific description of the task...'}
                                   className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none"
                                 />
                               </div>
@@ -506,13 +506,13 @@ export default function MemberPortal() {
                                   onClick={() => setActiveSubTaskProjId(null)}
                                   className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 font-semibold text-xs hover:bg-gray-50 transition-colors"
                                 >
-                                  Hủy
+                                  {i18n.language === 'vi' ? 'Hủy' : 'Cancel'}
                                 </button>
                                 <button
                                   type="submit"
                                   className="px-3 py-1.5 rounded-lg gradient-bg text-white font-bold text-xs shadow hover:opacity-95 transition-opacity"
                                 >
-                                  Thêm đầu việc
+                                  {i18n.language === 'vi' ? 'Thêm đầu việc' : 'Add sub-task'}
                                 </button>
                               </div>
                             </form>
@@ -522,7 +522,7 @@ export default function MemberPortal() {
                         {editingProjId === proj.id ? (
                           <form onSubmit={handleSaveProgress} className="space-y-4 pt-4 border-t border-gray-100">
                             <h4 className="text-xs font-bold text-[#1C2526] uppercase">
-                              Cập nhật liên kết sản phẩm bàn giao
+                              {i18n.language === 'vi' ? 'Cập nhật liên kết sản phẩm bàn giao' : 'Update deliverables link'}
                             </h4>
                             <div className="space-y-3">
                               {/* Work deliverables url */}
@@ -551,7 +551,7 @@ export default function MemberPortal() {
                                   type="submit"
                                   className="px-4 py-2 rounded-xl gradient-bg text-white font-bold text-xs shadow hover:opacity-95 transition-opacity"
                                 >
-                                  Lưu liên kết
+                                  {i18n.language === 'vi' ? 'Lưu liên kết' : 'Save link'}
                                 </button>
                               </div>
                             </div>
@@ -562,7 +562,7 @@ export default function MemberPortal() {
                               onClick={() => handleStartEdit(proj)}
                               className="px-4 py-2 border border-[#2C3E50]/20 text-[#2C3E50] font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
                             >
-                              Cập nhật link sản phẩm
+                              {i18n.language === 'vi' ? 'Cập nhật link sản phẩm' : 'Update product link'}
                             </button>
 
                             {/* Payout actions */}

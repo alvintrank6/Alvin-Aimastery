@@ -9,10 +9,11 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import {
-  Lead, Developer, Project, PayoutRequest,
+  User, Lead, Developer, Project, PayoutRequest,
   TrafficMetric, CampaignAlert, FinanceLog
 } from '@/utils/db';
-import { api, LeadsAPI, DevelopersAPI, ProjectsAPI, PayoutsAPI, AnalyticsAPI, SettingsAPI } from '@/utils/api';
+import { api, LeadsAPI, DevelopersAPI, UsersAPI, ProjectsAPI, PayoutsAPI, AnalyticsAPI, SettingsAPI } from '@/utils/api';
+import CustomSelect from '@/components/common/Select';
 import { io } from 'socket.io-client';
 
 const COLORS = ['#2C3E50', '#9B2A4C', '#A8B5A0', '#D97706', '#2563EB'];
@@ -49,8 +50,22 @@ export default function AdminDashboard() {
   const [twoFA, setTwoFA] = useState(false);
   const [showTwoFAModal, setShowTwoFAModal] = useState(false);
 
+  // CRM Lead modal states
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState<'All' | 'admin' | 'manager' | 'client' | 'developer'>('All');
+  const [newLeadName, setNewLeadName] = useState('');
+  const [newLeadEmail, setNewLeadEmail] = useState('');
+  const [newLeadPhone, setNewLeadPhone] = useState('');
+  const [newLeadCompany, setNewLeadCompany] = useState('');
+  const [newLeadService, setNewLeadService] = useState('web');
+  const [newLeadMessage, setNewLeadMessage] = useState('');
+
   // Form states
-  const [activeTab, setActiveTab] = useState<'marketing' | 'finance' | 'crm' | 'projects_management' | 'payouts' | 'security'>('marketing');
+  const [activeTab, setActiveTab] = useState<'marketing' | 'finance' | 'crm' | 'projects_management' | 'payouts' | 'accounts' | 'security'>('marketing');
   const [activeProjectSubTab, setActiveProjectSubTab] = useState<'progress' | 'assign'>('progress');
   const [activeKanbanStatus, setActiveKanbanStatus] = useState<'New' | 'In Progress' | 'Client Review' | 'Completed'>('New');
 
@@ -100,6 +115,105 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAddLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await LeadsAPI.create({
+        name: newLeadName,
+        email: newLeadEmail,
+        phone: newLeadPhone,
+        company: newLeadCompany,
+        service: newLeadService,
+        message: newLeadMessage,
+      });
+
+      setNewLeadName('');
+      setNewLeadEmail('');
+      setNewLeadPhone('');
+      setNewLeadCompany('');
+      setNewLeadMessage('');
+      setShowAddLeadModal(false);
+
+      showToast(
+        i18n.language === 'vi' ? 'Thêm khách hàng thủ công thành công!' : 'Customer successfully added manually!',
+        'success'
+      );
+      await loadData();
+    } catch (err) {
+      showToast(i18n.language === 'vi' ? 'Lỗi khi thêm khách hàng.' : 'Error adding customer.', 'error');
+    }
+  };
+
+  const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+        if (lines.length < 2) {
+          showToast(i18n.language === 'vi' ? 'File CSV trống hoặc không đúng định dạng.' : 'CSV file is empty or invalid.', 'error');
+          return;
+        }
+
+        const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase());
+        const importedLeads = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          let current = '';
+          let inQuotes = false;
+          const row = [];
+
+          for (let j = 0; j < line.length; j++) {
+            const char = line[j];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              row.push(current.trim().replace(/^["']|["']$/g, ''));
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          row.push(current.trim().replace(/^["']|["']$/g, ''));
+
+          const lead: any = {};
+          headers.forEach((header, idx) => {
+            const val = row[idx];
+            if (header === 'name') lead.name = val;
+            else if (header === 'email') lead.email = val;
+            else if (header === 'phone') lead.phone = val;
+            else if (header === 'company') lead.company = val;
+            else if (header === 'service') lead.service = val;
+            else if (header === 'message') lead.message = val;
+          });
+
+          if (lead.name) {
+            importedLeads.push(lead);
+          }
+        }
+
+        if (importedLeads.length > 0) {
+          await LeadsAPI.importBulk(importedLeads);
+          showToast(
+            i18n.language === 'vi' ? `Đã import thành công ${importedLeads.length} leads!` : `Successfully imported ${importedLeads.length} leads!`,
+            'success'
+          );
+          await loadData();
+        } else {
+          showToast(i18n.language === 'vi' ? 'Không tìm thấy dòng lead hợp lệ.' : 'No valid leads found.', 'warning');
+        }
+      } catch (err) {
+        showToast(i18n.language === 'vi' ? 'Lỗi khi parse file CSV.' : 'Error parsing CSV file.', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   // Lead assignment states
   const [assigningLead, setAssigningLead] = useState<Lead | null>(null);
   const [assigneeDeveloperId, setAssigneeDeveloperId] = useState('Unassigned');
@@ -124,8 +238,8 @@ export default function AdminDashboard() {
       assigneeName,
       deadline: assignDeadline,
       brief: assigningLead.message,
-      contractValue: assignContractValue,
-      outsourceFee: assignOutsourceFee,
+      contractValue: role === 'manager' ? 0 : assignContractValue,
+      outsourceFee: role === 'manager' ? 0 : assignOutsourceFee,
       taxRate,
       subTasks: JSON.stringify([])
     });
@@ -154,6 +268,7 @@ export default function AdminDashboard() {
   const [outsourceFee, setOutsourceFee] = useState<number>(600);
   const [deadline, setDeadline] = useState('2026-07-01');
   const [taskBrief, setTaskBrief] = useState('');
+  const [prefillLeadId, setPrefillLeadId] = useState('none');
 
 
   // Unified login check
@@ -169,12 +284,6 @@ export default function AdminDashboard() {
     setIsLoggedIn(true);
     setRole(userRole as 'admin' | 'manager');
   }, [navigate]);
-
-  const handleSwitchRole = (newRole: 'admin' | 'manager') => {
-    setRole(newRole);
-    sessionStorage.setItem('admin_role', newRole);
-    sessionStorage.setItem('user_role', newRole); // Sync role
-  };
 
   const handleLogoutAdmin = () => {
     sessionStorage.removeItem('user_logged_in');
@@ -265,6 +374,7 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setLeads(await LeadsAPI.getAll());
     setDevelopers(await DevelopersAPI.getAll());
+    setUsers(await UsersAPI.getAll());
     setProjects(await ProjectsAPI.getAll());
     setPayouts(await PayoutsAPI.getAll());
     setTrafficData(await AnalyticsAPI.getTraffic(trafficFilter));
@@ -282,30 +392,47 @@ export default function AdminDashboard() {
 
   // Approve developer application
   const handleApproveDeveloper = async (id: string, approve: boolean) => {
-    if (role === 'manager') {
-      showToast(t('admin.deniedApprove'), 'error');
-      return;
-    }
     await DevelopersAPI.update(id, { status: approve ? 'Approved' : 'Rejected' });
     await loadData();
   };
 
+  // Change user role and auto-create developer profile if needed
+  const handleRoleChange = async (userId: string, newRole: 'admin' | 'manager' | 'client' | 'developer') => {
+    try {
+      const userObj = users.find(u => u.id === userId);
+      if (!userObj) return;
 
+      await UsersAPI.update(userId, { role: newRole });
 
+      if (newRole === 'developer') {
+        const devProfile = developers.find(d => d.email === userObj.email || d.id === userId);
+        if (!devProfile) {
+          await DevelopersAPI.create({
+            email: userObj.email,
+            name: userObj.name || 'Developer',
+            skills: [],
+            rateType: 'hourly',
+            rateValue: 0,
+            status: 'Approved',
+            title: 'Developer'
+          });
+        }
+      }
 
-  // Reset database tool
-  const handleResetDb = async () => {
-    localStorage.removeItem('alvin_leads');
-    localStorage.removeItem('alvin_developers');
-    localStorage.removeItem('alvin_projects');
-    localStorage.removeItem('alvin_traffic');
-    localStorage.removeItem('alvin_alerts');
-    localStorage.removeItem('alvin_finance');
-    localStorage.removeItem('alvin_tax_rate');
-    localStorage.removeItem('alvin_2fa_enabled');
-    await loadData();
-    showToast(t('admin.resetDbSuccess'), 'success');
+      showToast(
+        i18n.language === 'vi' ? 'Cập nhật vai trò tài khoản thành công!' : 'Account role successfully updated!',
+        'success'
+      );
+      await loadData();
+    } catch (err) {
+      showToast(
+        i18n.language === 'vi' ? 'Cập nhật vai trò thất bại.' : 'Failed to update account role.',
+        'error'
+      );
+    }
   };
+
+
 
   // Add Kanban Project
   // Select lead to prefill task fields
@@ -336,8 +463,8 @@ export default function AdminDashboard() {
       assigneeName,
       deadline,
       brief: taskBrief,
-      contractValue,
-      outsourceFee,
+      contractValue: role === 'manager' ? 0 : contractValue,
+      outsourceFee: role === 'manager' ? 0 : outsourceFee,
       taxRate
     });
 
@@ -351,6 +478,7 @@ export default function AdminDashboard() {
     setClientName('');
     setClientEmail('');
     setTaskBrief('');
+    setPrefillLeadId('none');
   };
 
   // Move Kanban card
@@ -409,6 +537,29 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
 
+  // Export Finance Ledger to Excel (CSV)
+  const handleExportFinanceExcel = () => {
+    if (financeData.length === 0) {
+      showToast(i18n.language === 'vi' ? 'Không có dữ liệu tài chính để xuất!' : 'No financial data to export!', 'warning');
+      return;
+    }
+
+    let csvContent = "\ufeffMonth,Revenue ($),Outsource Cost ($),Operating Cost ($),Gross Profit ($)\n";
+    financeData.forEach(log => {
+      const gross = log.revenue - log.outsourceCost - log.otherCost;
+      csvContent += `${log.month},${log.revenue.toFixed(2)},${log.outsourceCost.toFixed(2)},${log.otherCost.toFixed(2)},${gross.toFixed(2)}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Alvin_Agency_Financial_Report_${new Date().toISOString().substring(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Config adjustments
   const handleTaxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (role === 'manager') {
@@ -421,10 +572,6 @@ export default function AdminDashboard() {
   };
 
   const handleToggle2FA = async () => {
-    if (role === 'manager') {
-      showToast(t('admin.denied2fa'), 'error');
-      return;
-    }
     if (!twoFA) {
       setShowTwoFAModal(true);
     } else {
@@ -491,6 +638,8 @@ export default function AdminDashboard() {
   const totalRevenue = projects.reduce((acc, p) => acc + p.contractValue, 0);
   const totalOutsource = projects.reduce((acc, p) => acc + p.outsourceFee, 0);
   const netEarnings = totalRevenue - totalOutsource;
+  const activeProjectsCount = projects.filter(p => p.status !== 'Completed').length;
+  const profitMargin = totalRevenue > 0 ? ((totalRevenue - totalOutsource) / totalRevenue) * 100 : 0;
 
   // Pie chart format
   const safeTrafficData = Array.isArray(trafficData) ? trafficData : [];
@@ -618,25 +767,6 @@ export default function AdminDashboard() {
                     </>
                   )}
                 </div>
-                <span className="text-xs font-bold text-[#5A6A72] uppercase tracking-wide">
-                  {t('admin.currentRole')}:
-                </span>
-                <div className="inline-flex rounded-xl border border-gray-200 p-0.5 bg-gray-50">
-                  <button
-                    onClick={() => handleSwitchRole('admin')}
-                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${role === 'admin' ? 'bg-white text-[#9B2A4C] shadow-sm' : 'text-gray-500 hover:text-gray-800'
-                      }`}
-                  >
-                    {t('portals.roleAdmin')}
-                  </button>
-                  <button
-                    onClick={() => handleSwitchRole('manager')}
-                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer ${role === 'manager' ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-gray-500 hover:text-gray-800'
-                      }`}
-                  >
-                    {t('portals.roleManager')}
-                  </button>
-                </div>
 
                 <button
                   onClick={handleLogoutAdmin}
@@ -652,11 +782,13 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-[#9B2A4C]/10 flex items-center justify-center text-[#9B2A4C] text-xl">
-                  <i className="ri-contacts-book-line" />
+                  <i className="ri-briefcase-line" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">CRM Leads</p>
-                  <p className="text-2xl font-black text-[#1C2526]">{totalLeads}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                    {i18n.language === 'vi' ? 'Dự án hoạt động' : 'Active Projects'}
+                  </p>
+                  <p className="text-2xl font-black text-[#1C2526]">{activeProjectsCount}</p>
                 </div>
               </div>
 
@@ -665,8 +797,10 @@ export default function AdminDashboard() {
                   <i className="ri-bank-card-line" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Contract Value</p>
-                  <p className="text-2xl font-black text-[#1C2526]">${totalRevenue}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                    {i18n.language === 'vi' ? 'Tổng Doanh Thu' : 'Total Revenue'}
+                  </p>
+                  <p className="text-2xl font-black text-[#1C2526]">{role === 'manager' ? '$***' : `$${totalRevenue}`}</p>
                 </div>
               </div>
 
@@ -675,18 +809,22 @@ export default function AdminDashboard() {
                   <i className="ri-refund-2-line" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Outsource Fees</p>
-                  <p className="text-2xl font-black text-[#1C2526]">${totalOutsource}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                    {i18n.language === 'vi' ? 'Chi phí Outsource' : 'Outsource Costs'}
+                  </p>
+                  <p className="text-2xl font-black text-[#1C2526]">{role === 'manager' ? '$***' : `$${totalOutsource}`}</p>
                 </div>
               </div>
 
               <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 text-xl">
-                  <i className="ri-safe-2-line" />
+                  <i className="ri-pie-chart-line" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Net Profit Margin</p>
-                  <p className="text-2xl font-black text-[#1C2526]">${netEarnings}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                    {i18n.language === 'vi' ? 'Biên Lợi Nhuận' : 'Profit Margin'}
+                  </p>
+                  <p className="text-2xl font-black text-[#1C2526]">{role === 'manager' ? '***%' : `${profitMargin.toFixed(1)}%`}</p>
                 </div>
               </div>
             </div>
@@ -716,7 +854,7 @@ export default function AdminDashboard() {
                   className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-3 cursor-pointer border-l-4 ${activeTab === 'crm' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
                     }`}
                 >
-                  <i className="ri-user-follow-line text-base" />
+                  <i className="ri-file-list-3-line text-base" />
                   {t('admin.crmManagement')}
                 </button>
                 <button
@@ -739,6 +877,21 @@ export default function AdminDashboard() {
                   {payouts.filter(p => p.status === 'Pending').length > 0 && (
                     <span className="bg-[#9B2A4C] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
                       {payouts.filter(p => p.status === 'Pending').length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('accounts')}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-between cursor-pointer border-l-4 ${activeTab === 'accounts' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' : 'border-transparent text-[#5A6A72] hover:bg-gray-50/50'
+                    }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <i className="ri-user-settings-line text-base" />
+                    {t('admin.accountManagement')}
+                  </span>
+                  {developers.filter(f => f.status === 'Pending').length > 0 && (
+                    <span className="bg-yellow-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                      {developers.filter(f => f.status === 'Pending').length}
                     </span>
                   )}
                 </button>
@@ -888,65 +1041,92 @@ export default function AdminDashboard() {
 
                 {/* 2. FINANCE TAB */}
                 {activeTab === 'finance' && (
-                  <div className="space-y-8 animate-fadeIn">
-                    <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                      <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.sheetsIntegration')}</h3>
-                      <span className="text-[10px] text-[#2C3E50] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 bg-[#2C3E50]/5 rounded-xl">
-                        <i className="ri-file-excel-fill text-green-600 text-sm" />
-                        {t('admin.sheetsActive')}
-                      </span>
-                    </div>
-
-                    {/* Finance charts */}
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={financeData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
-                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} />
-                          <Tooltip contentStyle={{ fontSize: 11 }} />
-                          <Legend wrapperStyle={{ fontSize: 11 }} />
-                          <Bar dataKey="revenue" fill="#9B2A4C" name="Total Revenue ($)" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="outsourceCost" fill="#2C3E50" name="Outsource Expenses ($)" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="otherCost" fill="#A8B5A0" name="General Operations ($)" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {/* Sheets Grid table representation */}
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                        {t('admin.sheetsLedger')}
-                      </h4>
-                      <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead>
-                            <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                              <th className="p-3">Month</th>
-                              <th className="p-3 text-right">Revenue</th>
-                              <th className="p-3 text-right">Outsource Cost</th>
-                              <th className="p-3 text-right">Operating Cost</th>
-                              <th className="p-3 text-right">Gross Profit</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-100 text-gray-700">
-                            {financeData.map(log => {
-                              const gross = log.revenue - log.outsourceCost - log.otherCost;
-                              return (
-                                <tr key={log.month} className="hover:bg-gray-50/50">
-                                  <td className="p-3 font-semibold text-[#1C2526]">{log.month}</td>
-                                  <td className="p-3 text-right font-semibold text-green-600">${log.revenue}</td>
-                                  <td className="p-3 text-right text-red-500">-${log.outsourceCost}</td>
-                                  <td className="p-3 text-right text-gray-400">-${log.otherCost}</td>
-                                  <td className="p-3 text-right font-bold text-[#9B2A4C]">${gross}</td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                  role === 'manager' ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                      <div className="w-16 h-16 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-2xl">
+                        <i className="ri-lock-2-line" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-[#1C2526] text-base">
+                          {i18n.language === 'vi' ? 'Truy cập bị hạn chế' : 'Access Restricted'}
+                        </h4>
+                        <p className="text-xs text-gray-400 max-w-sm">
+                          {i18n.language === 'vi'
+                            ? 'Tài khoản vai trò Quản lý (Manager) không có quyền xem báo cáo tài chính và sổ cái.'
+                            : 'Manager accounts do not have permission to view financial reports and ledger.'}
+                        </p>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="space-y-8 animate-fadeIn">
+                      <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                        <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.sheetsIntegration')}</h3>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={handleExportFinanceExcel}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-[#2C3E50] hover:bg-slate-800 text-white text-[10px] font-bold rounded-xl cursor-pointer transition-colors shadow-sm"
+                          >
+                            <i className="ri-file-download-line text-sm" />
+                            {i18n.language === 'vi' ? 'Xuất Excel (CSV)' : 'Export Excel (CSV)'}
+                          </button>
+                          <span className="text-[10px] text-[#2C3E50] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 bg-[#2C3E50]/5 rounded-xl">
+                            <i className="ri-file-excel-fill text-green-600 text-sm" />
+                            {t('admin.sheetsActive')}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Finance charts */}
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={financeData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+                            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} />
+                            <Tooltip contentStyle={{ fontSize: 11 }} />
+                            <Legend wrapperStyle={{ fontSize: 11 }} />
+                            <Bar dataKey="revenue" fill="#9B2A4C" name="Total Revenue ($)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="outsourceCost" fill="#2C3E50" name="Outsource Expenses ($)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="otherCost" fill="#A8B5A0" name="General Operations ($)" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Sheets Grid table representation */}
+                      <div className="space-y-3">
+                        <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
+                          {t('admin.sheetsLedger')}
+                        </h4>
+                        <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
+                                <th className="p-3">Month</th>
+                                <th className="p-3 text-right">Revenue</th>
+                                <th className="p-3 text-right">Outsource Cost</th>
+                                <th className="p-3 text-right">Operating Cost</th>
+                                <th className="p-3 text-right">Gross Profit</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 text-gray-700">
+                              {financeData.map(log => {
+                                const gross = log.revenue - log.outsourceCost - log.otherCost;
+                                return (
+                                  <tr key={log.month} className="hover:bg-gray-50/50">
+                                    <td className="p-3 font-semibold text-[#1C2526]">{log.month}</td>
+                                    <td className="p-3 text-right font-semibold text-green-600">${log.revenue}</td>
+                                    <td className="p-3 text-right text-red-500">-${log.outsourceCost}</td>
+                                    <td className="p-3 text-right text-gray-400">-${log.otherCost}</td>
+                                    <td className="p-3 text-right font-bold text-[#9B2A4C]">${gross}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )
                 )}
 
                 {/* 3. CRM LEADS */}
@@ -958,101 +1138,294 @@ export default function AdminDashboard() {
                         <p className="text-xs text-gray-400">{t('admin.crmDesc')}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
+                        <label className="px-4 py-2 border border-gray-200 text-gray-700 text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-gray-50 transition-colors cursor-pointer select-none">
+                          <i className="ri-file-upload-line text-sm" />
+                          {i18n.language === 'vi' ? 'Import CSV' : 'Import CSV'}
+                          <input
+                            type="file"
+                            accept=".csv"
+                            onChange={handleCsvImport}
+                            className="hidden"
+                          />
+                        </label>
+
                         <button
                           onClick={() => {
                             setActiveTab('projects_management');
                             setActiveProjectSubTab('assign');
                           }}
-                          className="px-4 py-2 gradient-bg text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow hover:opacity-95 transition-opacity cursor-pointer animate-pulse"
+                          className="px-4 py-2 bg-[#2C3E50] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow hover:opacity-95 transition-opacity cursor-pointer"
                         >
                           <i className="ri-add-line text-sm" />
-                          Tạo đơn hàng mới
-                        </button>
-                        <button
-                          onClick={handleResetDb}
-                          className="px-4 py-2 border border-red-200 text-red-500 hover:bg-red-50 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <i className="ri-refresh-line" />
-                          {t('admin.resetDb')}
+                          {i18n.language === 'vi' ? 'Tạo đơn hàng mới' : 'Create new project'}
                         </button>
                       </div>
                     </div>
 
                     {/* CRM Leads Database */}
-                    <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="border border-gray-200 rounded-2xl shadow-sm">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
                           <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                            <th className="p-3">{t('admin.customerInfo')}</th>
+                            <th className="p-3 rounded-tl-2xl">{t('admin.customerInfo')}</th>
                             <th className="p-3">{t('admin.requestDetails')}</th>
                             <th className="p-3">{t('admin.leadStatus')}</th>
-                            <th className="p-3 text-center">{t('common.actions')}</th>
+                            <th className="p-3 rounded-tr-2xl text-center">{t('common.actions')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 text-gray-700">
-                          {leads.map(lead => (
-                            <tr key={lead.id} className="hover:bg-gray-50/50 align-top">
-                              <td className="p-3 space-y-1">
-                                <p className="font-bold text-[#1C2526]">{lead.name}</p>
-                                <p className="text-[10px] text-gray-400">{lead.email}</p>
-                                <p className="text-[10px] text-gray-400">{lead.phone}</p>
-                                <p className="text-[10px] font-bold text-[#9B2A4C]">{lead.company}</p>
-                              </td>
-                              <td className="p-3 space-y-1 max-w-xs">
-                                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-                                  {i18n.exists(`services.list.${lead.service}.title`) ? t(`services.list.${lead.service}.title` as any) : lead.service}
-                                </span>
-                                <p className="text-[10px] text-[#5A6A72] leading-relaxed line-clamp-3">
-                                  {lead.message}
-                                </p>
-                              </td>
-                              <td className="p-3">
-                                <select
-                                  value={lead.status}
-                                  onChange={async (e) => {
-                                    await LeadsAPI.update(lead.id, { status: e.target.value });
-                                    await loadData();
-                                  }}
-                                  className="bg-gray-50 border border-gray-200 rounded px-1.5 py-1 text-[10px] font-bold text-gray-700 focus:outline-none focus:border-[#9B2A4C]"
-                                >
-                                  <option value="New">{t('admin.statusNew')}</option>
-                                  <option value="Contacted">{t('admin.statusContacted')}</option>
-                                  <option value="Qualified">{t('admin.statusQualified')}</option>
-                                  <option value="Closed">{t('admin.statusClosed')}</option>
-                                </select>
-                              </td>
-                              <td className="p-3 text-center">
-                                <div className="flex items-center justify-center gap-2">
-                                  {lead.status !== 'Qualified' && lead.status !== 'Closed' ? (
-                                    <button
-                                      onClick={() => {
-                                        setAssigningLead(lead);
-                                        setAssigneeDeveloperId(developers.filter(f => f.status === 'Approved')[0]?.id || 'Unassigned');
-                                      }}
-                                      className="px-2 py-1 bg-[#9B2A4C] text-white text-[10px] font-bold rounded hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-0.5"
-                                      title={i18n.language === 'vi' ? 'Giao việc cho Dev' : 'Assign to Dev'}
-                                    >
-                                      <i className="ri-user-add-line" />
-                                      {i18n.language === 'vi' ? 'Giao việc' : 'Assign'}
-                                    </button>
-                                  ) : null}
-                                  <button
-                                    onClick={async () => {
-                                      await LeadsAPI.delete(lead.id);
+                          {leads.map((lead, idx) => {
+                            const isLast = idx === leads.length - 1;
+                            return (
+                              <tr key={lead.id} className="hover:bg-gray-50/50 align-top">
+                                <td className={`p-3 space-y-1 ${isLast ? 'rounded-bl-2xl' : ''}`}>
+                                  <p className="font-bold text-[#1C2526]">{lead.name}</p>
+                                  <p className="text-[10px] text-gray-400">{lead.email}</p>
+                                  <p className="text-[10px] text-gray-400">{lead.phone}</p>
+                                  <p className="text-[10px] font-bold text-[#9B2A4C]">{lead.company}</p>
+                                </td>
+                                <td className="p-3 space-y-1 max-w-xs">
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                                    {i18n.exists(`services.list.${lead.service}.title`) ? t(`services.list.${lead.service}.title` as any) : lead.service}
+                                  </span>
+                                  <p className="text-[10px] text-[#5A6A72] leading-relaxed line-clamp-3">
+                                    {lead.message}
+                                  </p>
+                                </td>
+                                <td className="p-3">
+                                  <CustomSelect
+                                    value={lead.status}
+                                    onChange={async (val) => {
+                                      await LeadsAPI.update(lead.id, { status: val });
                                       await loadData();
                                     }}
-                                    className="text-red-500 hover:text-red-700 p-1 text-sm cursor-pointer"
-                                    title="Delete Lead"
-                                  >
-                                    <i className="ri-delete-bin-6-line" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                                    options={[
+                                      { value: 'New', label: t('admin.statusNew') },
+                                      { value: 'Contacted', label: t('admin.statusContacted') },
+                                      { value: 'Qualified', label: t('admin.statusQualified') },
+                                      { value: 'Closed', label: t('admin.statusClosed') }
+                                    ]}
+                                    selectClassName="bg-gray-50 border border-gray-200 rounded px-2.5 py-1 text-[10px] font-bold text-gray-700 focus:border-[#9B2A4C]"
+                                    className="w-28"
+                                  />
+                                </td>
+                                <td className={`p-3 text-center ${isLast ? 'rounded-br-2xl' : ''}`}>
+                                  <div className="flex items-center justify-center gap-2">
+                                    {lead.status !== 'Qualified' && lead.status !== 'Closed' ? (
+                                      <button
+                                        onClick={() => {
+                                          setAssigningLead(lead);
+                                          setAssigneeDeveloperId(developers.filter(f => f.status === 'Approved')[0]?.id || 'Unassigned');
+                                        }}
+                                        className="px-2 py-1 bg-[#9B2A4C] text-white text-[10px] font-bold rounded hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-0.5"
+                                        title={i18n.language === 'vi' ? 'Giao việc cho Dev' : 'Assign to Dev'}
+                                      >
+                                        <i className="ri-user-add-line" />
+                                        {i18n.language === 'vi' ? 'Giao việc' : 'Assign'}
+                                      </button>
+                                    ) : null}
+                                    <button
+                                      onClick={() => setLeadToDelete(lead)}
+                                      className="text-red-500 hover:text-red-700 p-1 text-sm cursor-pointer"
+                                      title={i18n.language === 'vi' ? 'Xóa khách hàng' : 'Delete Lead'}
+                                    >
+                                      <i className="ri-delete-bin-6-line" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
+
+
+                    {/* Add Customer Modal */}
+                    {showAddLeadModal && (
+                      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full border border-gray-100 shadow-2xl relative overflow-hidden animate-dropdown-in">
+                          <div className="absolute top-0 left-0 right-0 h-1.5 gradient-bg" />
+                          <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-extrabold text-[#1C2526] text-base">
+                              {i18n.language === 'vi' ? 'Thêm Khách Hàng Thủ Công' : 'Add New Customer'}
+                            </h3>
+                            <button
+                              onClick={() => setShowAddLeadModal(false)}
+                              className="text-gray-400 hover:text-[#9B2A4C] cursor-pointer"
+                            >
+                              <i className="ri-close-line text-xl" />
+                            </button>
+                          </div>
+
+                          <form onSubmit={handleAddLeadSubmit} className="space-y-4">
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Họ tên *' : 'Full Name *'}
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="Nguyen Van A"
+                                value={newLeadName}
+                                onChange={(e) => setNewLeadName(e.target.value)}
+                                className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] text-[#1C2526]"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                  Email *
+                                </label>
+                                <input
+                                  type="email"
+                                  required
+                                  placeholder="client@example.com"
+                                  value={newLeadEmail}
+                                  onChange={(e) => setNewLeadEmail(e.target.value)}
+                                  className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] text-[#1C2526]"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                  {i18n.language === 'vi' ? 'Số điện thoại *' : 'Phone Number *'}
+                                </label>
+                                <input
+                                  type="tel"
+                                  required
+                                  placeholder="0987654321"
+                                  value={newLeadPhone}
+                                  onChange={(e) => setNewLeadPhone(e.target.value)}
+                                  className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] text-[#1C2526]"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                  {i18n.language === 'vi' ? 'Công ty' : 'Company'}
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="Tech Corp"
+                                  value={newLeadCompany}
+                                  onChange={(e) => setNewLeadCompany(e.target.value)}
+                                  className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] text-[#1C2526]"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                  {i18n.language === 'vi' ? 'Dịch vụ yêu cầu' : 'Service Requested'}
+                                </label>
+                                <CustomSelect
+                                  value={newLeadService}
+                                  onChange={(val) => setNewLeadService(val)}
+                                  options={[
+                                    { value: 'web', label: 'Web Development' },
+                                    { value: 'chatbot', label: 'Chatbot AI' },
+                                    { value: 'landing', label: 'Landing Page' },
+                                    { value: 'workflow', label: 'Workflow Automation' },
+                                    { value: 'email', label: 'Email Automation' },
+                                    { value: 'n8n', label: 'n8n Custom Setup' },
+                                    { value: 'app', label: 'Mobile App' }
+                                  ]}
+                                  selectClassName="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer text-[#1C2526] font-semibold"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                {i18n.language === 'vi' ? 'Yêu cầu cụ thể *' : 'Brief / Message *'}
+                              </label>
+                              <textarea
+                                required
+                                rows={3}
+                                placeholder="..."
+                                value={newLeadMessage}
+                                onChange={(e) => setNewLeadMessage(e.target.value)}
+                                className="w-full bg-[#F8F6F2]/50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] resize-none text-[#1C2526]"
+                              />
+                            </div>
+
+                            <div className="flex gap-2 justify-end pt-2">
+                              <button
+                                type="button"
+                                onClick={() => setShowAddLeadModal(false)}
+                                className="px-4 py-2 rounded-xl border border-gray-200 text-gray-500 font-semibold text-xs hover:bg-gray-50 transition-colors"
+                              >
+                                {i18n.language === 'vi' ? 'Hủy' : 'Cancel'}
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-4 py-2 rounded-xl gradient-bg text-white font-bold text-xs shadow hover:opacity-95 transition-opacity"
+                              >
+                                {i18n.language === 'vi' ? 'Thêm Khách Hàng' : 'Create Customer'}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Delete Confirmation Modal */}
+                    {leadToDelete && (
+                      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                        <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-gray-100 shadow-2xl relative overflow-hidden animate-dropdown-in">
+                          <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-600" />
+                          <div className="flex items-start gap-4 mb-4">
+                            <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 text-lg shrink-0">
+                              <i className="ri-error-warning-line" />
+                            </div>
+                            <div className="space-y-1 flex-1">
+                              <h3 className="font-extrabold text-[#1C2526] text-base">
+                                {i18n.language === 'vi' ? 'Xác nhận xóa' : 'Confirm Delete'}
+                              </h3>
+                              <p className="text-xs text-gray-500 leading-relaxed">
+                                {i18n.language === 'vi'
+                                  ? `Bạn có chắc chắn muốn xóa khách hàng "${leadToDelete.name}"? Hành động này không thể hoàn tác.`
+                                  : `Are you sure you want to delete customer "${leadToDelete.name}"? This action cannot be undone.`}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 justify-end pt-2">
+                            <button
+                              type="button"
+                              onClick={() => setLeadToDelete(null)}
+                              className="px-4 py-2 rounded-xl border border-gray-200 text-gray-500 font-semibold text-xs hover:bg-gray-50 transition-colors cursor-pointer"
+                            >
+                              {i18n.language === 'vi' ? 'Hủy' : 'Cancel'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  await LeadsAPI.delete(leadToDelete.id);
+                                  showToast(
+                                    i18n.language === 'vi' ? 'Đã xóa khách hàng thành công!' : 'Customer successfully deleted!',
+                                    'success'
+                                  );
+                                  setLeadToDelete(null);
+                                  await loadData();
+                                } catch (err) {
+                                  showToast(
+                                    i18n.language === 'vi' ? 'Lỗi khi xóa khách hàng.' : 'Error deleting customer.',
+                                    'error'
+                                  );
+                                }
+                              }}
+                              className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-xs shadow hover:bg-red-700 transition-colors cursor-pointer"
+                            >
+                              {i18n.language === 'vi' ? 'Xóa' : 'Delete'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 )}
 
@@ -1182,7 +1555,7 @@ export default function AdminDashboard() {
                                             </h4>
                                             <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
                                               <i className="ri-user-star-line text-[12px]" />
-                                              <span>Client: <strong className="text-[#5A6A72] font-semibold">{proj.clientName}</strong></span>
+                                              <span>{i18n.language === 'vi' ? 'Khách hàng' : 'Client'}: <strong className="text-[#5A6A72] font-semibold">{proj.clientName}</strong></span>
                                             </p>
                                           </div>
                                         </div>
@@ -1195,10 +1568,10 @@ export default function AdminDashboard() {
                                             </p>
                                             <div className="flex items-center gap-1.5 font-medium text-gray-750">
                                               <i className="ri-user-3-line text-[#8A97A0]" />
-                                              <select
+                                              <CustomSelect
                                                 value={proj.assigneeId || 'Unassigned'}
-                                                onChange={async (e) => {
-                                                  const newAssigneeId = e.target.value;
+                                                onChange={async (val) => {
+                                                  const newAssigneeId = val;
                                                   const dev = developers.find(f => f.id === newAssigneeId);
                                                   const newAssigneeName = dev ? dev.name : 'None';
                                                   await ProjectsAPI.update(proj.id, {
@@ -1214,14 +1587,16 @@ export default function AdminDashboard() {
                                                     'success'
                                                   );
                                                 }}
-                                                className={`bg-transparent border-none font-semibold text-[11px] focus:outline-none cursor-pointer hover:text-[#9B2A4C] p-0 max-w-[120px] ${(proj.assigneeId || 'Unassigned') === 'Unassigned' ? 'text-gray-400' : 'text-gray-750'
-                                                  }`}
-                                              >
-                                                <option value="Unassigned" className="text-gray-400">Unassigned</option>
-                                                {developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => (
-                                                  <option key={f.id} value={f.id} className="text-gray-750">{f.name}</option>
-                                                ))}
-                                              </select>
+                                                options={[
+                                                  { value: 'Unassigned', label: 'Unassigned' },
+                                                  ...developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => ({
+                                                    value: f.id,
+                                                    label: f.name
+                                                  }))
+                                                ]}
+                                                selectClassName="bg-transparent border-none p-0 text-[11px] font-bold focus:outline-none cursor-pointer"
+                                                className={`w-32 hover:text-[#9B2A4C] ${(proj.assigneeId || 'Unassigned') === 'Unassigned' ? 'text-gray-400' : 'text-gray-750'}`}
+                                              />
                                             </div>
                                           </div>
 
@@ -1234,18 +1609,18 @@ export default function AdminDashboard() {
                                           </div>
 
                                           <div className="space-y-1 sm:min-w-[80px]">
-                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Hợp đồng</p>
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">{i18n.language === 'vi' ? 'Hợp đồng' : 'Contract'}</p>
                                             <div className="flex items-center gap-1.5 font-bold text-green-600">
                                               <i className="ri-money-dollar-circle-line" />
-                                              <span>${proj.contractValue}</span>
+                                              <span>{role === 'manager' ? '$***' : `$${proj.contractValue}`}</span>
                                             </div>
                                           </div>
 
                                           <div className="space-y-1 sm:min-w-[80px]">
-                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Thù lao</p>
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">{i18n.language === 'vi' ? 'Thù lao' : 'Payout'}</p>
                                             <div className="flex items-center gap-1.5 font-bold text-[#9B2A4C]">
                                               <i className="ri-wallet-line" />
-                                              <span>${proj.outsourceFee}</span>
+                                              <span>{role === 'manager' ? '$***' : `$${proj.outsourceFee}`}</span>
                                             </div>
                                           </div>
                                         </div>
@@ -1255,7 +1630,7 @@ export default function AdminDashboard() {
                                           {/* Progress Indicator */}
                                           <div className="space-y-1">
                                             <div className="flex justify-between items-center text-[10px]">
-                                              <span className="text-gray-400 font-medium">Tiến độ</span>
+                                              <span className="text-gray-400 font-medium">{i18n.language === 'vi' ? 'Tiến độ' : 'Progress'}</span>
                                               <span className="font-bold text-[#9B2A4C]">{proj.progress}%</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -1272,14 +1647,14 @@ export default function AdminDashboard() {
                                           {/* Card Mover */}
                                           <div className="flex justify-between items-center pt-1">
                                             <span className="text-[9px] font-bold text-[#5A6A72] uppercase tracking-wider">
-                                              Di chuyển thẻ
+                                              {i18n.language === 'vi' ? 'Di chuyển thẻ' : 'Move card'}
                                             </span>
                                             <div className="flex items-center gap-1.5">
                                               <button
                                                 onClick={() => handleMoveCard(proj.id, proj.status, 'left')}
                                                 disabled={activeKanbanStatus === 'New'}
                                                 className="w-6 h-6 rounded-full bg-[#F8F6F2] border border-gray-200 text-gray-500 hover:text-[#9B2A4C] hover:border-[#9B2A4C]/30 hover:bg-[#9B2A4C]/5 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:hover:border-gray-200 cursor-pointer flex items-center justify-center transition-all duration-150"
-                                                title="Sang trái"
+                                                title={i18n.language === 'vi' ? 'Sang trái' : 'Move left'}
                                               >
                                                 <i className="ri-arrow-left-s-line text-xs font-bold" />
                                               </button>
@@ -1287,7 +1662,7 @@ export default function AdminDashboard() {
                                                 onClick={() => handleMoveCard(proj.id, proj.status, 'right')}
                                                 disabled={activeKanbanStatus === 'Completed'}
                                                 className="w-6 h-6 rounded-full bg-[#F8F6F2] border border-gray-200 text-gray-500 hover:text-[#9B2A4C] hover:border-[#9B2A4C]/30 hover:bg-[#9B2A4C]/5 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:hover:border-gray-200 cursor-pointer flex items-center justify-center transition-all duration-150"
-                                                title="Sang phải"
+                                                title={i18n.language === 'vi' ? 'Sang phải' : 'Move right'}
                                               >
                                                 <i className="ri-arrow-right-s-line text-xs font-bold" />
                                               </button>
@@ -1353,20 +1728,23 @@ export default function AdminDashboard() {
                           {/* Prefill from request */}
                           <div className="space-y-1.5">
                             <label className="block text-[10px] font-extrabold text-[#5A6A72] uppercase tracking-wide">
-                              {i18n.language === 'vi' ? 'Điền nhanh thông tin từ Yêu cầu / Lead của khách' : 'Prefill from CRM Client Request'}
+                              {i18n.language === 'vi' ? 'Điền nhanh thông tin từ Đơn hàng của khách' : 'Prefill from Client Order'}
                             </label>
-                            <select
-                              onChange={(e) => handleSelectLeadForTask(e.target.value)}
-                              defaultValue="none"
-                              className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                            >
-                              <option value="none">-- {i18n.language === 'vi' ? 'Chọn yêu cầu gửi từ khách hàng' : 'Select client request'} --</option>
-                              {leads.map(l => (
-                                <option key={l.id} value={l.id}>
-                                  {l.name} - {l.company || 'Khách lẻ'} ({i18n.exists(`services.list.${l.service}.title`) ? t(`services.list.${l.service}.title` as any) : l.service}) [{l.status}]
-                                </option>
-                              ))}
-                            </select>
+                            <CustomSelect
+                              value={prefillLeadId}
+                              onChange={(val) => {
+                                setPrefillLeadId(val);
+                                handleSelectLeadForTask(val);
+                              }}
+                              options={[
+                                { value: 'none', label: `-- ${i18n.language === 'vi' ? 'Chọn đơn hàng từ khách hàng' : 'Select client order'} --` },
+                                ...leads.map(l => ({
+                                  value: l.id,
+                                  label: `${l.name} - ${l.company || (i18n.language === 'vi' ? 'Khách lẻ' : 'Individual')} (${i18n.exists(`services.list.${l.service}.title`) ? t(`services.list.${l.service}.title` as any) : l.service}) [${l.status}]`
+                                }))
+                              ]}
+                              selectClassName="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer"
+                            />
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1416,65 +1794,73 @@ export default function AdminDashboard() {
                               <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
                                 {i18n.language === 'vi' ? 'Dịch vụ yêu cầu *' : 'Requested Service *'}
                               </label>
-                              <select
+                              <CustomSelect
                                 value={taskService}
-                                onChange={(e) => setTaskService(e.target.value)}
-                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                              >
-                                <option value="web">{t('services.list.web.title')}</option>
-                                <option value="chatbot">{t('services.list.chatbot.title')}</option>
-                                <option value="landing">{t('services.list.landing.title')}</option>
-                                <option value="workflow">{t('services.list.workflow.title')}</option>
-                                <option value="email">{t('services.list.email.title')}</option>
-                                <option value="n8n">{t('services.list.n8n.title')}</option>
-                                <option value="app">{t('services.list.app.title')}</option>
-                              </select>
+                                onChange={(val) => setTaskService(val)}
+                                options={[
+                                  { value: 'web', label: t('services.list.web.title') },
+                                  { value: 'chatbot', label: t('services.list.chatbot.title') },
+                                  { value: 'landing', label: t('services.list.landing.title') },
+                                  { value: 'workflow', label: t('services.list.workflow.title') },
+                                  { value: 'email', label: t('services.list.email.title') },
+                                  { value: 'n8n', label: t('services.list.n8n.title') },
+                                  { value: 'app', label: t('services.list.app.title') }
+                                ]}
+                                selectClassName="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer text-[#1C2526] font-semibold"
+                              />
                             </div>
 
                             <div className="space-y-1.5">
                               <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
                                 {i18n.language === 'vi' ? 'Dev đảm nhận *' : 'Assign Developer *'}
                               </label>
-                              <select
+                              <CustomSelect
                                 value={assigneeId}
-                                onChange={(e) => setAssigneeId(e.target.value)}
-                                className={`w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] ${assigneeId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
-                                  }`}
-                              >
-                                <option value="Unassigned" className="text-gray-400 font-normal">{t('admin.kanbanForm.assignDeveloper')}</option>
-                                {developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => (
-                                  <option key={f.id} value={f.id} className="text-[#1C2526] font-semibold">{f.name}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="space-y-1.5">
-                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                                {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
-                              </label>
-                              <input
-                                type="number"
-                                required
-                                placeholder={t('admin.kanbanForm.contractValue')}
-                                value={contractValue}
-                                onChange={(e) => setContractValue(parseInt(e.target.value) || 0)}
-                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                                onChange={(val) => setAssigneeId(val)}
+                                options={[
+                                  { value: 'Unassigned', label: t('admin.kanbanForm.assignDeveloper') },
+                                  ...developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => ({
+                                    value: f.id,
+                                    label: f.name
+                                  }))
+                                ]}
+                                selectClassName={`w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer ${
+                                  assigneeId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
+                                }`}
                               />
                             </div>
 
-                            <div className="space-y-1.5">
-                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                                {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
-                              </label>
-                              <input
-                                type="number"
-                                required
-                                placeholder={t('admin.kanbanForm.outsourceFee')}
-                                value={outsourceFee}
-                                onChange={(e) => setOutsourceFee(parseInt(e.target.value) || 0)}
-                                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                              />
-                            </div>
+                            {role !== 'manager' && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                    {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
+                                  </label>
+                                  <input
+                                    type="number"
+                                    required
+                                    placeholder={t('admin.kanbanForm.contractValue')}
+                                    value={contractValue}
+                                    onChange={(e) => setContractValue(parseInt(e.target.value) || 0)}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                    {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
+                                  </label>
+                                  <input
+                                    type="number"
+                                    required
+                                    placeholder={t('admin.kanbanForm.outsourceFee')}
+                                    value={outsourceFee}
+                                    onChange={(e) => setOutsourceFee(parseInt(e.target.value) || 0)}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                                  />
+                                </div>
+                              </>
+                            )}
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1520,89 +1906,104 @@ export default function AdminDashboard() {
                 {/* 5. PAYMENTS REQUEST */}
                 {activeTab === 'payouts' && (
                   <div className="space-y-8 animate-fadeIn">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
-                      <div>
-                        <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.pendingPayments')}</h3>
-                        <p className="text-xs text-gray-400">{t('admin.payoutDesc')}</p>
+                    {role === 'manager' && (
+                      <div className="pb-4 border-b border-gray-100">
+                        <h3 className="font-bold text-[#1C2526] text-lg">
+                          {i18n.language === 'vi' ? 'Phê Duyệt Lập Trình Viên' : 'Developer Approvals'}
+                        </h3>
+                        <p className="text-xs text-gray-400">
+                          {i18n.language === 'vi'
+                            ? 'Xem xét và phê duyệt hồ sơ năng lực của các lập trình viên mới đăng ký.'
+                            : 'Review and approve capacity profiles of newly registered developers.'}
+                        </p>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleExportPayoutsCsv}
-                          className="px-4 py-2 bg-[#2C3E50] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
-                        >
-                          <i className="ri-file-download-line" />
-                          {t('admin.exportPayouts')}
-                        </button>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
-                            <th className="p-3">{t('admin.payoutHeaders.developerName')}</th>
-                            <th className="p-3">{t('admin.payoutHeaders.projectInfo')}</th>
-                            <th className="p-3 text-right">{t('admin.payoutHeaders.feeRate')}</th>
-                            <th className="p-3 text-right">{t('admin.payoutHeaders.tax')} ({taxRate}%)</th>
-                            <th className="p-3 text-right">{t('admin.payoutHeaders.netPayout')}</th>
-                            <th className="p-3">{t('common.status')}</th>
-                            <th className="p-3 text-center">{t('common.actions')}</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 text-gray-700">
-                          {payouts.map(p => (
-                            <tr key={p.id} className="hover:bg-gray-50/50">
-                              <td className="p-3 font-semibold text-[#1C2526]">{p.developerName}</td>
-                              <td className="p-3 text-[10px] text-gray-500 max-w-xs truncate">{p.projectName}</td>
-                              <td className="p-3 text-right font-bold text-[#2C3E50]">${p.amount}</td>
-                              <td className="p-3 text-right text-red-500">-${p.taxDeducted}</td>
-                              <td className="p-3 text-right font-bold text-[#9B2A4C]">${p.netAmount}</td>
-                              <td className="p-3">
-                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Paid'
-                                    ? 'bg-green-50 text-green-600'
-                                    : p.status === 'Approved'
-                                      ? 'bg-blue-50 text-blue-600'
-                                      : 'bg-yellow-50 text-yellow-600'
-                                  }`}>
-                                  {p.status === 'Paid' ? t('admin.paid') : p.status === 'Approved' ? t('admin.statusApproved') : t('admin.statusPending')}
-                                </span>
-                              </td>
-                              <td className="p-3 text-center space-x-2">
-                                {p.status === 'Pending' && (
-                                  <button
-                                    onClick={() => handleApprovePayout(p.id)}
-                                    disabled={role === 'manager'}
-                                    className="px-2.5 py-1 bg-[#2C3E50] text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
-                                  >
-                                    {t('admin.approve')}
-                                  </button>
-                                )}
-                                {p.status === 'Approved' && (
-                                  <button
-                                    onClick={() => handleMarkPaid(p.id)}
-                                    disabled={role === 'manager'}
-                                    className="px-2.5 py-1 bg-green-500 text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
-                                  >
-                                    {t('admin.markPaidBtn')}
-                                  </button>
-                                )}
-                                {p.status === 'Paid' && (
-                                  <span className="text-[10px] text-gray-400 font-semibold">{t('admin.done')}</span>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
+                    {role !== 'manager' && (
+                      <>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
+                          <div>
+                            <h3 className="font-bold text-[#1C2526] text-lg">{t('admin.pendingPayments')}</h3>
+                            <p className="text-xs text-gray-400">{t('admin.payoutDesc')}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleExportPayoutsCsv}
+                              className="px-4 py-2 bg-[#2C3E50] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
+                            >
+                              <i className="ri-file-download-line" />
+                              {t('admin.exportPayouts')}
+                            </button>
+                          </div>
+                        </div>
 
-                          {payouts.length === 0 && (
-                            <tr>
-                              <td colSpan={7} className="p-6 text-center text-gray-400 italic">
-                                {t('admin.noPayoutRequests')}
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                        <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
+                                <th className="p-3">{t('admin.payoutHeaders.developerName')}</th>
+                                <th className="p-3">{t('admin.payoutHeaders.projectInfo')}</th>
+                                <th className="p-3 text-right">{t('admin.payoutHeaders.feeRate')}</th>
+                                <th className="p-3 text-right">{t('admin.payoutHeaders.tax')} ({taxRate}%)</th>
+                                <th className="p-3 text-right">{t('admin.payoutHeaders.netPayout')}</th>
+                                <th className="p-3">{t('common.status')}</th>
+                                <th className="p-3 text-center">{t('common.actions')}</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 text-gray-700">
+                              {payouts.map(p => (
+                                <tr key={p.id} className="hover:bg-gray-50/50">
+                                  <td className="p-3 font-semibold text-[#1C2526]">{p.developerName}</td>
+                                  <td className="p-3 text-[10px] text-gray-500 max-w-xs truncate">{p.projectName}</td>
+                                  <td className="p-3 text-right font-bold text-[#2C3E50]">${p.amount}</td>
+                                  <td className="p-3 text-right text-red-500">-${p.taxDeducted}</td>
+                                  <td className="p-3 text-right font-bold text-[#9B2A4C]">${p.netAmount}</td>
+                                  <td className="p-3">
+                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Paid'
+                                        ? 'bg-green-50 text-green-600'
+                                        : p.status === 'Approved'
+                                          ? 'bg-blue-50 text-blue-600'
+                                          : 'bg-yellow-50 text-yellow-600'
+                                      }`}>
+                                      {p.status === 'Paid' ? t('admin.paid') : p.status === 'Approved' ? t('admin.statusApproved') : t('admin.statusPending')}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-center space-x-2">
+                                    {p.status === 'Pending' && (
+                                      <button
+                                        onClick={() => handleApprovePayout(p.id)}
+                                        className="px-2.5 py-1 bg-[#2C3E50] text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                                      >
+                                        {t('admin.approve')}
+                                      </button>
+                                    )}
+                                    {p.status === 'Approved' && (
+                                      <button
+                                        onClick={() => handleMarkPaid(p.id)}
+                                        className="px-2.5 py-1 bg-green-500 text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                                      >
+                                        {t('admin.markPaidBtn')}
+                                      </button>
+                                    )}
+                                    {p.status === 'Paid' && (
+                                      <span className="text-[10px] text-gray-400 font-semibold">{t('admin.done')}</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+
+                              {payouts.length === 0 && (
+                                <tr>
+                                  <td colSpan={7} className="p-6 text-center text-gray-400 italic">
+                                    {t('admin.noPayoutRequests')}
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    )}
 
                     {/* Freelancer approvals pending list */}
                     <div className="space-y-4 pt-4">
@@ -1679,9 +2080,15 @@ export default function AdminDashboard() {
 
                               <p>
                                 <span className="font-semibold">{t('admin.expectedRate')}:</span>{' '}
-                                {i18n.language === 'vi'
-                                  ? `${free.rateValue.toLocaleString('vi-VN')} vnđ ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`
-                                  : `$${free.rateValue} ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`}
+                                {role === 'manager' ? (
+                                  <span className="text-gray-400 italic">
+                                    {i18n.language === 'vi' ? 'Bị hạn chế' : 'Restricted'}
+                                  </span>
+                                ) : (
+                                  i18n.language === 'vi'
+                                    ? `${free.rateValue.toLocaleString('vi-VN')} vnđ ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`
+                                    : `$${free.rateValue} ${free.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}`
+                                )}
                               </p>
 
                               {free.shortBio && (
@@ -1693,15 +2100,13 @@ export default function AdminDashboard() {
                             <div className="flex gap-2 justify-end pt-1">
                               <button
                                 onClick={() => handleApproveDeveloper(free.id, false)}
-                                disabled={role === 'manager'}
-                                className="px-2.5 py-1 border border-red-200 text-red-500 text-[10px] font-bold rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors cursor-pointer"
+                                className="px-2.5 py-1 border border-red-200 text-red-500 text-[10px] font-bold rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
                               >
                                 {t('admin.decline')}
                               </button>
                               <button
                                 onClick={() => handleApproveDeveloper(free.id, true)}
-                                disabled={role === 'manager'}
-                                className="px-2.5 py-1 bg-green-500 text-white text-[10px] font-bold rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors cursor-pointer"
+                                className="px-2.5 py-1 bg-green-500 text-white text-[10px] font-bold rounded-lg hover:bg-green-600 transition-colors cursor-pointer"
                               >
                                 {t('admin.approve')}
                               </button>
@@ -1770,7 +2175,6 @@ export default function AdminDashboard() {
                           <span className="text-xs font-semibold text-gray-500">{t('admin.enable2fa')}</span>
                           <button
                             onClick={handleToggle2FA}
-                            disabled={role === 'manager'}
                             className={`w-12 h-6 rounded-full p-1 transition-all duration-300 disabled:opacity-50 cursor-pointer ${twoFA ? 'bg-[#9B2A4C] flex justify-end' : 'bg-gray-300 flex justify-start'
                               }`}
                           >
@@ -1792,11 +2196,364 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 )}
+
+                {/* 7. ACCOUNT MANAGEMENT */}
+                {activeTab === 'accounts' && (
+                  <div className="space-y-8 animate-fadeIn">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
+                      <div>
+                        <h3 className="font-bold text-[#1C2526] text-lg">
+                          {i18n.language === 'vi' ? 'Quản Lý Tài Khoản' : 'Account Management'}
+                        </h3>
+                        <p className="text-xs text-gray-400">
+                          {i18n.language === 'vi'
+                            ? 'Xem xét, phân quyền vai trò và quản lý tất cả tài khoản người dùng trên hệ thống.'
+                            : 'Review, update roles, and manage all user accounts across the system.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Filters and Search */}
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                      {/* Search Bar */}
+                      <div className="relative w-full sm:max-w-xs">
+                        <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                        <input
+                          type="text"
+                          placeholder={i18n.language === 'vi' ? 'Tìm theo tên, email...' : 'Search by name, email...'}
+                          value={userSearchQuery}
+                          onChange={(e) => setUserSearchQuery(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#9B2A4C] text-[#1C2526]"
+                        />
+                        {userSearchQuery && (
+                          <button
+                            onClick={() => setUserSearchQuery('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#9B2A4C]"
+                          >
+                            <i className="ri-close-line" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Role Filter */}
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <span className="text-xs text-[#5A6A72] font-semibold shrink-0">
+                          {i18n.language === 'vi' ? 'Vai trò:' : 'Role:'}
+                        </span>
+                        <CustomSelect
+                          value={userRoleFilter}
+                          onChange={(val: any) => setUserRoleFilter(val)}
+                          options={[
+                            { value: 'All', label: i18n.language === 'vi' ? 'Tất cả vai trò' : 'All Roles' },
+                            { value: 'admin', label: i18n.language === 'vi' ? 'Admin' : 'Admin' },
+                            { value: 'manager', label: i18n.language === 'vi' ? 'Manager' : 'Manager' },
+                            { value: 'developer', label: i18n.language === 'vi' ? 'Developer' : 'Developer' },
+                            { value: 'client', label: i18n.language === 'vi' ? 'Tài khoản khách' : 'Client Account' },
+                          ]}
+                          selectClassName="bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:border-[#9B2A4C] cursor-pointer font-bold text-gray-700 w-44"
+                          className="w-44"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Accounts Database Table */}
+                    <div className="border border-gray-200 rounded-2xl shadow-sm overflow-hidden bg-white">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
+                              <th className="p-3 pl-4 rounded-tl-2xl">{i18n.language === 'vi' ? 'Thông tin tài khoản' : 'Account Info'}</th>
+                              <th className="p-3">{i18n.language === 'vi' ? 'Vai trò hệ thống' : 'System Role'}</th>
+                              <th className="p-3">{i18n.language === 'vi' ? 'Thông tin Lập trình viên & Trạng thái' : 'Developer Profile & Status'}</th>
+                              <th className="p-3 rounded-tr-2xl text-center pr-4">{t('common.actions')}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 text-gray-700 bg-white">
+                            {(() => {
+                              const query = userSearchQuery.toLowerCase();
+                              const filtered = users.filter(user => {
+                                const nameMatch = user.name ? user.name.toLowerCase().includes(query) : false;
+                                const emailMatch = user.email ? user.email.toLowerCase().includes(query) : false;
+                                const matchesQuery = nameMatch || emailMatch;
+                                const matchesRole = userRoleFilter === 'All' || user.role === userRoleFilter;
+                                return matchesQuery && matchesRole;
+                              });
+
+                              if (filtered.length === 0) {
+                                return (
+                                  <tr>
+                                    <td colSpan={4} className="p-8 text-center text-gray-400 italic">
+                                      {i18n.language === 'vi' ? 'Không tìm thấy tài khoản nào' : 'No accounts found'}
+                                    </td>
+                                  </tr>
+                                );
+                              }
+
+                              return filtered.map((user, idx) => {
+                                const isLast = idx === filtered.length - 1;
+                                
+                                // Find matched developer profile if role is 'developer'
+                                const devProfile = user.role === 'developer' 
+                                  ? developers.find(d => d.email === user.email || d.id === user.id)
+                                  : null;
+
+                                return (
+                                  <tr key={user.id} className="hover:bg-gray-50/50 align-top">
+                                    {/* Account Info */}
+                                    <td className={`p-3 pl-4 space-y-1 ${isLast ? 'rounded-bl-2xl' : ''}`}>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-[#9B2A4C]/10 text-[#9B2A4C] flex items-center justify-center font-bold text-xs shrink-0">
+                                          {(user.name || user.email || '?')[0].toUpperCase()}
+                                        </div>
+                                        <div>
+                                          <p className="font-bold text-[#1C2526]">{user.name || '-'}</p>
+                                          <p className="text-[10px] text-gray-400">{user.email}</p>
+                                        </div>
+                                      </div>
+                                      <div className="text-[9px] text-gray-400 pl-10 space-y-0.5">
+                                        <p>ID: {user.id}</p>
+                                        {user.createdAt && (
+                                          <p>
+                                            {i18n.language === 'vi' ? 'Ngày tạo:' : 'Created:'}{' '}
+                                            {new Date(user.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', {
+                                              year: 'numeric',
+                                              month: 'short',
+                                              day: 'numeric'
+                                            })}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </td>
+
+                                    {/* Role Selector */}
+                                    <td className="p-3">
+                                      <CustomSelect
+                                        value={user.role}
+                                        disabled={role === 'manager'}
+                                        onChange={(val: any) => handleRoleChange(user.id, val)}
+                                        options={[
+                                          { value: 'admin', label: i18n.language === 'vi' ? 'Admin' : 'Admin' },
+                                          { value: 'manager', label: i18n.language === 'vi' ? 'Manager' : 'Manager' },
+                                          { value: 'developer', label: i18n.language === 'vi' ? 'Developer' : 'Developer' },
+                                          { value: 'client', label: i18n.language === 'vi' ? 'Tài khoản khách' : 'Client Account' }
+                                        ]}
+                                        selectClassName="bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1 text-[11px] font-bold text-gray-700 focus:border-[#9B2A4C] cursor-pointer"
+                                        className="w-36"
+                                      />
+                                    </td>
+
+                                    {/* Developer Profile & Status */}
+                                    <td className="p-3 space-y-1.5 max-w-sm">
+                                      {user.role === 'developer' ? (
+                                        devProfile ? (
+                                          <div className="space-y-1.5">
+                                            {/* Status Dropdown */}
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[10px] text-gray-400 font-semibold">
+                                                {i18n.language === 'vi' ? 'Xét duyệt:' : 'Verification:'}
+                                              </span>
+                                              <CustomSelect
+                                                value={devProfile.status}
+                                                disabled={role === 'manager'}
+                                                onChange={async (val: any) => {
+                                                  await DevelopersAPI.update(devProfile.id, { status: val });
+                                                  await loadData();
+                                                  showToast(
+                                                    i18n.language === 'vi' 
+                                                      ? 'Cập nhật trạng thái lập trình viên thành công!' 
+                                                      : 'Developer status updated!',
+                                                    'success'
+                                                  );
+                                                }}
+                                                options={[
+                                                  { value: 'Pending', label: i18n.language === 'vi' ? 'Chờ duyệt' : 'Pending' },
+                                                  { value: 'Approved', label: i18n.language === 'vi' ? 'Đã duyệt' : 'Approved' },
+                                                  { value: 'Rejected', label: i18n.language === 'vi' ? 'Từ chối' : 'Rejected' }
+                                                ]}
+                                                selectClassName="bg-gray-50 border border-gray-200 rounded px-2 py-0.5 text-[10px] font-bold text-gray-700 focus:border-[#9B2A4C]"
+                                                className="w-28"
+                                              />
+                                            </div>
+
+                                            {/* Developer Details */}
+                                            {devProfile.title && (
+                                              <p className="font-bold text-[#9B2A4C] text-[10px]">
+                                                {t(`developer.titles.${devProfile.title}` as any, devProfile.title)}
+                                              </p>
+                                            )}
+                                            {devProfile.skills && devProfile.skills.length > 0 && (
+                                              <div className="flex flex-wrap gap-1 mt-1">
+                                                {devProfile.skills.map(s => (
+                                                  <span key={s} className="text-[9px] font-semibold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                                                    {s}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            )}
+                                            <div className="text-[10px] text-gray-500 space-y-0.5">
+                                              <p className="font-semibold text-[#2C3E50]">
+                                                {i18n.language === 'vi' ? 'Mức lương:' : 'Rate:'}{' '}
+                                                {i18n.language === 'vi'
+                                                  ? `${devProfile.rateValue.toLocaleString('vi-VN')} vnđ`
+                                                  : `$${devProfile.rateValue}`}{' '}
+                                                <span className="text-[9px] text-gray-400 font-normal">
+                                                  {devProfile.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}
+                                                </span>
+                                              </p>
+                                              {devProfile.availability && (
+                                                <p>
+                                                  <span className="font-semibold">{i18n.language === 'vi' ? 'Khả dụng:' : 'Availability:'}</span>{' '}
+                                                  {t(`developer.availabilityOptions.${devProfile.availability}` as any, devProfile.availability)}
+                                                </p>
+                                              )}
+                                              {devProfile.englishProficiency && (
+                                                <p>
+                                                  <span className="font-semibold">{i18n.language === 'vi' ? 'Tiếng Anh:' : 'English:'}</span>{' '}
+                                                  {t(`developer.englishLevels.${devProfile.englishProficiency}` as any, devProfile.englishProficiency)}
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <div className="text-yellow-600 text-[10px] bg-yellow-50 px-2 py-1 rounded border border-yellow-100 flex items-center gap-1.5">
+                                            <i className="ri-alert-line text-xs" />
+                                            <span>
+                                              {i18n.language === 'vi' 
+                                                ? 'Chưa khởi tạo hồ sơ Lập trình viên' 
+                                                : 'Developer profile not initialized'}
+                                            </span>
+                                          </div>
+                                        )
+                                      ) : (
+                                        <span className="text-gray-400">-</span>
+                                      )}
+                                    </td>
+
+                                    {/* Actions */}
+                                    <td className={`p-3 text-center pr-4 ${isLast ? 'rounded-br-2xl' : ''}`}>
+                                      <div className="flex items-center justify-center gap-2">
+                                        {/* CV and Portfolio for Developers */}
+                                        {user.role === 'developer' && devProfile && (
+                                          <>
+                                            {devProfile.portfolio && (
+                                              <a
+                                                href={devProfile.portfolio}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-blue-500 hover:text-blue-700 p-1 text-sm cursor-pointer"
+                                                title={i18n.language === 'vi' ? 'Portfolio / Website' : 'Portfolio / Website'}
+                                              >
+                                                <i className="ri-external-link-line" />
+                                              </a>
+                                            )}
+                                            {devProfile.cvLink && (
+                                              <a
+                                                href={devProfile.cvLink}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-[#9B2A4C] hover:text-[#7A203A] p-1 text-sm cursor-pointer"
+                                                title={i18n.language === 'vi' ? 'Xem hồ sơ CV' : 'View CV Link'}
+                                              >
+                                                <i className="ri-attachment-line" />
+                                              </a>
+                                            )}
+                                          </>
+                                        )}
+                                        
+                                        {/* Delete User */}
+                                        <button
+                                          onClick={() => setUserToDelete(user)}
+                                          disabled={role === 'manager'}
+                                          className={`p-1 text-sm cursor-pointer transition-colors ${
+                                            role === 'manager' 
+                                              ? 'text-gray-300 cursor-not-allowed' 
+                                              : 'text-red-500 hover:text-red-700'
+                                          }`}
+                                          title={
+                                            role === 'manager'
+                                              ? (i18n.language === 'vi' ? 'Không có quyền xóa' : 'No delete permission')
+                                              : (i18n.language === 'vi' ? 'Xóa tài khoản' : 'Delete Account')
+                                          }
+                                        >
+                                          <i className="ri-delete-bin-6-line" />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              });
+                            })()}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </>
         )}
       </main>
+
+      {/* USER DELETE CONFIRMATION MODAL */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-gray-100 shadow-2xl relative overflow-hidden animate-scaleUp">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-600" />
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 text-lg shrink-0">
+                <i className="ri-error-warning-line" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <h3 className="font-bold text-[#1C2526] text-base">
+                  {i18n.language === 'vi' ? 'Xác nhận xóa tài khoản' : 'Confirm Account Deletion'}
+                </h3>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {i18n.language === 'vi'
+                    ? `Bạn có chắc muốn xóa tài khoản "${userToDelete.name || userToDelete.email}"? Thao tác này sẽ gỡ hoàn toàn thông tin của họ khỏi hệ thống. Nếu tài khoản là Lập trình viên, hồ sơ chuyên môn của họ cũng sẽ bị xóa.`
+                    : `Are you sure you want to delete user "${userToDelete.name || userToDelete.email}"? This action will permanently remove their records from the system. If they are a Developer, their profile details will also be deleted.`}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                className="px-4 py-2 border border-gray-200 text-gray-500 font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await UsersAPI.delete(userToDelete.id);
+                    showToast(
+                      i18n.language === 'vi'
+                        ? 'Đã xóa tài khoản thành công!'
+                        : 'Account successfully deleted!',
+                      'success'
+                    );
+                    setUserToDelete(null);
+                    await loadData();
+                  } catch (err) {
+                    showToast(
+                      i18n.language === 'vi'
+                        ? 'Lỗi khi xóa tài khoản.'
+                        : 'Error deleting account.',
+                      'error'
+                    );
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-xl hover:bg-red-700 shadow transition-colors cursor-pointer"
+              >
+                {t('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2FA SETUP MODAL MOCK */}
       {showTwoFAModal && (
@@ -1872,49 +2629,53 @@ export default function AdminDashboard() {
                 <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
                   {i18n.language === 'vi' ? 'Chọn Developer thực hiện *' : 'Assign Developer *'}
                 </label>
-                <select
-                  required
+                <CustomSelect
                   value={assigneeDeveloperId}
-                  onChange={(e) => setAssigneeDeveloperId(e.target.value)}
-                  className={`w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C] ${assigneeDeveloperId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
-                    }`}
-                >
-                  <option value="Unassigned" className="text-gray-400 font-normal">{i18n.language === 'vi' ? 'Chọn Developer' : 'Select Developer'}</option>
-                  {developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => (
-                    <option key={f.id} value={f.id} className="text-[#1C2526] font-semibold">{f.name} ({f.title || 'Developer'})</option>
-                  ))}
-                </select>
+                  onChange={(val) => setAssigneeDeveloperId(val)}
+                  options={[
+                    { value: 'Unassigned', label: i18n.language === 'vi' ? 'Chọn Developer' : 'Select Developer' },
+                    ...developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => ({
+                      value: f.id,
+                      label: `${f.name} (${f.title || 'Developer'})`
+                    }))
+                  ]}
+                  selectClassName={`w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer ${
+                    assigneeDeveloperId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
+                  }`}
+                />
               </div>
 
               {/* Price Details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                    {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min={0}
-                    value={assignContractValue}
-                    onChange={(e) => setAssignContractValue(parseInt(e.target.value) || 0)}
-                    className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                  />
+              {role !== 'manager' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                      {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      value={assignContractValue}
+                      onChange={(e) => setAssignContractValue(parseInt(e.target.value) || 0)}
+                      className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                      {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      value={assignOutsourceFee}
+                      onChange={(e) => setAssignOutsourceFee(parseInt(e.target.value) || 0)}
+                      className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                    {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min={0}
-                    value={assignOutsourceFee}
-                    onChange={(e) => setAssignOutsourceFee(parseInt(e.target.value) || 0)}
-                    className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                  />
-                </div>
-              </div>
+              )}
 
               {/* Deadline */}
               <div className="space-y-1.5">

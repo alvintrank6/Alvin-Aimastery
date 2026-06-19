@@ -14,8 +14,8 @@ export default function RegisterSelection() {
       id: 'client',
       title: t('auth.clientBooking'),
       desc: t('auth.clientBookingDesc'),
-      icon: 'ri-calendar-todo-line',
-      path: '/contact', // Customers go to booking form/contact
+      icon: 'ri-user-shared-line',
+      path: '/client/register', // Customers go to client register page
       color: '#9B2A4C',
       bgHover: 'rgba(155, 42, 76, 0.05)',
       borderColor: 'rgba(155, 42, 76, 0.15)'

@@ -13,7 +13,20 @@ if (connectionString?.startsWith('prisma+postgres://')) {
     connectionString = JSON.parse(decoded).databaseUrl;
   }
 }
-const pool = new Pool({ connectionString });
+let cleanUrl = connectionString;
+if (connectionString) {
+  try {
+    const parsed = new URL(connectionString);
+    parsed.searchParams.delete('sslmode');
+    cleanUrl = parsed.toString();
+  } catch (e) {}
+}
+const pool = new Pool({ 
+  connectionString: cleanUrl,
+  ssl: connectionString?.includes('localhost') || connectionString?.includes('127.0.0.1')
+    ? false
+    : { rejectUnauthorized: false }
+});
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
@@ -22,45 +35,59 @@ async function main() {
 
   const users = [
     {
-      email: 'admin@agency.com',
+      email: 'admin1@gmail.com',
+      phone: '0901111111',
       password: 'admin123',
       name: 'Super Admin',
       role: 'admin',
     },
     {
-      email: 'manager@agency.com',
+      email: 'admin2@gmail.com',
+      phone: '0902222222',
+      password: 'admin123',
+      name: 'Co-Admin',
+      role: 'admin',
+    },
+    {
+      email: 'manager1@gmail.com',
+      phone: '0903333333',
       password: 'manager123',
-      name: 'Manager',
+      name: 'Manager One',
       role: 'manager',
     },
     {
-      email: 'minhdev@gmail.com',
-      password: 'free123',
+      email: 'manager2@gmail.com',
+      phone: '0904444444',
+      password: 'manager123',
+      name: 'Manager Two',
+      role: 'manager',
+    },
+    {
+      email: 'dev1@gmail.com',
+      phone: '0905555555',
+      password: 'dev123',
       name: 'Minh Dev',
       role: 'developer',
     },
     {
-      email: 'anhtuan.dev@gmail.com',
-      password: 'free123',
+      email: 'dev2@gmail.com',
+      phone: '0906666666',
+      password: 'dev123',
       name: 'Anh Tuấn',
       role: 'developer',
     },
     {
-      email: 'baoanh.react@gmail.com',
-      password: 'free123',
-      name: 'Bảo Anh',
-      role: 'developer',
-    },
-    {
-      email: 'khanh.n8n@gmail.com',
-      password: 'free123',
-      name: 'Khánh Nguyễn',
-      role: 'developer',
-    },
-    {
-      email: 'vana@techcorp.vn',
+      email: 'client1@gmail.com',
+      phone: '0907777777',
       password: 'client123',
-      name: 'Client (TechCorp)',
+      name: 'Client A',
+      role: 'client',
+    },
+    {
+      email: 'client2@gmail.com',
+      phone: '0908888888',
+      password: 'client123',
+      name: 'Client B',
       role: 'client',
     },
   ];
@@ -73,9 +100,11 @@ async function main() {
         password: hashedPassword,
         name: user.name,
         role: user.role,
+        phone: user.phone,
       },
       create: {
         email: user.email,
+        phone: user.phone,
         password: hashedPassword,
         name: user.name,
         role: user.role,
@@ -87,7 +116,7 @@ async function main() {
   // Seed developer profiles
   const developersToSeed = [
     {
-      email: 'minhdev@gmail.com',
+      email: 'dev1@gmail.com',
       name: 'Minh Dev',
       skills: ['React', 'Node.js', 'n8n', 'Web'],
       rateType: 'hourly',
@@ -96,31 +125,13 @@ async function main() {
       title: 'Developer',
     },
     {
-      email: 'anhtuan.dev@gmail.com',
+      email: 'dev2@gmail.com',
       name: 'Anh Tuấn',
       skills: ['Node.js', 'Express', 'PostgreSQL', 'Docker'],
       rateType: 'hourly',
       rateValue: 25,
       status: 'Approved',
       title: 'Backend Developer',
-    },
-    {
-      email: 'baoanh.react@gmail.com',
-      name: 'Bảo Anh',
-      skills: ['React', 'Next.js', 'TailwindCSS', 'Redux'],
-      rateType: 'hourly',
-      rateValue: 22,
-      status: 'Approved',
-      title: 'Frontend Developer',
-    },
-    {
-      email: 'khanh.n8n@gmail.com',
-      name: 'Khánh Nguyễn',
-      skills: ['n8n', 'Make.com', 'Zapier', 'Python'],
-      rateType: 'hourly',
-      rateValue: 30,
-      status: 'Approved',
-      title: 'AI Automation Specialist',
     },
   ];
 

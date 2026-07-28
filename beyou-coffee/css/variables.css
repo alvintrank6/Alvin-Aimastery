@@ -1,0 +1,69 @@
+:root {
+  /* Brand Colors - Official from logo & interior */
+  --ember: #E0761F;        /* Burnt orange - ONLY accent color */
+  --ember-deep: #B85A12;   /* Dark orange - hover state */
+  --ink: #14110F;          /* Brown-black - logo background, dark mode bg */
+  --concrete: #343B38;     /* Blue-gray concrete - walls */
+  --brick: #8B4A32;        /* Terracotta brick - left wall */
+  --neon: #DFF4FF;         /* Cold white-blue - neon light */
+  --leaf: #5C8A6E;         /* Green - plants */
+  --bone: #EDE8E2;         /* Off-white - text on dark */
+  
+  /* Typography */
+  --font-display: 'Montserrat', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-neon: 'Dancing Script', cursive;
+  
+  /* Spacing */
+  --space-xs: clamp(0.5rem, 1vw, 0.75rem);
+  --space-sm: clamp(0.75rem, 1.5vw, 1rem);
+  --space-md: clamp(1rem, 2vw, 1.5rem);
+  --space-lg: clamp(1.5rem, 3vw, 2rem);
+  --space-xl: clamp(2rem, 4vw, 3rem);
+  --space-xxl: clamp(3rem, 6vw, 5rem);
+  
+  /* Type scale */
+  --text-xs: clamp(0.75rem, 0.7vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8vw, 1rem);
+  --text-base: clamp(1rem, 1vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1.2vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.5vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 2vw, 2rem);
+  --text-3xl: clamp(2rem, 3vw, 2.5rem);
+  --text-4xl: clamp(2.5rem, 4vw, 3.5rem);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+  --transition-slow: 500ms ease;
+  --transition-neon: 700ms ease;
+}
+
+/* NIGHT MODE (Default) */
+[data-theme="night"] {
+  --bg-primary: var(--ink);
+  --bg-secondary: var(--concrete);
+  --bg-tertiary: #1a1a1a;
+  --text-primary: var(--bone);
+  --text-secondary: #b8b8b8;
+  --text-muted: #888;
+  --border-color: rgba(237, 232, 226, 0.15);
+  --card-bg: rgba(52, 59, 56, 0.5);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --glow: 0 0 20px rgba(223, 244, 255, 0.3);
+}
+
+/* DAY MODE */
+[data-theme="day"] {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #e8e8e8;
+  --bg-tertiary: #ffffff;
+  --text-primary: var(--ink);
+  --text-secondary: #4a4a4a;
+  --text-muted: #666;
+  --border-color: rgba(20, 17, 15, 0.15);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --glow: none;
+}

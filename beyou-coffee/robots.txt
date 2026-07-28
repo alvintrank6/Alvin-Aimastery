@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://beyoucoffee.vn/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Block admin/private areas (if any)
+Disallow: /admin/
+Disallow: /private/

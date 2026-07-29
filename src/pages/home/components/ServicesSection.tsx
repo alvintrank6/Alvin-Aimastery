@@ -13,10 +13,10 @@ interface ServiceItem {
 
 const SERVICES_ITEMS: ServiceItem[] = [
   { id: 'web', icon: 'ri-global-line', titleKey: 'services.list.web.title', descKey: 'services.list.web.desc', color: '#9B2A4C' },
-  { id: 'chatbot', icon: 'ri-chat-voice-line', titleKey: 'services.list.chatbot.title', descKey: 'services.list.chatbot.desc', color: '#2C3E50' },
+  { id: 'chatbot', icon: 'ri-chat-voice-line', titleKey: 'services.list.chatbot.title', descKey: 'services.list.chatbot.desc', color: '#6B1D35' },
   { id: 'landing', icon: 'ri-layout-4-line', titleKey: 'services.list.landing.title', descKey: 'services.list.landing.desc', color: '#A8B5A0' },
   { id: 'workflow', icon: 'ri-git-merge-line', titleKey: 'services.list.workflow.title', descKey: 'services.list.workflow.desc', color: '#D97706' },
-  { id: 'email', icon: 'ri-mail-send-line', titleKey: 'services.list.email.title', descKey: 'services.list.email.desc', color: '#2563EB' },
+  { id: 'email', icon: 'ri-mail-send-line', titleKey: 'services.list.email.title', descKey: 'services.list.email.desc', color: '#E11D48' },
   { id: 'n8n', icon: 'ri-terminal-window-line', titleKey: 'services.list.n8n.title', descKey: 'services.list.n8n.desc', color: '#EF4444' },
   { id: 'app', icon: 'ri-smartphone-line', titleKey: 'services.list.app.title', descKey: 'services.list.app.desc', color: '#7C3AED' },
 ];
@@ -29,7 +29,7 @@ export default function ServicesSection() {
   const activeSvcData = SERVICES_DATA[activeTab];
 
   return (
-    <section className="py-20 bg-[#F8F6F2] relative overflow-hidden" id="services">
+    <section className="py-20 bg-[#F8F6F2] dark:!bg-[#0B0F17] relative overflow-hidden transition-colors" id="services">
       {/* Background shape */}
       <div className="absolute inset-0 opacity-[0.02]" style={{ background: 'radial-gradient(circle at 70% 30%, #9B2A4C 0%, transparent 60%)' }}></div>
 
@@ -37,13 +37,13 @@ export default function ServicesSection() {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2C3E50]/20 bg-[#2C3E50]/5">
-            <span className="text-[#2C3E50] text-xs font-semibold">{t('services.badge')}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#9B2A4C]/20 bg-[#9B2A4C]/5 dark:border-rose-400/30 dark:bg-rose-400/10">
+            <span className="text-[#9B2A4C] dark:text-rose-400 text-xs font-semibold">{t('services.badge')}</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-[#1C2526] leading-tight">
+          <h2 className="text-4xl md:text-5xl font-black text-[#1C2526] dark:text-white leading-tight">
             {t('services.title')} <span className="gradient-text">{t('services.titleHighlight')}</span>
           </h2>
-          <p className="text-[#5A6A72] text-sm md:text-base leading-relaxed">
+          <p className="text-[#5A6A72] dark:text-gray-300 text-sm md:text-base leading-relaxed">
             {t('services.subtitle')}
           </p>
         </div>
@@ -61,8 +61,8 @@ export default function ServicesSection() {
                   onClick={() => setActiveTab(svc.id)}
                   className={`w-auto lg:w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-left font-bold text-xs whitespace-nowrap transition-all duration-300 border cursor-pointer select-none shrink-0 ${
                     isActive
-                      ? 'bg-white text-[#1C2526] border-gray-200 shadow-md translate-x-1'
-                      : 'bg-white/40 text-[#5A6A72] border-transparent hover:bg-white/80 hover:text-[#1C2526]'
+                      ? 'bg-white dark:!bg-[#121722] text-[#1C2526] dark:!text-white border-gray-200 dark:border-gray-800 shadow-md translate-x-1'
+                      : 'bg-white/40 dark:!bg-[#121722]/40 text-[#5A6A72] dark:!text-gray-400 border-transparent hover:bg-white/80 dark:hover:bg-[#121722]/80 hover:text-[#1C2526] dark:hover:text-white'
                   }`}
                   style={{
                     borderLeft: isActive ? `4px solid ${svc.color}` : undefined
@@ -79,7 +79,7 @@ export default function ServicesSection() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-extrabold tracking-tight">{t(svc.titleKey)}</span>
-                    <span className="text-[9px] text-gray-400 font-medium hidden lg:inline-block mt-0.5 max-w-[200px] truncate">
+                    <span className="text-[9px] text-gray-400 dark:text-gray-500 font-medium hidden lg:inline-block mt-0.5 max-w-[200px] truncate">
                       {t(svc.descKey)}
                     </span>
                   </div>
@@ -89,7 +89,7 @@ export default function ServicesSection() {
           </div>
 
           {/* Right Side: Interactive split details and visual simulator */}
-          <div className="lg:col-span-8 bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden transition-all duration-300">
+          <div className="lg:col-span-8 bg-white dark:!bg-[#121722] border border-gray-100 dark:border-gray-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden transition-all duration-300">
             {/* Top accent line matching the service theme color */}
             <div
               className="absolute top-0 left-0 right-0 h-1.5 transition-all duration-300"
@@ -107,23 +107,23 @@ export default function ServicesSection() {
                   >
                     <i className={`${activeSvcInfo.icon} text-lg`} />
                   </div>
-                  <h3 className="text-xl font-bold text-[#1C2526] tracking-tight">{t(activeSvcInfo.titleKey)}</h3>
-                  <p className="text-xs text-[#5A6A72] leading-relaxed">{t(activeSvcInfo.descKey)}</p>
+                  <h3 className="text-xl font-bold text-[#1C2526] dark:text-white tracking-tight">{t(activeSvcInfo.titleKey)}</h3>
+                  <p className="text-xs text-[#5A6A72] dark:text-gray-300 leading-relaxed">{t(activeSvcInfo.descKey)}</p>
                 </div>
 
-                <div className="h-px bg-gray-100" />
+                <div className="h-px bg-gray-100 dark:bg-gray-800" />
 
                 {/* Tech Stack List */}
                 {activeSvcData && (
                   <div className="space-y-2">
-                    <h4 className="text-[10px] font-bold text-[#8A97A0] uppercase tracking-wider">
+                    <h4 className="text-[10px] font-bold text-[#8A97A0] dark:text-gray-400 uppercase tracking-wider">
                       {t('services.techStack')}
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
                       {activeSvcData.stack.map((item) => (
                         <span
                           key={item}
-                          className="text-[10px] font-bold px-2 py-1 rounded-lg bg-[#F8F6F2]/70 text-[#2C3E50] border border-gray-100"
+                          className="text-[10px] font-bold px-2 py-1 rounded-lg bg-[#F8F6F2]/70 dark:bg-gray-800/70 text-[#1C2526] dark:text-gray-200 border border-gray-100 dark:border-gray-700"
                         >
                           {item}
                         </span>
@@ -135,12 +135,12 @@ export default function ServicesSection() {
                 {/* Service core benefits */}
                 {activeSvcData && (
                   <div className="space-y-3">
-                    <h4 className="text-[10px] font-bold text-[#8A97A0] uppercase tracking-wider">
+                    <h4 className="text-[10px] font-bold text-[#8A97A0] dark:text-gray-400 uppercase tracking-wider">
                       {t('services.whyUs')}
                     </h4>
                     <ul className="space-y-2.5">
                       {activeSvcData.whyUs.map((benefit, bIdx) => (
-                        <li key={bIdx} className="flex items-start gap-2 text-[11px] text-[#5A6A72] leading-normal font-semibold">
+                        <li key={bIdx} className="flex items-start gap-[#1C2526] dark:gap-2 text-[11px] text-[#5A6A72] dark:text-gray-300 leading-normal font-semibold">
                           <i className="ri-checkbox-circle-line text-xs shrink-0 mt-0.5" style={{ color: activeSvcInfo.color }} />
                           <span>{benefit}</span>
                         </li>
@@ -160,7 +160,7 @@ export default function ServicesSection() {
                   </Link>
                   <Link
                     to={`/services/${activeTab}`}
-                    className="text-center text-xs font-bold text-[#2C3E50] border border-gray-200 hover:border-gray-300 px-5 py-3 rounded-xl transition-all cursor-pointer bg-white"
+                    className="text-center text-xs font-bold text-[#1C2526] dark:text-white border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 px-5 py-3 rounded-xl transition-all cursor-pointer bg-white dark:bg-gray-800"
                   >
                     {t('services.readMore')}
                   </Link>

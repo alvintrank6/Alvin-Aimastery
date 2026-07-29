@@ -44,13 +44,13 @@ export default function Navbar() {
   };
 
   const servicesList = [
-    { id: 'web', icon: 'ri-global-line', textColor: 'text-blue-500', bgColor: 'bg-blue-50' },
+    { id: 'web', icon: 'ri-global-line', textColor: 'text-indigo-600', bgColor: 'bg-indigo-50' },
     { id: 'chatbot', icon: 'ri-chat-voice-line', textColor: 'text-emerald-500', bgColor: 'bg-emerald-50' },
     { id: 'landing', icon: 'ri-layout-grid-line', textColor: 'text-violet-500', bgColor: 'bg-violet-50' },
     { id: 'workflow', icon: 'ri-git-branch-line', textColor: 'text-amber-500', bgColor: 'bg-amber-50' },
     { id: 'email', icon: 'ri-mail-send-line', textColor: 'text-rose-500', bgColor: 'bg-rose-50' },
     { id: 'n8n', icon: 'ri-route-line', textColor: 'text-teal-500', bgColor: 'bg-teal-50' },
-    { id: 'app', icon: 'ri-smartphone-line', textColor: 'text-cyan-500', bgColor: 'bg-cyan-50' },
+    { id: 'app', icon: 'ri-smartphone-line', textColor: 'text-pink-500', bgColor: 'bg-pink-50' },
   ];
 
   const navItems = [
@@ -105,78 +105,90 @@ export default function Navbar() {
       <div
         className={`w-full max-w-7xl h-16 flex items-center justify-between px-6 rounded-2xl border transition-all duration-300 ${
           scrolled
-            ? 'bg-white/95 backdrop-blur-lg border-gray-100 shadow-[0_12px_40px_rgba(44,62,80,0.08)] py-1'
-            : 'bg-white/60 backdrop-blur-md border-white/20 shadow-sm'
+            ? 'bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-lg border-gray-100 dark:border-gray-800 shadow-[0_12px_40px_rgba(0,0,0,0.4)] py-1'
+            : 'bg-white/60 dark:bg-[#0B0F17]/70 backdrop-blur-md border-white/20 dark:border-gray-800/50 shadow-sm'
         }`}
       >
         {/* Logo with Status Badge */}
         <Link to="/" className="flex items-center gap-3 group shrink-0">
           <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#2C3E50] to-[#9B2A4C] flex items-center justify-center text-white font-bold text-sm shadow-[0_3px_10px_rgba(155,42,76,0.15)] group-hover:scale-105 transition-transform duration-200">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#6B1D35] to-[#9B2A4C] flex items-center justify-center text-white font-bold text-sm shadow-[0_3px_10px_rgba(155,42,76,0.15)] group-hover:scale-105 transition-transform duration-200">
               A
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-[#0B0F17] rounded-full animate-pulse" title="Available for work" />
           </div>
           <div className="flex flex-col">
-            <span className="font-extrabold text-base text-[#1C2526] dark:text-white tracking-tight whitespace-nowrap flex items-center">
-              Alvin
-              <span className="text-[#9B2A4C] dark:text-cyan-400 font-semibold ml-0.5">Tran</span>
-            </span>
-            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
-              Available for work
-            </span>
+            <span className="font-extrabold text-sm tracking-tight text-[#1C2526] dark:text-white leading-tight">Alvin Tran</span>
+            <span className="text-[10px] font-semibold text-[#9B2A4C] dark:text-rose-400 leading-tight">Marketer & AI Specialist</span>
           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-6">
-          {/* Services Dropdown */}
-          <div
-            className="relative h-full flex items-center group"
-            onMouseEnter={() => setServicesOpen(true)}
-            onMouseLeave={() => setServicesOpen(false)}
-          >
-            <button className="text-sm font-bold text-[#5A6A72] dark:text-gray-300 hover:text-[#1C2526] dark:hover:text-white transition-colors duration-200 whitespace-nowrap flex items-center gap-1 cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 rounded-xl">
-              {t('navbar.services')}
-              <i className={`ri-arrow-down-s-line transition-transform duration-200 ${servicesOpen ? 'rotate-180 text-[#9B2A4C]' : ''}`} />
-            </button>
+        {/* Desktop Nav Items */}
+        <div className="hidden lg:flex items-center gap-1.5 bg-black/5 dark:bg-white/5 p-1 rounded-full border border-black/5 dark:border-white/10">
+          {navItems.map((item) => {
+            const isActive = isHome ? false : location.pathname === item.route;
+            return (
+              <Link
+                key={item.id}
+                to={item.route}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-[#9B2A4C] text-white shadow-sm'
+                    : 'text-[#5A6A72] dark:text-gray-300 hover:text-[#1C2526] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10'
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
 
-            {/* Mega Menu Dropdown */}
-            <div
-              className={`absolute top-[90%] left-1/2 -translate-x-[35%] mt-2 w-[720px] bg-white dark:bg-[#131B2E] border border-gray-100 dark:border-gray-800 rounded-3xl shadow-[0_20px_50px_rgba(44,62,80,0.12)] p-6 z-50 flex gap-6 transition-all duration-300 origin-top ${
-                servicesOpen
-                  ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-                  : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+          {/* Services Mega Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setServicesOpen(!servicesOpen)}
+              onMouseEnter={() => setServicesOpen(true)}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+                location.pathname.startsWith('/services')
+                  ? 'bg-[#9B2A4C] text-white shadow-sm'
+                  : 'text-[#5A6A72] dark:text-gray-300 hover:text-[#1C2526] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10'
               }`}
             >
-              {/* Services Grid (Left - 2 Columns) */}
-              <div className="flex-1 grid grid-cols-2 gap-3">
-                {servicesList.map((svc) => (
-                  <Link
-                    key={svc.id}
-                    to={`/services/${svc.id}`}
-                    className="flex gap-3 p-2.5 rounded-2xl hover:bg-[#9B2A4C]/5 dark:hover:bg-white/5 group/item transition-all duration-200 border border-transparent hover:border-[#9B2A4C]/10"
-                  >
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg ${svc.bgColor} ${svc.textColor} shrink-0 transition-transform group-hover/item:scale-110 duration-200`}
-                    >
-                      <i className={svc.icon} />
-                    </div>
-                    <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-[#1C2526] dark:text-white group-hover/item:text-[#9B2A4C] transition-colors">
-                        {t(`services.list.${svc.id}.title` as any)}
-                      </h4>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-400 leading-normal line-clamp-2">
-                        {t(`services.list.${svc.id}.desc` as any)}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {i18n.language === 'vi' ? 'Dịch vụ' : 'Services'}
+              <i className={`ri-arrow-down-s-line transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-              {/* Featured Promo Panel (Right) */}
-              <div className="w-56 bg-gradient-to-br from-[#9B2A4C] to-[#2C3E50] rounded-2xl p-5 text-white flex flex-col justify-between relative overflow-hidden shadow-inner shrink-0 group/promo">
+            {/* Dropdown Menu */}
+            {servicesOpen && (
+              <div
+                onMouseLeave={() => setServicesOpen(false)}
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[620px] bg-white dark:bg-[#121722] rounded-3xl p-4 shadow-2xl border border-gray-100 dark:border-gray-800 animate-dropdown-in flex gap-4 overflow-hidden z-50"
+              >
+                {/* Services List Grid (Left) */}
+                <div className="flex-1 grid grid-cols-2 gap-1.5">
+                  {servicesList.map((svc) => (
+                    <Link
+                      key={svc.id}
+                      to={`/services/${svc.id}`}
+                      onClick={() => setServicesOpen(false)}
+                      className="p-2.5 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all flex items-center gap-3 group/item border border-transparent hover:border-gray-100 dark:hover:border-gray-700/50"
+                    >
+                      <div className={`w-9 h-9 rounded-xl ${svc.bgColor} dark:bg-opacity-10 flex items-center justify-center text-lg ${svc.textColor} shrink-0 group-hover/item:scale-110 transition-transform duration-200`}>
+                        <i className={svc.icon} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-[#1C2526] dark:text-white truncate group-hover/item:text-[#9B2A4C] dark:group-hover/item:text-rose-400 transition-colors">
+                          {t(`services.list.${svc.id}.title` as any)}
+                        </p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">
+                          {t(`services.list.${svc.id}.desc` as any)}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Featured Promo Panel (Right) */}
+                <div className="w-56 bg-gradient-to-br from-[#9B2A4C] to-[#6B1D35] rounded-2xl p-5 text-white flex flex-col justify-between relative overflow-hidden shadow-inner shrink-0 group/promo">
                 {/* Glow effect */}
                 <div className="absolute -right-10 -top-10 w-28 h-28 bg-white/10 rounded-full blur-xl group-hover/promo:scale-125 transition-transform duration-500 animate-pulse" />
 
@@ -202,18 +214,9 @@ export default function Navbar() {
                 </Link>
               </div>
             </div>
-          </div>
-
-          {navItems.map((item) => (
-            <Link
-              key={item.id}
-              to={item.route}
-              className="text-sm font-bold text-[#5A6A72] dark:text-gray-300 hover:text-[#1C2526] dark:hover:text-white transition-all duration-200 whitespace-nowrap cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 dark:hover:bg-white/5 rounded-xl"
-            >
-              {item.label}
-            </Link>
-          ))}
+          )}
         </div>
+      </div>
 
         {/* Actions & Utilities */}
         <div className="hidden lg:flex items-center gap-3">

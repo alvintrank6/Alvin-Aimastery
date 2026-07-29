@@ -5,9 +5,9 @@ export default function JoinUsSection() {
   const { i18n } = useTranslation();
 
   return (
-    <section id="join-us" className="py-12 md:py-16 bg-gradient-to-r from-[#2C3E50] via-[#9B2A4C] to-[#1C2526] text-white relative overflow-hidden transition-colors">
+    <section id="join-us" className="py-12 md:py-16 bg-gradient-to-r from-[#6B1D35] via-[#9B2A4C] to-[#1C2526] text-white relative overflow-hidden transition-colors">
       {/* Background glow effects */}
-      <div className="absolute -top-16 -right-16 w-64 h-64 bg-cyan-400/20 blur-3xl rounded-full pointer-events-none animate-pulse" />
+      <div className="absolute -top-16 -right-16 w-64 h-64 bg-rose-400/20 blur-3xl rounded-full pointer-events-none animate-pulse" />
       <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-[#9B2A4C]/30 blur-3xl rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
@@ -21,7 +21,7 @@ export default function JoinUsSection() {
             
             <h2 className="text-2xl md:text-4xl font-black tracking-tight leading-tight">
               Đồng Hành & Phát Triển Cùng{' '}
-              <span className="text-cyan-300">AI Mastery</span>
+              <span className="text-rose-300">AI Mastery</span>
             </h2>
 
             <p className="text-xs md:text-sm text-white/80 leading-relaxed">

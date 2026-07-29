@@ -49,13 +49,13 @@ export default function HeroSection() {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
                 to="/contact"
-                className="gradient-bg dark:bg-gradient-to-r dark:from-cyan-500 dark:to-blue-600 text-white font-bold px-7 py-3.5 rounded-full hover:scale-105 transition-all text-xs tracking-wider uppercase shadow-lg shadow-[#9B2A4C]/20 dark:shadow-cyan-500/20"
+                className="gradient-bg dark:bg-gradient-to-r dark:from-rose-600 dark:to-pink-700 text-white font-bold px-7 py-3.5 rounded-full hover:scale-105 transition-all text-xs tracking-wider uppercase shadow-lg shadow-[#9B2A4C]/20 dark:shadow-rose-600/20"
               >
                 Let's Talk <i className="ri-arrow-right-line ml-1" />
               </Link>
               <Link
                 to="/projects"
-                className="border border-gray-300 dark:border-gray-700 hover:border-[#9B2A4C] dark:hover:border-cyan-400 text-[#1C2526] dark:text-white font-bold px-6 py-3.5 rounded-full transition-all text-xs tracking-wider uppercase"
+                className="border border-gray-300 dark:border-gray-700 hover:border-[#9B2A4C] dark:hover:border-rose-400 text-[#1C2526] dark:text-white font-bold px-6 py-3.5 rounded-full transition-all text-xs tracking-wider uppercase"
               >
                 {i18n.language === 'vi' ? 'Xem dự án' : 'View Projects'}
               </Link>

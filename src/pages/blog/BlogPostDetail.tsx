@@ -153,7 +153,7 @@ export const BlogPostDetail: React.FC = () => {
           ))}
 
           {/* Conclusion Box */}
-          <div className="p-6 rounded-3xl bg-gradient-to-r from-[#9B2A4C] to-[#2C3E50] text-white shadow-xl space-y-3 mt-8">
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-[#9B2A4C] to-[#7B1E3A] text-white shadow-xl space-y-3 mt-8">
             <h3 className="text-lg font-black flex items-center gap-2">
               <i className="ri-lightbulb-line text-amber-300" /> Kết Luận
             </h3>

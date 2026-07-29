@@ -10,30 +10,54 @@ html {
   scroll-behavior: smooth;
 }
 
+body, section, main, header, footer, nav, article, aside, .card-light {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
 body {
   background-color: #F8F6F2;
   color: #1C2526;
 }
 
+html.dark, html.dark body {
+  background-color: #0B0F17 !important;
+  color: #F3F4F6 !important;
+}
+
 @layer utilities {
   .gradient-text {
-    background: linear-gradient(135deg, #2C3E50, #9B2A4C, #A8B5A0);
+    background: linear-gradient(135deg, #9B2A4C, #7B1E3A, #1C2526);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .gradient-bg {
-    background: linear-gradient(135deg, #2C3E50, #9B2A4C, #A8B5A0);
+    background: linear-gradient(135deg, #9B2A4C, #7B1E3A, #1C2526);
   }
   .card-light {
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.04);
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(44, 62, 80, 0.04);
+    box-shadow: 0 2px 12px rgba(28, 37, 38, 0.04);
+  }
+  .dark .card-light {
+    background: #121722;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
   .card-light-hover:hover {
     border-color: rgba(155, 42, 76, 0.25);
-    box-shadow: 0 6px 28px rgba(44, 62, 80, 0.08);
+    box-shadow: 0 6px 28px rgba(28, 37, 38, 0.08);
+  }
+  .dark .card-light-hover:hover {
+    border-color: rgba(225, 29, 72, 0.4);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  }
+  .dark .gradient-text {
+    background: linear-gradient(135deg, #FF6B8B, #F43F5E, #E11D48);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
   .glass-nav {
     background: rgba(248, 246, 242, 0.88);
@@ -49,7 +73,7 @@ body {
     border-color: rgba(155, 42, 76, 0.22);
   }
   .cyan-glow {
-    box-shadow: 0 0 25px rgba(0, 242, 254, 0.25);
+    box-shadow: 0 0 25px rgba(155, 42, 76, 0.3);
   }
 }
 @keyframes wave-hand {

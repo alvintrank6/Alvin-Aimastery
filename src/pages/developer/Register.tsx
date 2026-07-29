@@ -129,7 +129,7 @@ export default function Register() {
 
       <main className="pt-28 pb-16 flex-grow flex items-center">
         <div className="max-w-xl mx-auto px-4 w-full">
-          <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#2C3E50]/5 shadow-xl relative overflow-hidden">
+          <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#1C2526]/5 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1.5 gradient-bg" />
 
             {success ? (
@@ -143,18 +143,18 @@ export default function Register() {
                     {t('developer.successDesc')}
                   </p>
                 </div>
-                <div className="bg-[#2C3E50]/5 p-4 rounded-xl border border-[#2C3E50]/10 text-xs text-[#5A6A72] space-y-2">
+                <div className="bg-[#1C2526]/5 p-4 rounded-xl border border-[#1C2526]/10 text-xs text-[#5A6A72] space-y-2">
                   <p>{t('developer.demoNote')}</p>
                   <div className="flex justify-center gap-3 mt-3">
                     <button
                       onClick={() => navigate('/admin')}
-                      className="bg-[#2C3E50] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
+                      className="bg-[#1C2526] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#1C2526]/90 transition-colors cursor-pointer"
                     >
                       {t('developer.goToAdmin')}
                     </button>
                     <button
                       onClick={() => navigate('/member-portal')}
-                      className="border border-[#2C3E50]/20 text-[#2C3E50] font-semibold px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="border border-[#1C2526]/20 text-[#1C2526] font-semibold px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       {t('developer.memberWorkspace')}
                     </button>

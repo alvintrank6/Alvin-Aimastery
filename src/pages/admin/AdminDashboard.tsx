@@ -16,7 +16,7 @@ import { api, LeadsAPI, DevelopersAPI, UsersAPI, ProjectsAPI, PayoutsAPI, Analyt
 import CustomSelect from '@/components/common/Select';
 import { io } from 'socket.io-client';
 
-const COLORS = ['#2C3E50', '#9B2A4C', '#A8B5A0', '#D97706', '#2563EB'];
+const COLORS = ['#1C2526', '#9B2A4C', '#A8B5A0', '#D97706', '#2563EB'];
 
 export default function AdminDashboard() {
   const { t, i18n } = useTranslation();
@@ -677,7 +677,7 @@ export default function AdminDashboard() {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-black text-[#1C2526]">{t('admin.title')}</h1>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${role === 'admin' ? 'bg-[#9B2A4C]/10 text-[#9B2A4C]' : 'bg-[#2C3E50]/10 text-[#2C3E50]'}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${role === 'admin' ? 'bg-[#9B2A4C]/10 text-[#9B2A4C]' : 'bg-[#1C2526]/10 text-[#1C2526]'}`}>
                     {role === 'admin' ? t('portals.roleAdmin') : t('portals.roleManager')}
                   </span>
                 </div>
@@ -740,7 +740,7 @@ export default function AdminDashboard() {
                                 >
                                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-sm ${notification.type === 'lead'
                                       ? 'bg-green-50 text-green-600'
-                                      : 'bg-blue-50 text-blue-600'
+                                      : 'bg-indigo-50 text-indigo-600'
                                     }`}>
                                     <i className={notification.type === 'lead' ? 'ri-customer-service-line' : 'ri-user-add-line'} />
                                   </div>
@@ -817,7 +817,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 text-xl">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 text-xl">
                   <i className="ri-pie-chart-line" />
                 </div>
                 <div>
@@ -950,7 +950,7 @@ export default function AdminDashboard() {
                           <Tooltip contentStyle={{ fontSize: 12 }} />
                           <Legend wrapperStyle={{ fontSize: 11 }} />
                           <Line type="monotone" dataKey="visitors" stroke="#9B2A4C" name="Total Visitors" strokeWidth={2.5} activeDot={{ r: 6 }} />
-                          <Line type="monotone" dataKey="organic" stroke="#2C3E50" name="SEO Organic" strokeWidth={1.5} />
+                          <Line type="monotone" dataKey="organic" stroke="#1C2526" name="SEO Organic" strokeWidth={1.5} />
                           <Line type="monotone" dataKey="facebook" stroke="#2563EB" name="Facebook" strokeWidth={1.5} />
                           <Line type="monotone" dataKey="tiktok" stroke="#D97706" name="TikTok" strokeWidth={1.5} />
                           <Line type="monotone" dataKey="youtube" stroke="#EF4444" name="YouTube" strokeWidth={1.5} />
@@ -1006,7 +1006,7 @@ export default function AdminDashboard() {
                                 }`}
                             >
                               <div className="flex items-center gap-3">
-                                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${alert.platform === 'TikTok' ? 'bg-black text-white' : 'bg-blue-100 text-blue-600'
+                                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${alert.platform === 'TikTok' ? 'bg-black text-white' : 'bg-indigo-100 text-indigo-600'
                                   }`}>
                                   <i className={`ri-${alert.platform.toLowerCase()}-fill`} />
                                 </span>
@@ -1021,7 +1021,7 @@ export default function AdminDashboard() {
                               {alert.status === 'active' ? (
                                 <button
                                   onClick={() => handleResolveAlert(alert.id)}
-                                  className="px-3 py-1 bg-[#2C3E50] text-white text-[10px] font-semibold rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                                  className="px-3 py-1 bg-[#1C2526] text-white text-[10px] font-semibold rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
                                 >
                                   {t('admin.resolve')}
                                 </button>
@@ -1064,12 +1064,12 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-3">
                           <button
                             onClick={handleExportFinanceExcel}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-[#2C3E50] hover:bg-slate-800 text-white text-[10px] font-bold rounded-xl cursor-pointer transition-colors shadow-sm"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-[#1C2526] hover:bg-slate-800 text-white text-[10px] font-bold rounded-xl cursor-pointer transition-colors shadow-sm"
                           >
                             <i className="ri-file-download-line text-sm" />
                             {i18n.language === 'vi' ? 'Xuất Excel (CSV)' : 'Export Excel (CSV)'}
                           </button>
-                          <span className="text-[10px] text-[#2C3E50] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 bg-[#2C3E50]/5 rounded-xl">
+                          <span className="text-[10px] text-[#1C2526] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 bg-[#1C2526]/5 rounded-xl">
                             <i className="ri-file-excel-fill text-green-600 text-sm" />
                             {t('admin.sheetsActive')}
                           </span>
@@ -1086,7 +1086,7 @@ export default function AdminDashboard() {
                             <Tooltip contentStyle={{ fontSize: 11 }} />
                             <Legend wrapperStyle={{ fontSize: 11 }} />
                             <Bar dataKey="revenue" fill="#9B2A4C" name="Total Revenue ($)" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="outsourceCost" fill="#2C3E50" name="Outsource Expenses ($)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="outsourceCost" fill="#1C2526" name="Outsource Expenses ($)" radius={[4, 4, 0, 0]} />
                             <Bar dataKey="otherCost" fill="#A8B5A0" name="General Operations ($)" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
@@ -1154,7 +1154,7 @@ export default function AdminDashboard() {
                             setActiveTab('projects_management');
                             setActiveProjectSubTab('assign');
                           }}
-                          className="px-4 py-2 bg-[#2C3E50] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow hover:opacity-95 transition-opacity cursor-pointer"
+                          className="px-4 py-2 bg-[#1C2526] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow hover:opacity-95 transition-opacity cursor-pointer"
                         >
                           <i className="ri-add-line text-sm" />
                           {i18n.language === 'vi' ? 'Tạo đơn hàng mới' : 'Create new project'}
@@ -1477,14 +1477,14 @@ export default function AdminDashboard() {
                                 onClick={() => setActiveKanbanStatus(status)}
                                 className={`flex items-center gap-2 px-4 py-3 text-xs font-extrabold transition-all border-b-2 cursor-pointer ${isActive
                                     ? status === 'New' ? 'border-[#D97706] text-[#D97706] bg-[#D97706]/5' :
-                                      status === 'In Progress' ? 'border-blue-500 text-blue-500 bg-blue-500/5' :
+                                      status === 'In Progress' ? 'border-indigo-500 text-indigo-500 bg-indigo-500/5' :
                                         status === 'Client Review' ? 'border-[#9B2A4C] text-[#9B2A4C] bg-[#9B2A4C]/5' :
                                           'border-green-500 text-green-500 bg-green-500/5'
                                     : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50/50'
                                   } rounded-t-xl`}
                               >
                                 <span className={`w-2 h-2 rounded-full ${status === 'New' ? 'bg-[#D97706]' :
-                                    status === 'In Progress' ? 'bg-blue-500' :
+                                    status === 'In Progress' ? 'bg-indigo-500' :
                                       status === 'Client Review' ? 'bg-[#9B2A4C]' : 'bg-green-500'
                                   }`} />
                                 <span>
@@ -1495,7 +1495,7 @@ export default function AdminDashboard() {
                                 </span>
                                 <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-full ${isActive
                                     ? status === 'New' ? 'bg-[#D97706]/10 text-[#D97706]' :
-                                      status === 'In Progress' ? 'bg-blue-500/10 text-blue-500' :
+                                      status === 'In Progress' ? 'bg-indigo-500/10 text-indigo-500' :
                                         status === 'Client Review' ? 'bg-[#9B2A4C]/10 text-[#9B2A4C]' :
                                           'bg-green-500/10 text-green-500'
                                     : 'bg-gray-100 text-gray-500'
@@ -1638,7 +1638,7 @@ export default function AdminDashboard() {
                                                 className="h-full rounded-full transition-all duration-500"
                                                 style={{
                                                   width: `${proj.progress}%`,
-                                                  background: proj.progress === 100 ? '#10B981' : 'linear-gradient(90deg, #9B2A4C, #2C3E50)'
+                                                  background: proj.progress === 100 ? '#10B981' : 'linear-gradient(90deg, #9B2A4C, #1C2526)'
                                                 }}
                                               />
                                             </div>
@@ -1679,7 +1679,7 @@ export default function AdminDashboard() {
                                             <span className="text-[9px] font-extrabold text-gray-400 uppercase tracking-wider">
                                               {i18n.language === 'vi' ? 'Đầu việc timeline' : 'Subtasks timeline'}
                                             </span>
-                                            <span className="text-[9px] font-bold bg-[#2C3E50]/5 px-1.5 py-0.2 rounded text-gray-500">
+                                            <span className="text-[9px] font-bold bg-[#1C2526]/5 px-1.5 py-0.2 rounded text-gray-500">
                                               {completedSubTasks}/{totalSubTasks}
                                             </span>
                                           </div>
@@ -1893,7 +1893,7 @@ export default function AdminDashboard() {
 
                           <button
                             type="submit"
-                            className="bg-[#2C3E50] text-white font-bold px-4.5 py-2.5 rounded-xl text-xs hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
+                            className="bg-[#1C2526] text-white font-bold px-4.5 py-2.5 rounded-xl text-xs hover:bg-[#1C2526]/90 transition-colors cursor-pointer"
                           >
                             {t('admin.createTaskBtn')}
                           </button>
@@ -1929,7 +1929,7 @@ export default function AdminDashboard() {
                           <div className="flex gap-2">
                             <button
                               onClick={handleExportPayoutsCsv}
-                              className="px-4 py-2 bg-[#2C3E50] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-[#2C3E50]/90 transition-colors cursor-pointer"
+                              className="px-4 py-2 bg-[#1C2526] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-[#1C2526]/90 transition-colors cursor-pointer"
                             >
                               <i className="ri-file-download-line" />
                               {t('admin.exportPayouts')}
@@ -1955,14 +1955,14 @@ export default function AdminDashboard() {
                                 <tr key={p.id} className="hover:bg-gray-50/50">
                                   <td className="p-3 font-semibold text-[#1C2526]">{p.developerName}</td>
                                   <td className="p-3 text-[10px] text-gray-500 max-w-xs truncate">{p.projectName}</td>
-                                  <td className="p-3 text-right font-bold text-[#2C3E50]">${p.amount}</td>
+                                  <td className="p-3 text-right font-bold text-[#1C2526]">${p.amount}</td>
                                   <td className="p-3 text-right text-red-500">-${p.taxDeducted}</td>
                                   <td className="p-3 text-right font-bold text-[#9B2A4C]">${p.netAmount}</td>
                                   <td className="p-3">
                                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Paid'
                                         ? 'bg-green-50 text-green-600'
                                         : p.status === 'Approved'
-                                          ? 'bg-blue-50 text-blue-600'
+                                          ? 'bg-indigo-50 text-indigo-600'
                                           : 'bg-yellow-50 text-yellow-600'
                                       }`}>
                                       {p.status === 'Paid' ? t('admin.paid') : p.status === 'Approved' ? t('admin.statusApproved') : t('admin.statusPending')}
@@ -1972,7 +1972,7 @@ export default function AdminDashboard() {
                                     {p.status === 'Pending' && (
                                       <button
                                         onClick={() => handleApprovePayout(p.id)}
-                                        className="px-2.5 py-1 bg-[#2C3E50] text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
+                                        className="px-2.5 py-1 bg-[#1C2526] text-white text-[9px] font-bold rounded hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
                                       >
                                         {t('admin.approve')}
                                       </button>
@@ -2161,7 +2161,7 @@ export default function AdminDashboard() {
                       {/* 2FA Configuration */}
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center text-lg">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-lg">
                             <i className="ri-shield-keyhole-line" />
                           </div>
                           <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
@@ -2186,7 +2186,7 @@ export default function AdminDashboard() {
 
                     {/* Password Encryption notice */}
                     <div className="pl-4 border-l-2 border-yellow-500 text-xs text-[#5A6A72] space-y-1 py-1">
-                      <p className="font-bold text-[#2C3E50] flex items-center gap-1">
+                      <p className="font-bold text-[#1C2526] flex items-center gap-1">
                         <i className="ri-lock-line" />
                         {t('admin.encNoticeTitle')}
                       </p>
@@ -2391,7 +2391,7 @@ export default function AdminDashboard() {
                                               </div>
                                             )}
                                             <div className="text-[10px] text-gray-500 space-y-0.5">
-                                              <p className="font-semibold text-[#2C3E50]">
+                                              <p className="font-semibold text-[#1C2526]">
                                                 {i18n.language === 'vi' ? 'Mức lương:' : 'Rate:'}{' '}
                                                 {i18n.language === 'vi'
                                                   ? `${devProfile.rateValue.toLocaleString('vi-VN')} vnđ`
@@ -2440,7 +2440,7 @@ export default function AdminDashboard() {
                                                 href={devProfile.portfolio}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="text-blue-500 hover:text-blue-700 p-1 text-sm cursor-pointer"
+                                                className="text-indigo-500 hover:text-indigo-700 p-1 text-sm cursor-pointer"
                                                 title={i18n.language === 'vi' ? 'Portfolio / Website' : 'Portfolio / Website'}
                                               >
                                                 <i className="ri-external-link-line" />
@@ -2570,7 +2570,7 @@ export default function AdminDashboard() {
                 {/* Visual grid representing QR Code */}
                 <div className="grid grid-cols-5 gap-1.5 w-full h-full">
                   {[...Array(25)].map((_, i) => (
-                    <div key={i} className={`rounded-sm ${i % 3 === 0 || i % 7 === 0 ? 'bg-[#2C3E50]' : 'bg-white'}`} />
+                    <div key={i} className={`rounded-sm ${i % 3 === 0 || i % 7 === 0 ? 'bg-[#1C2526]' : 'bg-white'}`} />
                   ))}
                 </div>
               </div>

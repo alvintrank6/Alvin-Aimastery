@@ -113,10 +113,10 @@ export default function ContactPage() {
 
       {/* Hero */}
       <section className="pt-28 pb-12 md:pt-36 md:pb-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ background: 'radial-gradient(ellipse at 50% 0%, #2C3E50 0%, transparent 60%)' }}></div>
+        <div className="absolute inset-0 opacity-[0.03]" style={{ background: 'radial-gradient(ellipse at 50% 0%, #9B2A4C 0%, transparent 60%)' }}></div>
         <div className="max-w-3xl mx-auto px-4 md:px-6 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2C3E50]/20 bg-[#2C3E50]/5 mb-5">
-            <span className="text-[#2C3E50] text-xs font-semibold">{t('contact.badge')}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#9B2A4C]/20 bg-[#9B2A4C]/5 mb-5">
+            <span className="text-[#9B2A4C] text-xs font-semibold">{t('contact.badge')}</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[#1C2526] mb-4 leading-tight">
             {t('contact.title')} <span className="gradient-text">{t('contact.titleHighlight')}</span>
@@ -157,7 +157,7 @@ export default function ContactPage() {
                     </p>
                     <button
                       onClick={() => setFormState('idle')}
-                      className="mt-6 border border-gray-200 text-[#1C2526] text-sm font-semibold px-6 py-2.5 rounded-full hover:border-[#2C3E50]/30 hover:text-[#2C3E50] transition-colors cursor-pointer whitespace-nowrap"
+                      className="mt-6 border border-gray-200 text-[#1C2526] text-sm font-semibold px-6 py-2.5 rounded-full hover:border-[#9B2A4C]/30 hover:text-[#9B2A4C] transition-colors cursor-pointer whitespace-nowrap"
                     >
                       {t('contact.form.sendAnother')}
                     </button>
@@ -172,40 +172,40 @@ export default function ContactPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
                         <label className="block text-[#1C2526] text-sm font-medium mb-2">
-                          {t('contact.form.nameLabel')} <span className="text-[#2C3E50]">*</span>
+                          {t('contact.form.nameLabel')} <span className="text-[#9B2A4C]">*</span>
                         </label>
                         <input
                           type="text"
                           name="name"
                           required
                           placeholder={t('contact.form.namePlaceholder')}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#9B2A4C]/50 transition-colors"
                         />
                       </div>
                       <div>
                         <label className="block text-[#1C2526] text-sm font-medium mb-2">
-                          {t('contact.form.emailLabel')} <span className="text-[#2C3E50]">*</span>
+                          {t('contact.form.emailLabel')} <span className="text-[#9B2A4C]">*</span>
                         </label>
                         <input
                           type="email"
                           name="email"
                           required
                           placeholder={t('contact.form.emailPlaceholder')}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#9B2A4C]/50 transition-colors"
                         />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-[#1C2526] text-sm font-medium mb-2">
-                        {t('contact.form.phoneLabel')} <span className="text-[#2C3E50]">*</span>
+                        {t('contact.form.phoneLabel')} <span className="text-[#9B2A4C]">*</span>
                       </label>
                       <input
                         type="tel"
                         name="phone"
                         required
                         placeholder={t('contact.form.phonePlaceholder')}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#9B2A4C]/50 transition-colors"
                       />
                     </div>
 
@@ -246,7 +246,7 @@ export default function ContactPage() {
                             value={customSubject}
                             onChange={(e) => setCustomSubject(e.target.value)}
                             placeholder={t('contact.form.subjectPlaceholder')}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#9B2A4C]/50 transition-colors"
                           />
                         </div>
                       )}
@@ -254,7 +254,7 @@ export default function ContactPage() {
 
                     <div>
                       <label className="block text-[#1C2526] text-sm font-medium mb-2">
-                        {t('contact.form.messageLabel')} <span className="text-[#2C3E50]">*</span>
+                        {t('contact.form.messageLabel')} <span className="text-[#9B2A4C]">*</span>
                       </label>
                       <textarea
                         name="message"
@@ -263,7 +263,7 @@ export default function ContactPage() {
                         maxLength={500}
                         placeholder={t('contact.form.messagePlaceholder')}
                         onChange={(e) => setCharCount(e.target.value.length)}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#2C3E50]/50 transition-colors resize-none"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[#1C2526] text-sm placeholder-[#8A97A0] focus:outline-none focus:border-[#9B2A4C]/50 transition-colors resize-none"
                       />
                       <div className="flex justify-between mt-1">
                         <span className="text-[#8A97A0] text-xs">{t('contact.form.messageHint')}</span>

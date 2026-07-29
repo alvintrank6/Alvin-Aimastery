@@ -151,7 +151,7 @@ export default function ClientPortal() {
           {/* Header section */}
           <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#9B2A4C] to-[#2C3E50] flex items-center justify-center text-white font-bold text-lg shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#9B2A4C] to-[#1C2526] flex items-center justify-center text-white font-bold text-lg shadow-sm">
                 {clientName[0]?.toUpperCase() || 'C'}
               </div>
               <div>
@@ -231,7 +231,7 @@ export default function ClientPortal() {
                                   ? 'bg-green-50 text-green-600 border border-green-100'
                                   : proj.status === 'Client Review'
                                   ? 'bg-[#9B2A4C]/10 text-[#9B2A4C] border border-[#9B2A4C]/15'
-                                  : 'bg-blue-50 text-blue-600 border border-blue-100'
+                                  : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
                               }`}
                             >
                               {proj.status === 'New' && (isVi ? 'Mới khởi tạo' : 'New')}
@@ -244,7 +244,7 @@ export default function ClientPortal() {
 
                         {/* Brief Info */}
                         <div className="pl-4 border-l-2 border-gray-200 text-xs">
-                          <h4 className="font-extrabold text-[#2C3E50] mb-1 uppercase tracking-wide text-[9px]">
+                          <h4 className="font-extrabold text-[#1C2526] mb-1 uppercase tracking-wide text-[9px]">
                             {isVi ? 'YÊU CẦU DỰ ÁN' : 'PROJECT BRIEF'}
                           </h4>
                           <p className="text-[#5A6A72] leading-relaxed whitespace-pre-line">{proj.brief}</p>
@@ -261,7 +261,7 @@ export default function ClientPortal() {
                               className="h-full rounded-full transition-all duration-500"
                               style={{
                                 width: `${proj.progress}%`,
-                                background: proj.progress === 100 ? '#10B981' : 'linear-gradient(90deg, #9B2A4C, #2C3E50)'
+                                background: proj.progress === 100 ? '#10B981' : 'linear-gradient(90deg, #9B2A4C, #1C2526)'
                               }}
                             />
                           </div>

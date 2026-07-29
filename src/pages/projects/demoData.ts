@@ -70,7 +70,7 @@ const COSMETICS_HTML = `
   <div id="tab-home" class="tab-content">
     <!-- Hero Banner -->
     <section class="p-4 md:p-8 max-w-7xl mx-auto">
-      <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#9B2A4C] via-[#7B1E3A] to-[#2C3E50] text-white p-8 md:p-14 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
+      <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#9B2A4C] via-[#7B1E3A] to-[#1C2526] text-white p-8 md:p-14 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
         <div class="space-y-5 max-w-2xl text-center lg:text-left z-10">
           <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md text-white text-xs font-extrabold px-4 py-1.5 rounded-full border border-white/20">
             <i class="ri-leaf-line text-emerald-300"></i> 100% Thuần Chay & Y Khoa Kiểm Định Quốc Tế
@@ -234,7 +234,7 @@ const COSMETICS_HTML = `
           <div class="flex text-amber-400 text-sm">★★★★★</div>
           <p class="text-xs text-gray-600 italic leading-relaxed">"Kem chống nắng mỏng nhẹ, nâng tông tự nhiên không hề bị vệt trắng. Rất thích hợp cho da dầu mụn như mình!"</p>
           <div class="flex items-center gap-3 pt-2 border-t">
-            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">MA</div>
+            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center">MA</div>
             <div>
               <p class="text-xs font-bold text-[#1C2526]">Minh Anh (24 tuổi, Đà Nẵng)</p>
               <p class="text-[10px] text-emerald-600 font-semibold">✓ Đã mua hàng chính hãng</p>

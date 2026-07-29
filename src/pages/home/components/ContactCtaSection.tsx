@@ -200,13 +200,13 @@ export default function ContactCtaSection() {
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Mô tả sơ lược về nhu cầu hoặc mục tiêu dự án của bạn..."
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-4 rounded-xl gradient-bg dark:bg-gradient-to-r dark:from-cyan-500 dark:to-blue-600 text-white font-black text-xs tracking-wider uppercase shadow-xl hover:opacity-95 transition-opacity cursor-pointer"
+                    className="w-full py-4 rounded-xl gradient-bg dark:bg-gradient-to-r dark:from-rose-600 dark:to-pink-700 text-white font-black text-xs tracking-wider uppercase shadow-xl hover:opacity-95 transition-opacity cursor-pointer"
                   >
                     Gửi Yêu Cầu Tư Vấn <i className="ri-send-plane-fill ml-1" />
                   </button>

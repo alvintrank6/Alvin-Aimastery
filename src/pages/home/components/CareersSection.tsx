@@ -24,7 +24,7 @@ export default function CareersSection() {
     <section id="careers" className="py-24 md:py-32 text-white relative overflow-hidden" style={{ background: '#1C2526' }}>
       {/* Dynamic Glowing Background Accents */}
       <div className="absolute inset-0 opacity-15" style={{
-        background: 'radial-gradient(circle at 20% 35%, #9B2A4C 0%, transparent 40%), radial-gradient(circle at 80% 75%, #2C3E50 0%, transparent 40%)'
+        background: 'radial-gradient(circle at 20% 35%, #9B2A4C 0%, transparent 40%), radial-gradient(circle at 80% 75%, #6B1D35 0%, transparent 40%)'
       }}></div>
       
       {/* Decorative Grid Lines Overlay */}

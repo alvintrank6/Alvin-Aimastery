@@ -188,7 +188,7 @@ export default function ContactOrbit() {
       {/* Orbit Stage */}
       <div className={`relative flex items-center justify-center transition-all duration-500 ${stageSize}`}>
         {/* Dashed track in navy tone */}
-        <div className={`absolute border border-dashed border-[#2C3E50]/15 rounded-full pointer-events-none transition-all duration-500 ${trackSize}`} />
+        <div className={`absolute border border-dashed border-[#9B2A4C]/15 rounded-full pointer-events-none transition-all duration-500 ${trackSize}`} />
 
         {/* Center Node Column */}
         <div className={`absolute z-10 flex flex-col items-center text-center justify-center transition-all duration-500 ${centerSize}`}>

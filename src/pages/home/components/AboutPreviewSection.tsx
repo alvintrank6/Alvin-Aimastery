@@ -152,15 +152,15 @@ export default function AboutPreviewSection() {
                 href="https://www.linkedin.com/in/alvin-tran-95"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5A6A72] dark:text-gray-300 hover:text-[#9B2A4C] dark:hover:text-cyan-400 border border-gray-300 dark:border-gray-700 px-4 py-2.5 rounded-full transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5A6A72] dark:text-gray-300 hover:text-[#9B2A4C] dark:hover:text-rose-400 border border-gray-300 dark:border-gray-700 px-4 py-2.5 rounded-full transition-colors"
               >
-                <i className="ri-linkedin-box-fill text-blue-600 text-sm" />
+                <i className="ri-linkedin-box-fill text-indigo-600 text-sm" />
                 LinkedIn
               </a>
 
               <Link
                 to="/about"
-                className="inline-flex items-center gap-2 text-xs font-bold text-[#9B2A4C] dark:text-cyan-400 border border-[#9B2A4C]/30 dark:border-cyan-400/30 hover:bg-[#9B2A4C]/10 dark:hover:bg-cyan-400/10 px-5 py-2.5 rounded-full transition-all"
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#9B2A4C] dark:text-rose-400 border border-[#9B2A4C]/30 dark:border-rose-400/30 hover:bg-[#9B2A4C]/10 dark:hover:bg-rose-400/10 px-5 py-2.5 rounded-full transition-all"
               >
                 {i18n.language === 'vi' ? 'Xem hành trình của tôi (My Story)' : 'Read My Story'}
                 <i className="ri-arrow-right-line" />

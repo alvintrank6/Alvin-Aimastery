@@ -28,7 +28,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return <i className="ri-alert-fill text-amber-500 text-lg" />;
       case 'info':
       default:
-        return <i className="ri-information-fill text-blue-500 text-lg" />;
+        return <i className="ri-information-fill text-indigo-500 text-lg" />;
     }
   };
 
@@ -42,7 +42,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return 'border-amber-100/80 bg-amber-50/10 text-amber-900';
       case 'info':
       default:
-        return 'border-blue-100/80 bg-blue-50/10 text-blue-900';
+        return 'border-indigo-100/80 bg-indigo-50/10 text-indigo-900';
     }
   };
 
@@ -56,7 +56,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return 'bg-amber-500';
       case 'info':
       default:
-        return 'bg-blue-500';
+        return 'bg-indigo-500';
     }
   };
 

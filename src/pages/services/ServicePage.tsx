@@ -178,7 +178,7 @@ export function WebShowcase() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50 p-3 rounded-2xl border border-gray-100 gap-3">
-        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.web.title')}</span>
+        <span className="text-xs font-bold text-[#1C2526]">{t('services.showcase.web.title')}</span>
         <div className="flex flex-wrap items-center gap-2">
           {/* Viewport switch */}
           <div className="flex rounded-xl border border-gray-200/60 p-0.5 bg-white shadow-sm">
@@ -232,7 +232,7 @@ export function WebShowcase() {
           <div className={`p-4 border-b flex justify-between items-center shrink-0 transition-colors duration-300 ${
             theme === 'dark' ? 'border-slate-800 bg-slate-900/80 backdrop-blur-md' : 'border-gray-100 bg-white/80 backdrop-blur-md'
           }`}>
-            <span className="text-xs font-black tracking-wider bg-gradient-to-r from-[#9B2A4C] to-[#2C3E50] bg-clip-text text-transparent">
+            <span className="text-xs font-black tracking-wider bg-gradient-to-r from-[#9B2A4C] to-[#1C2526] bg-clip-text text-transparent">
               COSMETICS CO.
             </span>
             <div className="flex items-center gap-3">
@@ -288,7 +288,7 @@ export function WebShowcase() {
                     Welcome to Cosmetics Co.
                   </span>
                   
-                  <h4 className="text-lg md:text-xl font-black leading-tight bg-gradient-to-r from-[#9B2A4C] to-[#2C3E50] dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                  <h4 className="text-lg md:text-xl font-black leading-tight bg-gradient-to-r from-[#9B2A4C] to-[#1C2526] dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                     Chăm Sóc Làn Da<br />Theo Cách Khoa Học
                   </h4>
                   
@@ -375,7 +375,7 @@ export function WebShowcase() {
                     100% Organic & Vegan
                   </div>
 
-                  <h4 className="text-md font-black leading-tight bg-gradient-to-r from-[#9B2A4C] to-[#2C3E50] dark:from-white dark:to-slate-300 bg-clip-text text-transparent px-2">
+                  <h4 className="text-md font-black leading-tight bg-gradient-to-r from-[#9B2A4C] to-[#1C2526] dark:from-white dark:to-slate-300 bg-clip-text text-transparent px-2">
                     {t('services.showcase.web.tagline')}
                   </h4>
                   <p className="text-[9px] text-gray-400 max-w-xs mx-auto leading-relaxed">
@@ -516,7 +516,7 @@ export function WebShowcase() {
 
             {/* Mock Footer inside mockup */}
             <div className="mt-8 border-t dark:border-slate-800 border-gray-100 pt-5 px-6 pb-2 text-center space-y-3">
-              <p className="text-[8px] font-black tracking-wider uppercase bg-gradient-to-r from-[#9B2A4C] to-[#2C3E50] dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+              <p className="text-[8px] font-black tracking-wider uppercase bg-gradient-to-r from-[#9B2A4C] to-[#1C2526] dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                 COSMETICS CO.
               </p>
               <p className="text-[6px] text-gray-400 dark:text-slate-500 max-w-[220px] mx-auto leading-relaxed">
@@ -801,7 +801,7 @@ export function ChatbotShowcase() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.chatbot.title')}</span>
+        <span className="text-xs font-bold text-[#1C2526]">{t('services.showcase.chatbot.title')}</span>
         <span className="text-[9px] font-bold text-gray-400">{t('services.showcase.chatbot.status')}</span>
       </div>
 
@@ -954,7 +954,7 @@ export function LandingShowcase() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.landing.title')}</span>
+        <span className="text-xs font-bold text-[#1C2526]">{t('services.showcase.landing.title')}</span>
         <span className="text-[9px] font-bold text-gray-400">Kéo thanh trượt để so sánh</span>
       </div>
 
@@ -1096,7 +1096,7 @@ export function WorkflowShowcase() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.workflow.title')}</span>
+        <span className="text-xs font-bold text-[#1C2526]">{t('services.showcase.workflow.title')}</span>
         <button
           onClick={startSimulation}
           disabled={running}
@@ -1343,7 +1343,7 @@ export function EmailShowcase() {
     <div className="space-y-4">
       {/* Simulation Bar Header */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50 p-3 rounded-2xl border border-gray-100 gap-3">
-        <span className="text-xs font-bold text-[#2C3E50] flex items-center gap-1.5">
+        <span className="text-xs font-bold text-[#1C2526] flex items-center gap-1.5">
           <i className="ri-robot-line text-[#9B2A4C]" />
           Giả lập Trợ Lý AI Auto-Responder Email
         </span>
@@ -1489,7 +1489,7 @@ export function EmailShowcase() {
                 </div>
                 <button
                   onClick={() => handleResetTicket(activeTab)}
-                  className="px-4 py-2 bg-[#2C3E50] text-white text-[8px] font-extrabold rounded-xl shadow-md hover:bg-slate-800 cursor-pointer"
+                  className="px-4 py-2 bg-[#1C2526] text-white text-[8px] font-extrabold rounded-xl shadow-md hover:bg-slate-800 cursor-pointer"
                 >
                   <i className="ri-refresh-line mr-1" />
                   Thử phản hồi lại bằng AI
@@ -1711,7 +1711,7 @@ export function AppShowcase() {
     <div className="space-y-4">
       {/* Top Control Bar */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50 p-3 rounded-2xl border border-gray-100 gap-3">
-        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.app.title')}</span>
+        <span className="text-xs font-bold text-[#1C2526]">{t('services.showcase.app.title')}</span>
         <div className="flex flex-wrap items-center gap-2">
           {/* Device switch (iOS / Android) */}
           <div className="flex rounded-xl border border-gray-200/60 p-0.5 bg-white shadow-sm">
@@ -2063,7 +2063,7 @@ export function GeneralShowcase({ serviceId }: { serviceId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-        <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.general.title')}</span>
+        <span className="text-xs font-bold text-[#1C2526]">{t('services.showcase.general.title')}</span>
         <span className="text-[9px] font-bold text-gray-400">{t('services.showcase.general.activeClients')}</span>
       </div>
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
@@ -2232,7 +2232,7 @@ export default function ServicePage() {
               <p className="text-[#5A6A72] text-lg leading-relaxed">
                 {t(service.descKey)}
               </p>
-              <div className="h-px bg-[#2C3E50]/10" />
+              <div className="h-px bg-[#1C2526]/10" />
 
               {/* Dynamic Interactive Portfolio Showcase */}
               <div className="my-6">
@@ -2252,7 +2252,7 @@ export default function ServicePage() {
                   {service.stack.map((item) => (
                     <span
                       key={item}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-[#2C3E50]/10 text-[#2C3E50] shadow-sm"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-[#1C2526]/10 text-[#1C2526] shadow-sm"
                     >
                       {item}
                     </span>
@@ -2263,7 +2263,7 @@ export default function ServicePage() {
 
             {/* Right Booking card */}
             <div className="lg:col-span-5 sticky top-24">
-              <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#2C3E50]/5 shadow-xl relative overflow-hidden">
+              <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#1C2526]/5 shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1.5 gradient-bg" />
                 <h2 className="text-[#1C2526] font-bold text-xl mb-2">
                   {t('services.bookService')}
@@ -2375,7 +2375,7 @@ export default function ServicePage() {
         </section>
 
         {/* Process and Why choose Us */}
-        <section className="bg-white border-y border-[#2C3E50]/5 mt-10 py-16">
+        <section className="bg-white border-y border-[#1C2526]/5 mt-10 py-16">
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Process timeline */}
@@ -2383,7 +2383,7 @@ export default function ServicePage() {
                 <h2 className="text-[#1C2526] font-bold text-2xl">
                   {t('services.processTitle')}
                 </h2>
-                <div className="relative border-l border-[#2C3E50]/10 pl-6 space-y-8 ml-3">
+                <div className="relative border-l border-[#1C2526]/10 pl-6 space-y-8 ml-3">
                   {processList.map((step, idx) => (
                     <div key={idx} className="relative">
                       {/* Step Circle */}
@@ -2417,14 +2417,14 @@ export default function ServicePage() {
                   ))}
                 </div>
 
-                <div className="bg-[#2C3E50]/5 rounded-3xl p-6 border border-[#2C3E50]/10 text-center space-y-4">
-                  <h3 className="font-bold text-sm text-[#2C3E50]">{t('services.booking.readyTitle')}</h3>
+                <div className="bg-[#1C2526]/5 rounded-3xl p-6 border border-[#1C2526]/10 text-center space-y-4">
+                  <h3 className="font-bold text-sm text-[#1C2526]">{t('services.booking.readyTitle')}</h3>
                   <p className="text-xs text-[#5A6A72]">
                     {t('services.booking.readyDesc')}
                   </p>
                   <Link
                     to="/contact"
-                    className="inline-block bg-[#2C3E50] text-white text-xs font-semibold px-6 py-2.5 rounded-full hover:bg-[#2C3E50]/90 transition-colors"
+                    className="inline-block bg-[#1C2526] text-white text-xs font-semibold px-6 py-2.5 rounded-full hover:bg-[#1C2526]/90 transition-colors"
                   >
                     {t('services.booking.goToContact')}
                   </Link>

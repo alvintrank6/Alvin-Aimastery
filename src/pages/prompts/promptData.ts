@@ -142,7 +142,7 @@ Dưới đây là 3 bài học đắt giá tôi ước mình biết từ 2 năm 
     title: 'Prompt Midjourney v7 Chụp Ảnh Sản Phẩm Studio 3D Chuẩn Bìa Tạp Chí',
     category: 'Content & Social',
     model: 'Midjourney v7',
-    badgeColor: 'bg-blue-600',
+    badgeColor: 'bg-rose-600',
     summary: 'Bộ Prompt nhiếp ảnh Studio 3D siêu thực tạo bối cảnh ánh sáng và chất liệu sản phẩm đẳng cấp như bìa tạp chí.',
     systemPrompt: `You are an Elite Commercial Photographer & Midjourney Prompt Engineer specializing in high-end luxury product photography.`,
     userPrompt: `Tạo Prompt Midjourney v7 tiếng Anh chi tiết cho sản phẩm: [Tên sản phẩm / Chai mỹ phẩm / Đồng hồ / Giày]

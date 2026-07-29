@@ -44,7 +44,7 @@ export default function ProjectsSection() {
         'A brand-new website with 100/100 SEO points',
       ],
       tags: (t('projects.items', { returnObjects: true }) as Array<{ tags: string[] }>)[0]?.tags ?? ['Brand Strategy', 'Social Media'],
-      color: '#2C3E50',
+      color: '#6B1D35',
     },
     {
       title: (t('projects.items', { returnObjects: true }) as Array<{ title: string }>)[1]?.title ?? 'Senn Cosmetics – From Zero to $4K/Month',
@@ -121,17 +121,17 @@ export default function ProjectsSection() {
   const galleryLabels = t('projects.galleryLabels', { returnObjects: true }) as Record<string, string>;
 
   return (
-    <section id="projects" className="py-20 md:py-28" style={{ background: '#ffffff' }}>
+    <section id="projects" className="py-20 md:py-28 bg-white dark:!bg-[#0B0F17] transition-colors">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         {/* Header */}
         <div className="max-w-3xl mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2C3E50]/20 bg-[#2C3E50]/5 mb-5">
-            <span className="text-[#2C3E50] text-xs font-semibold">{t('projects.badge')}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#9B2A4C]/20 bg-[#9B2A4C]/5 dark:border-rose-400/30 dark:bg-rose-400/10 mb-5">
+            <span className="text-[#9B2A4C] dark:text-rose-400 text-xs font-semibold">{t('projects.badge')}</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1C2526] mb-3">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1C2526] dark:text-white mb-3">
             {t('projects.title')} <span className="gradient-text">{t('projects.titleHighlight')}</span>
           </h2>
-          <p className="text-[#5A6A72] text-base leading-relaxed">
+          <p className="text-[#5A6A72] dark:text-gray-300 text-base leading-relaxed">
             {t('projects.intro')}
           </p>
         </div>
@@ -141,7 +141,7 @@ export default function ProjectsSection() {
           {projects.map((project, i) => (
             <div
               key={i}
-              className="card-light card-light-hover rounded-2xl overflow-hidden transition-all duration-300"
+              className="card-light card-light-hover dark:!bg-[#121722] dark:border-gray-800 rounded-2xl overflow-hidden transition-all duration-300"
             >
               {/* Bố cục: chia cột song song đan xen (Zebra layout) trên Desktop, xếp chồng trên Mobile */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
@@ -172,17 +172,17 @@ export default function ProjectsSection() {
                     </span>
                   </div>
 
-                  <h3 className="text-[#1C2526] font-bold text-xl mb-3">{project.title}</h3>
-                  <p className="text-[#5A6A72] text-sm leading-relaxed mb-5">{project.description}</p>
+                  <h3 className="text-[#1C2526] dark:text-white font-bold text-xl mb-3">{project.title}</h3>
+                  <p className="text-[#5A6A72] dark:text-gray-300 text-sm leading-relaxed mb-5">{project.description}</p>
 
                   {/* Results */}
                   <div className="mb-5">
-                    <h4 className="text-[#1C2526] text-xs font-semibold mb-2 uppercase tracking-wide">{t('projects.keyResults')}</h4>
+                    <h4 className="text-[#1C2526] dark:text-white text-xs font-semibold mb-2 uppercase tracking-wide">{t('projects.keyResults')}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {project.results.map((result, ri) => (
                         <div key={ri} className="flex items-center gap-2">
                           <i className="ri-check-line text-sm" style={{ color: project.color }}></i>
-                          <span className="text-[#3E4A52] text-sm">{result}</span>
+                          <span className="text-[#3E4A52] dark:text-gray-300 text-sm">{result}</span>
                         </div>
                       ))}
                     </div>

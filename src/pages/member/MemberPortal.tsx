@@ -274,7 +274,7 @@ export default function MemberPortal() {
               </div>
               <button
                 onClick={handleLogout}
-                className="text-xs text-[#8A97A0] hover:text-[#2C3E50] font-bold cursor-pointer"
+                className="text-xs text-[#8A97A0] hover:text-[#1C2526] font-bold cursor-pointer"
               >
                 {t('portals.logout')}
               </button>
@@ -345,7 +345,7 @@ export default function MemberPortal() {
 
                         {/* Brief */}
                         <div className="pl-4 border-l-2 border-gray-200 text-xs">
-                          <h4 className="font-extrabold text-[#2C3E50] mb-1 uppercase tracking-wide text-[10px]">
+                          <h4 className="font-extrabold text-[#1C2526] mb-1 uppercase tracking-wide text-[10px]">
                             {t('member.brief')}
                           </h4>
                           <p className="text-[#5A6A72] leading-relaxed whitespace-pre-line">{proj.brief}</p>
@@ -423,7 +423,7 @@ export default function MemberPortal() {
                                           {st.completed && <i className="ri-check-line text-xs font-bold" />}
                                         </button>
                                         <div className="space-y-0.5">
-                                          <p className={`text-xs font-bold text-[#2C3E50] leading-normal ${st.completed ? 'line-through text-gray-400' : ''}`}>
+                                          <p className={`text-xs font-bold text-[#1C2526] leading-normal ${st.completed ? 'line-through text-gray-400' : ''}`}>
                                             {st.title}
                                           </p>
                                           {st.description && (
@@ -560,7 +560,7 @@ export default function MemberPortal() {
                           <div className="flex gap-2 justify-end pt-2">
                             <button
                               onClick={() => handleStartEdit(proj)}
-                              className="px-4 py-2 border border-[#2C3E50]/20 text-[#2C3E50] font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+                              className="px-4 py-2 border border-[#1C2526]/20 text-[#1C2526] font-bold text-xs rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
                             >
                               {i18n.language === 'vi' ? 'Cập nhật link sản phẩm' : 'Update product link'}
                             </button>
@@ -579,7 +579,7 @@ export default function MemberPortal() {
                                 {t('member.paymentRequested')}
                               </span>
                             ) : proj.payoutStatus === 'Approved' ? (
-                              <span className="px-4 py-2 bg-blue-50 text-blue-600 font-bold text-xs rounded-xl border border-blue-100 flex items-center gap-1">
+                              <span className="px-4 py-2 bg-indigo-50 text-indigo-600 font-bold text-xs rounded-xl border border-indigo-100 flex items-center gap-1">
                                 <i className="ri-check-line" />
                                 {t('member.statusApproved')}
                               </span>
@@ -624,7 +624,7 @@ export default function MemberPortal() {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-500">{t('member.outsourceFee')}</span>
-                              <span className="font-bold text-[#2C3E50]">${proj.outsourceFee}</span>
+                              <span className="font-bold text-[#1C2526]">${proj.outsourceFee}</span>
                             </div>
                             <div className="flex justify-between text-red-500">
                               <span>
@@ -645,7 +645,7 @@ export default function MemberPortal() {
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${proj.payoutStatus === 'Paid'
                                 ? 'bg-green-50 text-green-600'
                                 : proj.payoutStatus === 'Approved'
-                                  ? 'bg-blue-50 text-blue-600'
+                                  ? 'bg-indigo-50 text-indigo-600'
                                   : proj.payoutStatus === 'Requested'
                                     ? 'bg-yellow-50 text-yellow-600'
                                     : 'bg-gray-100 text-gray-500'

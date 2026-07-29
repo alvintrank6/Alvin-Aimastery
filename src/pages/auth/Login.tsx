@@ -37,9 +37,9 @@ export default function Login() {
       label: t('portals.roleManager'),
       email: 'manager1@gmail.com',
       password: 'manager123',
-      color: '#2C3E50',
-      bg: 'rgba(44, 62, 80, 0.05)',
-      borderColor: 'rgba(44, 62, 80, 0.15)',
+      color: '#6B1D35',
+      bg: 'rgba(107, 29, 53, 0.05)',
+      borderColor: 'rgba(107, 29, 53, 0.15)',
       icon: 'ri-user-settings-line',
     },
     {

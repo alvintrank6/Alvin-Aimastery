@@ -26,9 +26,9 @@ export default function RegisterSelection() {
       desc: 'Nhận tư vấn giải pháp AI Marketing, Tự động hóa n8n & Thiết kế Website.',
       icon: 'ri-chat-smile-3-line',
       path: '/contact',
-      color: '#2C3E50',
-      bgHover: 'rgba(44, 62, 80, 0.05)',
-      borderColor: 'rgba(44, 62, 80, 0.15)'
+      color: '#6B1D35',
+      bgHover: 'rgba(107, 29, 53, 0.05)',
+      borderColor: 'rgba(107, 29, 53, 0.15)'
     }
   ];
 

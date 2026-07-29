@@ -6,6 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Last-modified" content="2026-05-07" />
 
+    <script>
+      (function() {
+        try {
+          const theme = localStorage.getItem('theme');
+          if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Primary SEO -->
     <title>Alvin Tran | Marketer, AI Automation Specialist & Communications Strategist</title>
     <meta name="description" content="Alvin Tran (Trần Vũ Quốc Anh) – 20-year-old Marketer and AI Automation Specialist. Proven track record scaling businesses through creative strategies and smart technology." />

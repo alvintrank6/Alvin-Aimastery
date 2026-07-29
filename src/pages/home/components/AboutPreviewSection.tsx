@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 // Animated Counter Component (Counts up smoothly from 0 to target value on scroll)
-function AnimatedCounter({ end, duration = 1600, suffix = '' }: { end: number; duration?: number; suffix?: string }) {
+function AnimatedCounter({ end, duration = 2500, suffix = '' }: { end: number; duration?: number; suffix?: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const hasAnimated = useRef(false);
@@ -58,7 +58,7 @@ function AnimatedProgressBar({ percent }: { percent: number }) {
         if (entries[0].isIntersecting) {
           setTimeout(() => {
             setWidth(percent);
-          }, 150);
+          }, 200);
         }
       },
       { threshold: 0.2 }
@@ -74,7 +74,7 @@ function AnimatedProgressBar({ percent }: { percent: number }) {
   return (
     <div ref={ref} className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
       <div
-        className="h-full bg-gradient-to-r from-[#9B2A4C] to-cyan-400 rounded-full transition-all duration-1200 ease-out"
+        className="h-full bg-gradient-to-r from-[#9B2A4C] to-cyan-400 rounded-full transition-all duration-[2400ms] cubic-bezier(0.16, 1, 0.3, 1)"
         style={{ width: `${width}%` }}
       />
     </div>

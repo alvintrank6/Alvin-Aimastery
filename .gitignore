@@ -54,6 +54,10 @@ web_modules/
 # Optional stylelint cache
 .stylelintcache
 
+# Vite build cache
+.vite/
+auto-imports.d.ts
+
 # Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/

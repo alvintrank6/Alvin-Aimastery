@@ -11,6 +11,11 @@ const translations = {
     close: 'Close',
   },
 
+  contactButtons: {
+    zalo: 'Chat on Zalo',
+    messenger: 'Chat on Messenger',
+  },
+
   navbar: {
     about: 'About me',
     projects: 'Projects',
@@ -422,9 +427,9 @@ const translations = {
         ]
       },
       app: {
-        title: 'Custom App Development',
-        desc: 'Interactive mobile and web applications tailored exactly to your unique business logic and goals.',
-        details: 'From concept to Play Store and App Store deployment. We use React Native, Flutter, and serverless architectures to build robust apps that scale smoothly.',
+        title: 'Mobile App Development',
+        desc: 'Native and cross-platform mobile applications tailored exactly to your unique business logic and goals.',
+        details: 'From concept to Play Store and App Store deployment. We use React Native, Flutter, and iOS/Android technologies to build robust mobile apps that scale smoothly.',
         process: [
           {
             title: 'Step 1: App Architecture & Database Modeling',

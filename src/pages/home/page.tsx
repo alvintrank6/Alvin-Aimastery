@@ -1,12 +1,12 @@
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import HeroSection from './components/HeroSection';
-import EcosystemSection from './components/EcosystemSection';
-import AboutSection from './components/AboutSection';
+import AboutPreviewSection from './components/AboutPreviewSection';
 import ServicesSection from './components/ServicesSection';
-import ProjectsSection from './components/ProjectsSection';
-import CareersSection from './components/CareersSection';
-import CtaSection from './components/CtaSection';
+import FeaturedProjectsSection from './components/FeaturedProjectsSection';
+import BlogPreviewSection from './components/BlogPreviewSection';
+import PromptHubPreviewSection from './components/PromptHubPreviewSection';
+import ContactCtaSection from './components/ContactCtaSection';
 import { useEffect } from 'react';
 
 function HomeJsonLd() {
@@ -16,31 +16,24 @@ function HomeJsonLd() {
       '@type': 'Person',
       name: 'Alvin Tran',
       alternateName: 'Trần Vũ Quốc Anh',
-      jobTitle: 'Marketer, AI Automation Specialist & Communications Strategist',
-      url: import.meta.env.VITE_SITE_URL ?? 'https://example.com',
-      description: '20-year-old marketer with proven track record scaling businesses through creative strategies and smart technology.',
+      jobTitle: 'AI Marketing Specialist & Communications Strategist',
+      url: import.meta.env.VITE_SITE_URL ?? 'https://alvinaimastery.com',
+      description: 'Marketer and AI Automation Specialist scaling businesses with creative strategies and smart technology.',
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Ha Dong',
+        addressLocality: 'Cau Giay',
         addressRegion: 'Hanoi',
         addressCountry: 'VN',
       },
-      sameAs: [],
+      sameAs: [
+        'https://www.facebook.com/alvin.tran.872661/',
+        'https://www.instagram.com/alvintran_95/'
+      ],
       worksFor: [
         {
           '@type': 'Organization',
-          name: 'Beta Home Viet Nam',
-          jobTitle: 'Communications & Marketer',
-        },
-        {
-          '@type': 'Organization',
-          name: 'Senn Cosmetics',
-          jobTitle: 'CEO, Marketer & Sales',
-        },
-        {
-          '@type': 'Organization',
-          name: 'ByeBye Pimple',
-          jobTitle: 'Designer / Marketer',
+          name: 'AI Mastery',
+          jobTitle: 'AI Marketing Specialist & Business Development',
         },
       ],
     };
@@ -64,17 +57,17 @@ function HomeJsonLd() {
 
 export default function Home() {
   return (
-    <div className="min-h-screen" style={{ background: '#F8F6F2' }}>
+    <div className="min-h-screen transition-colors duration-300">
       <HomeJsonLd />
       <Navbar />
       <main>
         <HeroSection />
-        <EcosystemSection />
-        <AboutSection />
+        <AboutPreviewSection />
         <ServicesSection />
-        <ProjectsSection />
-        <CareersSection />
-        <CtaSection />
+        <FeaturedProjectsSection />
+        <BlogPreviewSection />
+        <PromptHubPreviewSection />
+        <ContactCtaSection />
       </main>
       <Footer />
     </div>

@@ -15,17 +15,17 @@ export default function RegisterSelection() {
       title: t('auth.clientBooking'),
       desc: t('auth.clientBookingDesc'),
       icon: 'ri-user-shared-line',
-      path: '/client/register', // Customers go to client register page
+      path: '/client/register',
       color: '#9B2A4C',
       bgHover: 'rgba(155, 42, 76, 0.05)',
       borderColor: 'rgba(155, 42, 76, 0.15)'
     },
     {
-      id: 'developer',
-      title: t('auth.partnerReg'),
-      desc: t('auth.partnerRegDesc'),
-      icon: 'ri-team-line',
-      path: '/developer/register', // Freelancers go to outsource register
+      id: 'consultation',
+      title: 'Tư Vấn & Báo Giá',
+      desc: 'Nhận tư vấn giải pháp AI Marketing, Tự động hóa n8n & Thiết kế Website.',
+      icon: 'ri-chat-smile-3-line',
+      path: '/contact',
       color: '#2C3E50',
       bgHover: 'rgba(44, 62, 80, 0.05)',
       borderColor: 'rgba(44, 62, 80, 0.15)'

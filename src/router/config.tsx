@@ -10,11 +10,36 @@ import Login from "../pages/auth/Login";
 import RegisterSelection from "../pages/auth/RegisterSelection";
 import ClientPortal from "../pages/client/ClientPortal";
 import ClientRegister from "../pages/client/ClientRegister";
+import AboutPage from "../pages/about/page";
+import ProjectsPage from "../pages/projects/page";
+import PromptsPage from "../pages/prompts/page";
+import BlogPage from "../pages/blog/page";
+import BlogPostDetail from "../pages/blog/BlogPostDetail";
 
 const routes: RouteObject[] = [
   {
     path: "/",
     element: <Home />,
+  },
+  {
+    path: "/about",
+    element: <AboutPage />,
+  },
+  {
+    path: "/projects",
+    element: <ProjectsPage />,
+  },
+  {
+    path: "/prompts",
+    element: <PromptsPage />,
+  },
+  {
+    path: "/blog",
+    element: <BlogPage />,
+  },
+  {
+    path: "/blog/:postId",
+    element: <BlogPostDetail />,
   },
   {
     path: "/contact",

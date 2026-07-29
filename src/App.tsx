@@ -9,6 +9,22 @@ import { AnalyticsAPI } from "./utils/api";
 // Global flag to prevent duplicate tracking requests within the same page load lifecycle (e.g., React.StrictMode in dev)
 let isTrackedInSession = false;
 
+import { useLocation } from "react-router-dom";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
+import FloatingContactButtons from "./components/common/FloatingContactButtons";
+import TechCursor from "./components/common/TechCursor";
+import ThemeToggleSwitch from "./components/common/ThemeToggleSwitch";
+
 function App() {
   useEffect(() => {
     // Only track once per browser session to prevent duplicate hits on page navigation/refresh
@@ -90,7 +106,11 @@ function App() {
     <I18nextProvider i18n={i18n}>
       <ToastProvider>
         <BrowserRouter basename={__BASE_PATH__}>
+          <TechCursor />
+          <ScrollToTop />
           <AppRoutes />
+          <FloatingContactButtons />
+          <ThemeToggleSwitch />
         </BrowserRouter>
       </ToastProvider>
     </I18nextProvider>

@@ -11,6 +11,11 @@ const translations = {
     close: 'Đóng',
   },
 
+  contactButtons: {
+    zalo: 'Chat qua Zalo',
+    messenger: 'Chat qua Messenger',
+  },
+
   navbar: {
     about: 'Về tôi',
     projects: 'Dự án',
@@ -422,9 +427,9 @@ const translations = {
         ]
       },
       app: {
-        title: 'Xây Dựng Ứng Dụng (App)',
-        desc: 'Phát triển ứng dụng Web và Mobile tùy biến theo chính xác logic và quy trình kinh doanh của bạn.',
-        details: 'Đồng hành từ ý tưởng đến đưa app lên cửa hàng ứng dụng Google Play & App Store. Sử dụng các công nghệ React Native, Flutter và Serverless giúp vận hành ổn định và dễ dàng nâng cấp.',
+        title: 'Phát Triển Mobile App',
+        desc: 'Phát triển ứng dụng di động (iOS & Android) chuẩn native và cross-platform tùy biến theo đúng logic kinh doanh của bạn.',
+        details: 'Đồng hành từ ý tưởng đến đưa ứng dụng lên cửa hàng Google Play & App Store. Sử dụng các công nghệ React Native, Flutter và Serverless giúp ứng dụng di động vận hành mượt mà, tối ưu trải nghiệm người dùng.',
         process: [
           {
             title: 'Bước 1: Thiết Kế Kiến Trúc & Thiết Lập Database',

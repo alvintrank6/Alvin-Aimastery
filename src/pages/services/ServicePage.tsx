@@ -761,7 +761,7 @@ export function ChatbotShowcase() {
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([]);
   const [typing, setTyping] = useState(false);
   const [inputText, setInputText] = useState('');
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMessages([
@@ -770,7 +770,9 @@ export function ChatbotShowcase() {
   }, [i18n.language, t]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages, typing]);
 
   const handleSend = (text: string) => {
@@ -820,6 +822,7 @@ export function ChatbotShowcase() {
 
         {/* Messages Screen */}
         <div 
+          ref={chatContainerRef}
           className="flex-grow overflow-y-auto space-y-3 p-1"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
@@ -849,7 +852,6 @@ export function ChatbotShowcase() {
               </div>
             </div>
           )}
-          <div ref={chatEndRef} />
         </div>
 
         {/* Input & Quick Suggestions */}
@@ -1652,7 +1654,7 @@ export function EmailShowcase() {
 // 6. Mobile App Showcase: App screen slider inside device mock
 export function AppShowcase() {
   const { t } = useTranslation();
-  const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
+  const [device, setDevice] = useState<'ios' | 'android'>('ios');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark'); // Smart home dashboard defaults to dark theme for visual premium feel
 
   const [currentTab, setCurrentTab] = useState<'home' | 'scenes' | 'security'>('home');
@@ -1711,23 +1713,23 @@ export function AppShowcase() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-gray-50 p-3 rounded-2xl border border-gray-100 gap-3">
         <span className="text-xs font-bold text-[#2C3E50]">{t('services.showcase.app.title')}</span>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Viewport switch */}
+          {/* Device switch (iOS / Android) */}
           <div className="flex rounded-xl border border-gray-200/60 p-0.5 bg-white shadow-sm">
             <button
-              onClick={() => setViewport('desktop')}
+              onClick={() => setDevice('ios')}
               className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
-                viewport === 'desktop' ? 'bg-[#9B2A4C] text-white shadow-sm' : 'bg-white text-gray-500 hover:text-gray-800'
+                device === 'ios' ? 'bg-[#9B2A4C] text-white shadow-sm' : 'bg-white text-gray-500 hover:text-gray-800'
               }`}
             >
-              Máy tính
+              📱 iOS
             </button>
             <button
-              onClick={() => setViewport('mobile')}
+              onClick={() => setDevice('android')}
               className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
-                viewport === 'mobile' ? 'bg-[#9B2A4C] text-white shadow-sm' : 'bg-white text-gray-500 hover:text-gray-800'
+                device === 'android' ? 'bg-[#9B2A4C] text-white shadow-sm' : 'bg-white text-gray-500 hover:text-gray-800'
               }`}
             >
-              Di động
+              🤖 Android
             </button>
           </div>
 
@@ -1756,15 +1758,19 @@ export function AppShowcase() {
       {/* Simulator Frame wrapper */}
       <div className="flex justify-center items-center bg-[#F8F6F2] border border-gray-100 rounded-3xl p-6 min-h-[340px] transition-all duration-300">
         <div
-          className={`bg-slate-950 border-[6px] border-slate-800 rounded-[36px] shadow-2xl relative flex flex-col justify-between overflow-hidden transition-all duration-500 ${
-            viewport === 'desktop' ? 'w-[260px] h-[480px]' : 'w-64 h-[420px]'
-          }`}
+          className="bg-slate-950 border-[6px] border-slate-800 rounded-[36px] shadow-2xl relative flex flex-col justify-between overflow-hidden transition-all duration-500 w-64 h-[440px]"
         >
-          {/* Top Notch/Speaker */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-4 bg-slate-800 rounded-full z-30 flex items-center justify-center pointer-events-none">
-            <div className="w-1.5 h-1.5 bg-slate-900 rounded-full mr-2" />
-            <div className="w-8 h-1 bg-slate-700 rounded-full" />
-          </div>
+          {/* Top Camera/Notch according to device */}
+          {device === 'ios' ? (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-4 bg-slate-800 rounded-full z-30 flex items-center justify-center pointer-events-none">
+              <div className="w-1.5 h-1.5 bg-slate-900 rounded-full mr-2" />
+              <div className="w-8 h-1 bg-slate-700 rounded-full" />
+            </div>
+          ) : (
+            <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full z-30 pointer-events-none flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-slate-800 rounded-full" />
+            </div>
+          )}
 
           {/* Device Screen */}
           <div

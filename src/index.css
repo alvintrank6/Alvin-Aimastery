@@ -41,9 +41,31 @@ body {
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   }
+  .dark .glass-nav {
+    background: rgba(11, 15, 23, 0.88);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
   .accent-border {
     border-color: rgba(155, 42, 76, 0.22);
   }
+  .cyan-glow {
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.25);
+  }
+}
+@keyframes wave-hand {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-8deg); }
+  45% { transform: rotate(14deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-wave-hand {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: wave-hand 1.2s infinite ease-in-out;
 }
 
 @keyframes slideIn {
@@ -112,4 +134,11 @@ body {
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: rgba(155, 42, 76, 0.35);
+}
+
+/* Custom Tech Cursor: Hide default mouse cursor on desktop devices with fine pointer */
+@media (pointer: fine) {
+  html, body, a, button, input, select, textarea, [role="button"], label, .cursor-pointer {
+    cursor: none !important;
+  }
 }

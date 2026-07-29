@@ -15,6 +15,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [authDropdownOpen, setAuthDropdownOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const authDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,6 +34,15 @@ export default function Navbar() {
     setUserState({ loggedIn, role, name });
   }, [location.pathname, authDropdownOpen]);
 
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    if (!isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
   const servicesList = [
     { id: 'web', icon: 'ri-global-line', textColor: 'text-blue-500', bgColor: 'bg-blue-50' },
     { id: 'chatbot', icon: 'ri-chat-voice-line', textColor: 'text-emerald-500', bgColor: 'bg-emerald-50' },
@@ -44,9 +54,10 @@ export default function Navbar() {
   ];
 
   const navItems = [
-    { label: t('navbar.projects'), id: 'projects' },
-    { label: t('navbar.about'), id: 'about' },
-    { label: t('navbar.careers'), id: 'careers' },
+    { label: i18n.language === 'vi' ? 'Về tôi' : 'About', id: 'about', route: '/about' },
+    { label: i18n.language === 'vi' ? 'Dự án' : 'Projects', id: 'projects', route: '/projects' },
+    { label: i18n.language === 'vi' ? 'Bài viết' : 'Blog', id: 'blog', route: '/blog' },
+    { label: i18n.language === 'vi' ? 'Prompt Hub' : 'Prompts', id: 'prompts', route: '/prompts' },
   ];
 
   useEffect(() => {
@@ -98,16 +109,24 @@ export default function Navbar() {
             : 'bg-white/60 backdrop-blur-md border-white/20 shadow-sm'
         }`}
       >
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#2C3E50] to-[#9B2A4C] flex items-center justify-center text-white font-bold text-sm shadow-[0_3px_10px_rgba(155,42,76,0.15)] group-hover:scale-105 transition-transform duration-200">
-            A
+        {/* Logo with Status Badge */}
+        <Link to="/" className="flex items-center gap-3 group shrink-0">
+          <div className="relative">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#2C3E50] to-[#9B2A4C] flex items-center justify-center text-white font-bold text-sm shadow-[0_3px_10px_rgba(155,42,76,0.15)] group-hover:scale-105 transition-transform duration-200">
+              A
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-[#0B0F17] rounded-full animate-pulse" title="Available for work" />
           </div>
-          <span className="font-extrabold text-base text-[#1C2526] tracking-tight whitespace-nowrap flex items-center">
-            Alvin
-            <span className="text-[#9B2A4C] font-semibold ml-0.5">Tran</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#9B2A4C] ml-1 animate-pulse" />
-          </span>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-base text-[#1C2526] dark:text-white tracking-tight whitespace-nowrap flex items-center">
+              Alvin
+              <span className="text-[#9B2A4C] dark:text-cyan-400 font-semibold ml-0.5">Tran</span>
+            </span>
+            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+              Available for work
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Nav */}
@@ -118,14 +137,14 @@ export default function Navbar() {
             onMouseEnter={() => setServicesOpen(true)}
             onMouseLeave={() => setServicesOpen(false)}
           >
-            <button className="text-sm font-bold text-[#5A6A72] hover:text-[#1C2526] transition-colors duration-200 whitespace-nowrap flex items-center gap-1 cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 rounded-xl">
+            <button className="text-sm font-bold text-[#5A6A72] dark:text-gray-300 hover:text-[#1C2526] dark:hover:text-white transition-colors duration-200 whitespace-nowrap flex items-center gap-1 cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 rounded-xl">
               {t('navbar.services')}
               <i className={`ri-arrow-down-s-line transition-transform duration-200 ${servicesOpen ? 'rotate-180 text-[#9B2A4C]' : ''}`} />
             </button>
 
             {/* Mega Menu Dropdown */}
             <div
-              className={`absolute top-[90%] left-1/2 -translate-x-[35%] mt-2 w-[720px] bg-white border border-gray-100 rounded-3xl shadow-[0_20px_50px_rgba(44,62,80,0.12)] p-6 z-50 flex gap-6 transition-all duration-300 origin-top ${
+              className={`absolute top-[90%] left-1/2 -translate-x-[35%] mt-2 w-[720px] bg-white dark:bg-[#131B2E] border border-gray-100 dark:border-gray-800 rounded-3xl shadow-[0_20px_50px_rgba(44,62,80,0.12)] p-6 z-50 flex gap-6 transition-all duration-300 origin-top ${
                 servicesOpen
                   ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
                   : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
@@ -137,7 +156,7 @@ export default function Navbar() {
                   <Link
                     key={svc.id}
                     to={`/services/${svc.id}`}
-                    className="flex gap-3 p-2.5 rounded-2xl hover:bg-[#9B2A4C]/5 group/item transition-all duration-200 border border-transparent hover:border-[#9B2A4C]/10"
+                    className="flex gap-3 p-2.5 rounded-2xl hover:bg-[#9B2A4C]/5 dark:hover:bg-white/5 group/item transition-all duration-200 border border-transparent hover:border-[#9B2A4C]/10"
                   >
                     <div
                       className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg ${svc.bgColor} ${svc.textColor} shrink-0 transition-transform group-hover/item:scale-110 duration-200`}
@@ -145,10 +164,10 @@ export default function Navbar() {
                       <i className={svc.icon} />
                     </div>
                     <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-[#1C2526] group-hover/item:text-[#9B2A4C] transition-colors">
+                      <h4 className="text-xs font-bold text-[#1C2526] dark:text-white group-hover/item:text-[#9B2A4C] transition-colors">
                         {t(`services.list.${svc.id}.title` as any)}
                       </h4>
-                      <p className="text-[10px] text-gray-400 leading-normal line-clamp-2">
+                      <p className="text-[10px] text-gray-400 dark:text-gray-400 leading-normal line-clamp-2">
                         {t(`services.list.${svc.id}.desc` as any)}
                       </p>
                     </div>
@@ -186,18 +205,18 @@ export default function Navbar() {
           </div>
 
           {navItems.map((item) => (
-            <button
+            <Link
               key={item.id}
-              onClick={() => handleNavClick(item.id)}
-              className="text-sm font-bold text-[#5A6A72] hover:text-[#1C2526] transition-all duration-200 whitespace-nowrap cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 rounded-xl"
+              to={item.route}
+              className="text-sm font-bold text-[#5A6A72] dark:text-gray-300 hover:text-[#1C2526] dark:hover:text-white transition-all duration-200 whitespace-nowrap cursor-pointer py-1.5 px-3 hover:bg-[#9B2A4C]/5 dark:hover:bg-white/5 rounded-xl"
             >
               {item.label}
-            </button>
+            </Link>
           ))}
         </div>
 
         {/* Actions & Utilities */}
-        <div className="hidden lg:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-3">
           {/* Premium Sliding Language toggle */}
           <div className="relative bg-[#F8F6F2] p-0.5 rounded-full border border-gray-200 flex items-center w-24 h-8 select-none">
             {/* Sliding indicator */}

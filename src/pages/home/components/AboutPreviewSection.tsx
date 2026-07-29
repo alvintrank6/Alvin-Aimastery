@@ -1,5 +1,85 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
+// Animated Counter Component (Counts up smoothly from 0 to target value on scroll)
+function AnimatedCounter({ end, duration = 1600, suffix = '' }: { end: number; duration?: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          let startTime: number | null = null;
+          const step = (timestamp: number) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            // Smooth easeOutCubic curve
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(easeProgress * end));
+            if (progress < 1) {
+              requestAnimationFrame(step);
+            } else {
+              setCount(end);
+            }
+          };
+          requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [end, duration]);
+
+  return (
+    <span ref={ref}>
+      {count.toLocaleString()}
+      {suffix}
+    </span>
+  );
+}
+
+// Animated Progress Bar Component (Fills smoothly from 0% width to target % width)
+function AnimatedProgressBar({ percent }: { percent: number }) {
+  const [width, setWidth] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setTimeout(() => {
+            setWidth(percent);
+          }, 150);
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [percent]);
+
+  return (
+    <div ref={ref} className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-gradient-to-r from-[#9B2A4C] to-cyan-400 rounded-full transition-all duration-1200 ease-out"
+        style={{ width: `${width}%` }}
+      />
+    </div>
+  );
+}
 
 export default function AboutPreviewSection() {
   const { i18n } = useTranslation();
@@ -28,11 +108,11 @@ export default function AboutPreviewSection() {
               Tôi là <strong>Trần Vũ Quốc Anh (Alvin Tran)</strong> — Marketer & Chuyên gia Tự động hóa AI với hơn 3 năm kinh nghiệm tư vấn và triển khai giải pháp tăng trưởng cho doanh nghiệp. Định hướng kết hợp giữa sáng tạo nội dung truyền thông và sức mạnh công nghệ AI thế hệ mới để mang lại hiệu quả đo lường được.
             </p>
 
-            {/* Stats Bar - 3 Columns */}
+            {/* Stats Bar - 3 Columns with Animated Counter */}
             <div className="grid grid-cols-3 gap-4 pt-4 border-y border-gray-200 dark:border-gray-800 py-6">
               <div className="space-y-1">
                 <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-cyan-400">
-                  3+
+                  <AnimatedCounter end={3} suffix="+" />
                 </div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Năm kinh nghiệm
@@ -41,7 +121,7 @@ export default function AboutPreviewSection() {
 
               <div className="space-y-1">
                 <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-cyan-400">
-                  1,500+
+                  <AnimatedCounter end={1500} suffix="+" />
                 </div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Học viên & Khách hàng
@@ -50,7 +130,7 @@ export default function AboutPreviewSection() {
 
               <div className="space-y-1">
                 <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-cyan-400">
-                  30+
+                  <AnimatedCounter end={30} suffix="+" />
                 </div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Dự án hoàn thành
@@ -88,7 +168,7 @@ export default function AboutPreviewSection() {
             </div>
           </div>
 
-          {/* Right Column Highlights / Skills Pills */}
+          {/* Right Column Highlights / Skills Pills with Animated Progress */}
           <div className="lg:col-span-5 space-y-4">
             <div className="p-6 rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl space-y-5">
               <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white flex items-center gap-2">
@@ -96,35 +176,35 @@ export default function AboutPreviewSection() {
                 Core Capabilities & Focus
               </h3>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <div className="flex justify-between text-xs font-bold mb-1 text-gray-700 dark:text-gray-300">
+                  <div className="flex justify-between text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-300">
                     <span>AI Strategy & Workflow Automation</span>
-                    <span className="text-[#9B2A4C] dark:text-cyan-400">95%</span>
+                    <span className="text-[#9B2A4C] dark:text-cyan-400">
+                      <AnimatedCounter end={95} suffix="%" />
+                    </span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#9B2A4C] to-cyan-400 w-[95%] rounded-full" />
-                  </div>
+                  <AnimatedProgressBar percent={95} />
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-xs font-bold mb-1 text-gray-700 dark:text-gray-300">
+                  <div className="flex justify-between text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-300">
                     <span>Performance Ads & Conversion Rate (CRO)</span>
-                    <span className="text-[#9B2A4C] dark:text-cyan-400">90%</span>
+                    <span className="text-[#9B2A4C] dark:text-cyan-400">
+                      <AnimatedCounter end={90} suffix="%" />
+                    </span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#9B2A4C] to-cyan-400 w-[90%] rounded-full" />
-                  </div>
+                  <AnimatedProgressBar percent={90} />
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-xs font-bold mb-1 text-gray-700 dark:text-gray-300">
+                  <div className="flex justify-between text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-300">
                     <span>Web & System Architecture (Odoo, React, Python)</span>
-                    <span className="text-[#9B2A4C] dark:text-cyan-400">88%</span>
+                    <span className="text-[#9B2A4C] dark:text-cyan-400">
+                      <AnimatedCounter end={88} suffix="%" />
+                    </span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#9B2A4C] to-cyan-400 w-[88%] rounded-full" />
-                  </div>
+                  <AnimatedProgressBar percent={88} />
                 </div>
               </div>
 

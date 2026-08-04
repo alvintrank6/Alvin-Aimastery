@@ -9,6 +9,7 @@ export interface PromptItem {
   userPrompt: string;
   usageGuide: string;
   exampleOutput: string;
+  imageUrl?: string;
   variables: { name: string; label: string; placeholder: string }[];
 }
 

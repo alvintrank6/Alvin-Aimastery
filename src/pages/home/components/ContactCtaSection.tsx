@@ -14,6 +14,27 @@ export default function ContactCtaSection() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    
+    // Save contact submission directly to Admin Dashboard Leads database
+    const newLead = {
+      id: `lead_${Date.now()}`,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      company: 'Khách từ Website (Home Page)',
+      service: formData.service,
+      message: formData.message || 'Yêu cầu tư vấn dịch vụ từ Home Page',
+      status: 'New',
+      date: new Date().toLocaleDateString('vi-VN')
+    };
+
+    try {
+      const existingLeads = JSON.parse(localStorage.getItem('aimastery_leads') || '[]');
+      localStorage.setItem('aimastery_leads', JSON.stringify([newLead, ...existingLeads]));
+    } catch (err) {
+      console.error('Failed to save lead to localStorage', err);
+    }
+
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);

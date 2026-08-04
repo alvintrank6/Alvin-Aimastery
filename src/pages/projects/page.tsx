@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import { PRODUCT_DEMO_HTML } from './demoData';
@@ -144,7 +144,20 @@ export default function ProjectsPage() {
     }
   };
 
-  const filteredProducts = SAMPLE_PRODUCTS.filter((prod) => {
+  const allProducts = useMemo(() => {
+    try {
+      const saved = localStorage.getItem('custom_projects');
+      if (saved) {
+        const parsed: SampleProduct[] = JSON.parse(saved);
+        return [...parsed, ...SAMPLE_PRODUCTS];
+      }
+    } catch {
+      // fallback
+    }
+    return SAMPLE_PRODUCTS;
+  }, []);
+
+  const filteredProducts = allProducts.filter((prod) => {
     const matchesCat = selectedCat === 'all' || prod.catId === selectedCat;
     const matchesSearch =
       prod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

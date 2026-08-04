@@ -17,8 +17,21 @@ export default function PromptsPage() {
   const categories = ['Tất cả', 'Marketing & Sales', 'Content & Social', 'AI Automation', 'SEO & Copywriting', 'Consulting & Code'];
   const models = ['Tất cả', 'ChatGPT 4o', 'Claude 3.5 Sonnet', 'DeepSeek R1', 'Midjourney v7'];
 
+  const allPrompts = useMemo(() => {
+    try {
+      const saved = localStorage.getItem('custom_prompts');
+      if (saved) {
+        const parsed: PromptItem[] = JSON.parse(saved);
+        return [...parsed, ...PROMPT_LIBRARY];
+      }
+    } catch {
+      // fallback
+    }
+    return PROMPT_LIBRARY;
+  }, []);
+
   const filteredPrompts = useMemo(() => {
-    return PROMPT_LIBRARY.filter((item) => {
+    return allPrompts.filter((item) => {
       const matchCat = selectedCategory === 'Tất cả' || item.category === selectedCategory;
       const matchModel = selectedModel === 'Tất cả' || item.model === selectedModel;
       const matchSearch =
@@ -28,7 +41,7 @@ export default function PromptsPage() {
         item.userPrompt.toLowerCase().includes(searchQuery.toLowerCase());
       return matchCat && matchModel && matchSearch;
     });
-  }, [selectedCategory, selectedModel, searchQuery]);
+  }, [allPrompts, selectedCategory, selectedModel, searchQuery]);
 
   const handleCopyText = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -145,6 +158,16 @@ export default function PromptsPage() {
                         {item.model}
                       </span>
                     </div>
+
+                    {item.imageUrl && (
+                      <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-inner group">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    )}
 
                     <h2 className="text-lg md:text-xl font-extrabold text-[#1C2526] dark:text-white leading-snug">
                       {item.title}

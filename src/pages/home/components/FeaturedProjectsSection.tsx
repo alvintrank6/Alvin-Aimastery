@@ -20,7 +20,15 @@ export default function FeaturedProjectsSection() {
     }
   };
 
-  const projects = [
+  const [customProjectsList] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('custom_projects');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  const baseProjects = [
     {
       id: 'senn-cosmetics',
       title: 'Cosmetics Co. — AI E-Commerce & Growth System',
@@ -52,6 +60,19 @@ export default function FeaturedProjectsSection() {
       demoUrl: 'https://lamphongtech.vn/san-pham-mau.html',
     },
   ];
+
+  const mappedCustom = customProjectsList.map((cp: any) => ({
+    id: cp.id,
+    title: cp.name,
+    tag: cp.badge || 'Dự Án Mới',
+    desc: cp.description,
+    stats: `${cp.priceLabel} ${cp.price}`,
+    tech: cp.tags ? cp.tags.split(',').map((t: string) => t.trim()) : ['AI System'],
+    img: cp.image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80',
+    demoUrl: cp.demoUrl || 'https://lamphongtech.vn/san-pham-mau.html',
+  }));
+
+  const projects = [...mappedCustom, ...baseProjects];
 
   return (
     <section id="projects" className="py-20 md:py-28 border-t border-gray-200/60 dark:border-gray-800/60 transition-colors">

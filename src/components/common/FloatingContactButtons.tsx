@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 
 export const FloatingContactButtons: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [hovered, setHovered] = useState<'zalo' | 'messenger' | null>(null);
+
+  // Hide Zalo and Messenger floating buttons on admin pages
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
 
   const zaloLink = 'https://zalo.me/0376960193';
   const messengerLink = 'https://www.facebook.com/messages/t/alvin.tran.872661';

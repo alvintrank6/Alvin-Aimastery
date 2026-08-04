@@ -117,6 +117,28 @@ export default function Login() {
         navigate('/');
       }
     } catch (err: any) {
+      // Fallback for demo accounts when backend server is offline/unreachable
+      const foundDemo = demoAccounts.find(a => a.email === loginEmail && a.password === loginPass);
+      if (foundDemo) {
+        const role = foundDemo.role;
+        sessionStorage.setItem('user_logged_in', 'true');
+        sessionStorage.setItem('user_role', role);
+        sessionStorage.setItem('user_email', foundDemo.email);
+        sessionStorage.setItem('user_name', foundDemo.label);
+        sessionStorage.setItem('user_id', `demo-${role}`);
+        if (role === 'admin' || role === 'manager') {
+          sessionStorage.setItem('admin_logged_in', 'true');
+          sessionStorage.setItem('admin_role', role);
+          navigate('/admin');
+        } else if (role === 'client') {
+          navigate('/client-portal');
+        } else if (role === 'developer') {
+          navigate('/member-portal');
+        } else {
+          navigate('/');
+        }
+        return;
+      }
       setError(err.message || t('admin.invalidCredentials'));
     } finally {
       setLoading(false);

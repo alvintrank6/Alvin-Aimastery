@@ -4,7 +4,7 @@ export interface User {
   id: string;
   email: string;
   name?: string;
-  role: 'admin' | 'manager' | 'client' | 'developer';
+  role: 'admin' | 'manager' | 'client';
   createdAt?: string;
   updatedAt?: string;
 }
@@ -19,27 +19,6 @@ export interface Lead {
   message: string;
   status: 'New' | 'Contacted' | 'Qualified' | 'Closed';
   date: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface Developer {
-  id: string;
-  name: string;
-  email: string;
-  skills: string[];
-  portfolio: string;
-  rateType: 'hourly' | 'fixed';
-  rateValue: number;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  date: string;
-  title?: string;
-  yearsOfExperience?: string;
-  englishProficiency?: string;
-  cvLink?: string;
-  availability?: string;
-  shortBio?: string;
-  dateOfBirth?: string;
   createdAt?: string;
   updatedAt?: string;
 }

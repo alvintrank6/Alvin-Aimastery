@@ -48,11 +48,6 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<User> {
-    // Clean up corresponding developer profile if it exists
-    const dev = await this.prisma.developer.findUnique({ where: { id } });
-    if (dev) {
-      await this.prisma.developer.delete({ where: { id } });
-    }
     return this.prisma.user.delete({
       where: { id },
     });

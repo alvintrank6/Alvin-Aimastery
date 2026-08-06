@@ -72,7 +72,7 @@ html.dark, html.dark body {
   .accent-border {
     border-color: rgba(155, 42, 76, 0.22);
   }
-  .cyan-glow {
+  .brand-glow {
     box-shadow: 0 0 25px rgba(155, 42, 76, 0.3);
   }
 }

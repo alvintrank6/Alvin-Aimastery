@@ -74,7 +74,7 @@ function AnimatedProgressBar({ percent }: { percent: number }) {
   return (
     <div ref={ref} className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
       <div
-        className="h-full bg-gradient-to-r from-[#9B2A4C] to-cyan-400 rounded-full transition-all duration-[2400ms] cubic-bezier(0.16, 1, 0.3, 1)"
+        className="h-full bg-gradient-to-r from-[#9B2A4C] to-rose-400 rounded-full transition-all duration-[2400ms] cubic-bezier(0.16, 1, 0.3, 1)"
         style={{ width: `${width}%` }}
       />
     </div>
@@ -90,7 +90,7 @@ export default function AboutPreviewSection() {
         
         {/* Header Badge */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-cyan-400 px-3 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-rose-400 px-3 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 border border-[#9B2A4C]/20 dark:border-rose-400/30">
             About the Consultant
           </span>
         </div>
@@ -101,7 +101,7 @@ export default function AboutPreviewSection() {
           <div className="lg:col-span-7 space-y-6">
             <h2 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white tracking-tight leading-tight">
               Kinh nghiệm thực chiến trong{' '}
-              <span className="text-[#9B2A4C] dark:text-cyan-400">AI Marketing</span> & Truyền thông
+              <span className="text-[#9B2A4C] dark:text-rose-400">AI Marketing</span> & Truyền thông
             </h2>
 
             <p className="text-sm md:text-base text-[#5A6A72] dark:text-gray-300 leading-relaxed">
@@ -111,7 +111,7 @@ export default function AboutPreviewSection() {
             {/* Stats Bar - 3 Columns with Animated Counter */}
             <div className="grid grid-cols-3 gap-4 pt-4 border-y border-gray-200 dark:border-gray-800 py-6">
               <div className="space-y-1">
-                <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-cyan-400">
+                <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-rose-400">
                   <AnimatedCounter end={3} suffix="+" />
                 </div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -120,7 +120,7 @@ export default function AboutPreviewSection() {
               </div>
 
               <div className="space-y-1">
-                <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-cyan-400">
+                <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-rose-400">
                   <AnimatedCounter end={1500} suffix="+" />
                 </div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -129,7 +129,7 @@ export default function AboutPreviewSection() {
               </div>
 
               <div className="space-y-1">
-                <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-cyan-400">
+                <div className="text-2xl md:text-4xl font-black text-[#9B2A4C] dark:text-rose-400">
                   <AnimatedCounter end={30} suffix="+" />
                 </div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -144,7 +144,7 @@ export default function AboutPreviewSection() {
                 href="mailto:alvintrank95@gmail.com"
                 className="inline-flex items-center gap-2 text-xs font-bold text-[#1C2526] dark:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2.5 rounded-full transition-colors"
               >
-                <i className="ri-mail-send-line text-[#9B2A4C] dark:text-cyan-400" />
+                <i className="ri-mail-send-line text-[#9B2A4C] dark:text-rose-400" />
                 alvintrank95@gmail.com
               </a>
 
@@ -172,7 +172,7 @@ export default function AboutPreviewSection() {
           <div className="lg:col-span-5 space-y-4">
             <div className="p-6 rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl space-y-5">
               <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white flex items-center gap-2">
-                <i className="ri-shield-star-line text-[#9B2A4C] dark:text-cyan-400" />
+                <i className="ri-shield-star-line text-[#9B2A4C] dark:text-rose-400" />
                 Core Capabilities & Focus
               </h3>
 
@@ -180,7 +180,7 @@ export default function AboutPreviewSection() {
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-300">
                     <span>AI Strategy & Workflow Automation</span>
-                    <span className="text-[#9B2A4C] dark:text-cyan-400">
+                    <span className="text-[#9B2A4C] dark:text-rose-400">
                       <AnimatedCounter end={95} suffix="%" />
                     </span>
                   </div>
@@ -190,7 +190,7 @@ export default function AboutPreviewSection() {
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-300">
                     <span>Performance Ads & Conversion Rate (CRO)</span>
-                    <span className="text-[#9B2A4C] dark:text-cyan-400">
+                    <span className="text-[#9B2A4C] dark:text-rose-400">
                       <AnimatedCounter end={90} suffix="%" />
                     </span>
                   </div>
@@ -200,7 +200,7 @@ export default function AboutPreviewSection() {
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-300">
                     <span>Web & System Architecture (Odoo, React, Python)</span>
-                    <span className="text-[#9B2A4C] dark:text-cyan-400">
+                    <span className="text-[#9B2A4C] dark:text-rose-400">
                       <AnimatedCounter end={88} suffix="%" />
                     </span>
                   </div>

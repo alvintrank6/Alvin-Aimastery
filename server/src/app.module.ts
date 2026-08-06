@@ -5,7 +5,6 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { LeadsModule } from './leads/leads.module';
-import { DevelopersModule } from './developers/developers.module';
 import { ProjectsModule } from './projects/projects.module';
 import { PayoutsModule } from './payouts/payouts.module';
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -19,7 +18,6 @@ import { MailModule } from './mail/mail.module';
     UsersModule,
     AuthModule,
     LeadsModule,
-    DevelopersModule,
     ProjectsModule,
     PayoutsModule,
     AnalyticsModule,

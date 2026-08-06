@@ -63,20 +63,6 @@ async function main() {
       role: 'manager',
     },
     {
-      email: 'dev1@gmail.com',
-      phone: '0905555555',
-      password: 'dev123',
-      name: 'Minh Dev',
-      role: 'developer',
-    },
-    {
-      email: 'dev2@gmail.com',
-      phone: '0906666666',
-      password: 'dev123',
-      name: 'Anh Tuấn',
-      role: 'developer',
-    },
-    {
       email: 'client1@gmail.com',
       phone: '0907777777',
       password: 'client123',
@@ -111,58 +97,6 @@ async function main() {
       },
     });
     console.log(`Upserted user: ${result.email} with role ${result.role}`);
-  }
-
-  // Seed developer profiles
-  const developersToSeed = [
-    {
-      email: 'dev1@gmail.com',
-      name: 'Minh Dev',
-      skills: ['React', 'Node.js', 'n8n', 'Web'],
-      rateType: 'hourly',
-      rateValue: 20,
-      status: 'Approved',
-      title: 'Developer',
-    },
-    {
-      email: 'dev2@gmail.com',
-      name: 'Anh Tuấn',
-      skills: ['Node.js', 'Express', 'PostgreSQL', 'Docker'],
-      rateType: 'hourly',
-      rateValue: 25,
-      status: 'Approved',
-      title: 'Backend Developer',
-    },
-  ];
-
-  for (const devData of developersToSeed) {
-    const devUser = await prisma.user.findUnique({
-      where: { email: devData.email }
-    });
-    if (devUser) {
-      await prisma.developer.upsert({
-        where: { email: devData.email },
-        update: {
-          name: devData.name,
-          skills: devData.skills,
-          rateType: devData.rateType,
-          rateValue: devData.rateValue,
-          status: devData.status,
-          title: devData.title,
-        },
-        create: {
-          id: devUser.id, // Match the user id!
-          email: devData.email,
-          name: devData.name,
-          skills: devData.skills,
-          rateType: devData.rateType,
-          rateValue: devData.rateValue,
-          status: devData.status,
-          title: devData.title,
-        }
-      });
-      console.log(`Upserted developer profile for ${devData.email}`);
-    }
   }
 
   console.log('Seeding finished.');

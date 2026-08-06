@@ -128,10 +128,10 @@ export default function CareersSection() {
 
                 <div>
                   <Link
-                    to="/developer/register"
+                    to="/contact"
                     className="w-full py-3 bg-white/5 border border-white/10 text-white rounded-xl text-xs font-bold text-center block hover:border-[#9B2A4C]/40 hover:bg-[#9B2A4C]/5 transition-all group-hover:scale-[1.02] cursor-pointer"
                   >
-                    {t('developer.submitBtn')}
+                    {t('contact.badge', 'Liên hệ tư vấn')}
                   </Link>
                 </div>
               </div>
@@ -142,10 +142,10 @@ export default function CareersSection() {
         {/* Global Careers CTA Buttons */}
         <div className="flex flex-col items-center justify-center mt-16 pt-10 border-t border-white/5">
           <Link
-            to="/developer/register"
+            to="/contact"
             className="gradient-bg text-white font-bold px-8 py-4 rounded-full whitespace-nowrap hover:opacity-90 hover:shadow-[0_4px_25px_rgba(155,42,76,0.3)] hover:scale-[1.02] transition-all text-xs cursor-pointer text-center w-full sm:w-auto"
           >
-            <i className="ri-team-line mr-2" />
+            <i className="ri-chat-smile-3-line mr-2" />
             {t('careers.exploreBtn')}
           </Link>
         </div>

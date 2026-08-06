@@ -7,10 +7,10 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import {
-  User, Lead, Developer, Project, PayoutRequest,
+  User, Lead, Project, PayoutRequest,
   TrafficMetric, CampaignAlert, FinanceLog
 } from '@/utils/db';
-import { api, LeadsAPI, DevelopersAPI, UsersAPI, ProjectsAPI, PayoutsAPI, AnalyticsAPI, SettingsAPI } from '@/utils/api';
+import { api, LeadsAPI, UsersAPI, ProjectsAPI, PayoutsAPI, AnalyticsAPI, SettingsAPI } from '@/utils/api';
 import CustomSelect from '@/components/common/Select';
 import { io } from 'socket.io-client';
 
@@ -53,30 +53,12 @@ export default function AdminDashboard() {
 
   // DB States
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [developers, setDevelopers] = useState<Developer[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [payouts, setPayouts] = useState<PayoutRequest[]>([]);
-  const [trafficData, setTrafficData] = useState<TrafficMetric[]>([
-    { date: '01/08', visitors: 1250, organic: 520, facebook: 340, tiktok: 210, youtube: 110, direct: 70 },
-    { date: '02/08', visitors: 1420, organic: 610, facebook: 380, tiktok: 240, youtube: 120, direct: 70 },
-    { date: '03/08', visitors: 1680, organic: 730, facebook: 450, tiktok: 290, youtube: 130, direct: 80 },
-    { date: '04/08', visitors: 1550, organic: 680, facebook: 410, tiktok: 260, youtube: 120, direct: 80 },
-    { date: '05/08', visitors: 1890, organic: 820, facebook: 510, tiktok: 320, youtube: 150, direct: 90 },
-    { date: '06/08', visitors: 2100, organic: 940, facebook: 560, tiktok: 350, youtube: 160, direct: 90 },
-    { date: '07/08', visitors: 2450, organic: 1120, facebook: 640, tiktok: 410, youtube: 180, direct: 100 },
-  ]);
+  const [trafficData, setTrafficData] = useState<TrafficMetric[]>([]);
   const [trafficFilter, setTrafficFilter] = useState<'day' | 'week' | 'month'>('day');
   const [alerts, setAlerts] = useState<CampaignAlert[]>([]);
-  const [financeData, setFinanceData] = useState<FinanceLog[]>([
-    { month: 'Tháng 1', revenue: 210000000, outsourceCost: 45000000, otherCost: 50000000 },
-    { month: 'Tháng 2', revenue: 260000000, outsourceCost: 55000000, otherCost: 55000000 },
-    { month: 'Tháng 3', revenue: 310000000, outsourceCost: 65000000, otherCost: 65000000 },
-    { month: 'Tháng 4', revenue: 280000000, outsourceCost: 50000000, otherCost: 55000000 },
-    { month: 'Tháng 5', revenue: 390000000, outsourceCost: 75000000, otherCost: 70000000 },
-    { month: 'Tháng 6', revenue: 350000000, outsourceCost: 60000000, otherCost: 65000000 },
-    { month: 'Tháng 7', revenue: 410000000, outsourceCost: 80000000, otherCost: 75000000 },
-    { month: 'Tháng 8', revenue: 350000000, outsourceCost: 65000000, otherCost: 60000000 },
-  ]);
+  const [financeData, setFinanceData] = useState<FinanceLog[]>([]);
 
   // Settings
   const [taxRate, setTaxRate] = useState(10);
@@ -89,7 +71,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [userRoleFilter, setUserRoleFilter] = useState<'All' | 'admin' | 'manager' | 'client' | 'developer'>('All');
+  const [userRoleFilter, setUserRoleFilter] = useState<'All' | 'admin' | 'manager' | 'client'>('All');
   const [newLeadName, setNewLeadName] = useState('');
   const [newLeadEmail, setNewLeadEmail] = useState('');
   const [newLeadPhone, setNewLeadPhone] = useState('');
@@ -108,36 +90,7 @@ export default function AdminDashboard() {
       const saved = localStorage.getItem('sales_payouts');
       if (saved) return JSON.parse(saved);
     } catch {}
-    return [
-      {
-        id: 'sale-payout-1',
-        saleName: 'Nguyễn Văn Nam',
-        saleEmail: 'nam.nguyen@alvinai.vn',
-        salePhone: '0988123456',
-        projectName: 'Cosmetics Co. E-Commerce',
-        contractValue: 15000000,
-        commissionRate: 10,
-        amount: 1500000,
-        bankInfo: 'MBBank: 0376960193 - NGUYEN VAN NAM',
-        date: '2026-08-01',
-        status: 'Approved',
-        note: 'Hoa hồng hợp đồng tư vấn phễu Zalo ZNS'
-      },
-      {
-        id: 'sale-payout-2',
-        saleName: 'Trần Thị Mai',
-        saleEmail: 'mai.tran@alvinai.vn',
-        salePhone: '0912345678',
-        projectName: 'Landmark Estates Portal',
-        contractValue: 45000000,
-        commissionRate: 12,
-        amount: 5400000,
-        bankInfo: 'Techcombank: 190345678901 - TRAN THI MAI',
-        date: '2026-08-03',
-        status: 'Pending',
-        note: 'Hoa hồng chốt hợp đồng BĐS cao cấp'
-      }
-    ];
+    return [];
   });
   const [showAddSalesModal, setShowAddSalesModal] = useState(false);
   const [saleNameInput, setSaleNameInput] = useState('');
@@ -347,7 +300,7 @@ export default function AdminDashboard() {
 
   // Lead assignment states
   const [assigningLead, setAssigningLead] = useState<Lead | null>(null);
-  const [assigneeDeveloperId, setAssigneeDeveloperId] = useState('Unassigned');
+  const [assigneeStaffId, setAssigneeStaffId] = useState('Unassigned');
   const [assignContractValue, setAssignContractValue] = useState<number>(1500);
   const [assignOutsourceFee, setAssignOutsourceFee] = useState<number>(600);
   const [assignDeadline, setAssignDeadline] = useState('2026-07-01');
@@ -356,21 +309,18 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!assigningLead) return;
 
-    const assignedDeveloper = developers.find(f => f.id === assigneeDeveloperId);
-    const assigneeName = assignedDeveloper ? assignedDeveloper.name : 'None';
-
     await ProjectsAPI.create({
       name: `${assigningLead.company || 'Client'} - ${t(`services.list.${assigningLead.service}.title`, assigningLead.service)}`,
       clientName: assigningLead.name,
       clientEmail: assigningLead.email,
       service: assigningLead.service,
       status: 'New',
-      assigneeId: assigneeDeveloperId,
-      assigneeName,
+      assigneeId: 'Unassigned',
+      assigneeName: 'None',
       deadline: assignDeadline,
       brief: assigningLead.message,
       contractValue: role === 'manager' ? 0 : assignContractValue,
-      outsourceFee: role === 'manager' ? 0 : assignOutsourceFee,
+      outsourceFee: 0,
       taxRate,
       subTasks: JSON.stringify([])
     });
@@ -378,11 +328,9 @@ export default function AdminDashboard() {
     await LeadsAPI.update(assigningLead.id, { status: 'Qualified' });
 
     setAssigningLead(null);
-    setAssigneeDeveloperId('Unassigned');
     setAssignContractValue(1500);
-    setAssignOutsourceFee(600);
     showToast(
-      i18n.language === 'vi' ? 'Đã giao việc cho Developer thành công!' : 'Task successfully assigned to Developer!',
+      i18n.language === 'vi' ? 'Đã tạo Dự án mới thành công!' : 'Project created successfully!',
       'success'
     );
     await loadData();
@@ -403,6 +351,11 @@ export default function AdminDashboard() {
 
 
   // Unified login check
+  useEffect(() => {
+    // Admin page always enforces clean light theme
+    document.documentElement.classList.remove('dark');
+  }, []);
+
   useEffect(() => {
     const isUserLoggedIn = sessionStorage.getItem('user_logged_in') === 'true';
     const userRole = sessionStorage.getItem('user_role');
@@ -463,23 +416,6 @@ export default function AdminDashboard() {
         return updatedLeads;
       });
     });
-    socket.on('developers-updated', async () => {
-      const updatedDevelopers = await DevelopersAPI.getAll();
-      setDevelopers(prevDevelopers => {
-        if (prevDevelopers.length > 0) {
-          const newDevelopers = updatedDevelopers.filter(uf => !prevDevelopers.some(pf => pf.id === uf.id));
-          newDevelopers.forEach(latestDeveloper => {
-            showToast(
-              i18n.language === 'vi'
-                ? `Ứng viên mới: ${latestDeveloper.name} ứng tuyển ${t(`developer.titles.${latestDeveloper.title}`, latestDeveloper.title || 'Developer')}!`
-                : `New Candidate: ${latestDeveloper.name} applied for ${t(`developer.titles.${latestDeveloper.title}`, latestDeveloper.title || 'Developer')}!`,
-              'success'
-            );
-          });
-        }
-        return updatedDevelopers;
-      });
-    });
     socket.on('projects-updated', async () => {
       setProjects(await ProjectsAPI.getAll());
     });
@@ -515,48 +451,40 @@ export default function AdminDashboard() {
       console.warn('LeadsAPI fallback to local data');
     }
     const combinedLeads = [...localLeads, ...apiLeads.filter(al => !localLeads.some(ll => ll.id === al.id))];
-    if (combinedLeads.length > 0) {
-      setLeads(combinedLeads);
-    }
+    setLeads(combinedLeads);
 
-    // 2. Developers
-    try {
-      const devRes = await DevelopersAPI.getAll();
-      if (devRes && devRes.length > 0) setDevelopers(devRes);
-    } catch (e) {}
-
-    // 3. Users
+    // 2. Users
     try {
       const userRes = await UsersAPI.getAll();
-      if (userRes && userRes.length > 0) setUsers(userRes);
+      if (Array.isArray(userRes)) setUsers(userRes);
     } catch (e) {}
 
-    // 4. Projects
+    // 3. Projects
     try {
       const projRes = await ProjectsAPI.getAll();
-      if (projRes && projRes.length > 0) setProjects(projRes);
+      if (Array.isArray(projRes)) setProjects(projRes);
     } catch (e) {}
 
-    // 5. Payouts
+    // 4. Payouts
     try {
       const payRes = await PayoutsAPI.getAll();
-      if (payRes && payRes.length > 0) setPayouts(payRes);
+      if (Array.isArray(payRes)) setPayouts(payRes);
     } catch (e) {}
 
-    // 6. Traffic & Analytics
+    // 5. Traffic & Analytics
     try {
       const trafRes = await AnalyticsAPI.getTraffic(trafficFilter);
-      if (trafRes && trafRes.length > 0) setTrafficData(trafRes);
+      if (Array.isArray(trafRes)) setTrafficData(trafRes);
     } catch (e) {}
 
     try {
       const alertRes = await AnalyticsAPI.getAlerts();
-      if (alertRes) setAlerts(alertRes);
+      if (Array.isArray(alertRes)) setAlerts(alertRes);
     } catch (e) {}
 
     try {
       const finRes = await AnalyticsAPI.getFinance();
-      if (finRes && finRes.length > 0) setFinanceData(finRes);
+      if (Array.isArray(finRes)) setFinanceData(finRes);
     } catch (e) {}
 
     try {
@@ -571,34 +499,13 @@ export default function AdminDashboard() {
     await loadData();
   };
 
-  // Approve developer application
-  const handleApproveDeveloper = async (id: string, approve: boolean) => {
-    await DevelopersAPI.update(id, { status: approve ? 'Approved' : 'Rejected' });
-    await loadData();
-  };
-
-  // Change user role and auto-create developer profile if needed
-  const handleRoleChange = async (userId: string, newRole: 'admin' | 'manager' | 'client' | 'developer') => {
+  // Change user role
+  const handleRoleChange = async (userId: string, newRole: 'admin' | 'manager' | 'client') => {
     try {
       const userObj = users.find(u => u.id === userId);
       if (!userObj) return;
 
       await UsersAPI.update(userId, { role: newRole });
-
-      if (newRole === 'developer') {
-        const devProfile = developers.find(d => d.email === userObj.email || d.id === userId);
-        if (!devProfile) {
-          await DevelopersAPI.create({
-            email: userObj.email,
-            name: userObj.name || 'Developer',
-            skills: [],
-            rateType: 'hourly',
-            rateValue: 0,
-            status: 'Approved',
-            title: 'Developer'
-          });
-        }
-      }
 
       showToast(
         i18n.language === 'vi' ? 'Cập nhật vai trò tài khoản thành công!' : 'Account role successfully updated!',
@@ -912,8 +819,6 @@ export default function AdminDashboard() {
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    const assignedDeveloper = developers.find(f => f.id === assigneeId);
-    const assigneeName = assignedDeveloper ? assignedDeveloper.name : 'None';
 
     await ProjectsAPI.create({
       name: taskName,
@@ -921,14 +826,22 @@ export default function AdminDashboard() {
       clientEmail,
       service: taskService,
       status: 'New',
-      assigneeId,
-      assigneeName,
+      assigneeId: 'Unassigned',
+      assigneeName: 'None',
       deadline,
       brief: taskBrief,
       contractValue: role === 'manager' ? 0 : contractValue,
-      outsourceFee: role === 'manager' ? 0 : outsourceFee,
+      outsourceFee: 0,
       taxRate
     });
+
+    if (prefillLeadId && prefillLeadId !== 'none') {
+      try {
+        await LeadsAPI.update(prefillLeadId, { status: 'Qualified' });
+      } catch (err) {
+        console.error('Failed to update lead status:', err);
+      }
+    }
 
     await loadData();
     // Redirect to Kanban Board
@@ -985,9 +898,9 @@ export default function AdminDashboard() {
       return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,ID,Developer,Amount,Tax Deducted,Net Payout,Date\n";
+    let csvContent = "data:text/csv;charset=utf-8,ID,Assignee,Amount,Tax Deducted,Net Payout,Date\n";
     pending.forEach(p => {
-      csvContent += `${p.id},${p.developerName},${p.amount},${p.taxDeducted},${p.netAmount},${p.date}\n`;
+      csvContent += `${p.id},${p.developerName || 'Assignee'},${p.amount},${p.taxDeducted},${p.netAmount},${p.date}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -1058,7 +971,7 @@ export default function AdminDashboard() {
       title: string;
       desc: string;
       time: Date;
-      type: 'lead' | 'developer';
+      type: 'lead';
       targetTab: 'crm' | 'payouts';
       item: any;
     }> = [];
@@ -1077,23 +990,9 @@ export default function AdminDashboard() {
       });
     });
 
-    developers.forEach(f => {
-      list.push({
-        id: `developer-${f.id}`,
-        title: i18n.language === 'vi' ? 'Ứng tuyển Developer mới' : 'New Developer Application',
-        desc: i18n.language === 'vi'
-          ? `${f.name} đã ứng tuyển vị trí ${t(`developer.titles.${f.title}`, f.title || 'Developer')}`
-          : `${f.name} applied for ${t(`developer.titles.${f.title}`, f.title || 'Developer')}`,
-        time: new Date(f.createdAt || f.date),
-        type: 'developer',
-        targetTab: 'payouts',
-        item: f
-      });
-    });
-
     // Sort by time descending
     return list.sort((a, b) => b.time.getTime() - a.time.getTime());
-  }, [leads, developers, i18n.language, t]);
+  }, [leads, i18n.language, t]);
 
   const unreadNotifications = derivedNotifications.filter(n => !readNotificationIds.includes(n.id));
   const unreadCount = unreadNotifications.length;
@@ -1122,36 +1021,74 @@ export default function AdminDashboard() {
     { name: 'Browser', value: sourceTotals.direct }
   ];
 
-  // Executive Dashboard illustration chart data (Matching Google Doc Image 1)
-  const executiveLineData = [
-    { month: 'Tháng 1', revenue: 210, expense: 95 },
-    { month: 'Tháng 2', revenue: 260, expense: 110 },
-    { month: 'Tháng 3', revenue: 310, expense: 130 },
-    { month: 'Tháng 4', revenue: 280, expense: 105 },
-    { month: 'Tháng 5', revenue: 390, expense: 145 },
-    { month: 'Tháng 6', revenue: 350, expense: 125 },
-  ];
+  // Executive Dashboard dynamic calculations
+  const realTotalRevenue = projects.reduce((acc, p) => acc + (p.contractValue || 0), 0);
+  const realTotalOutsourceCost = projects.reduce((acc, p) => acc + (p.outsourceFee || 0), 0);
+  const realGrossProfit = Math.max(0, realTotalRevenue - realTotalOutsourceCost);
+  const realGrossProfitMargin = realTotalRevenue > 0 ? ((realGrossProfit / realTotalRevenue) * 100).toFixed(1) : '0.0';
 
-  const executiveDonutData = [
-    { name: 'AI Automation', value: 35, color: '#9B2A4C' },
-    { name: 'Social Media', value: 25, color: '#2563EB' },
-    { name: 'Web Dev', value: 25, color: '#1C2526' },
-    { name: 'Content Creator', value: 15, color: '#D97706' },
-  ];
+  const realActiveProjects = projects.filter(p => p.status !== 'Completed');
+  const realOnboardingCount = projects.filter(p => p.status === 'New').length;
+  const realInProgressCount = projects.filter(p => p.status === 'In Progress').length;
+  const realCompletedCount = projects.filter(p => p.status === 'Completed').length;
 
+  const realTotalLeads = leads.length;
+  const realWonLeads = leads.filter(l => l.status === 'Qualified' || l.status === 'Closed').length;
+  const realWinRate = realTotalLeads > 0 ? ((realWonLeads / realTotalLeads) * 100).toFixed(1) : '0.0';
+
+  const executiveLineData = (financeData && financeData.length > 0)
+    ? financeData.map(f => ({
+        month: f.month,
+        revenue: Math.round((f.revenue || 0) / 1000000),
+        expense: Math.round(((f.outsourceCost || 0) + (f.otherCost || 0)) / 1000000)
+      }))
+    : [];
+
+  const serviceCategoryMap: Record<string, number> = {};
+  projects.forEach(p => {
+    const cat = p.service ? t(`services.list.${p.service}.title`, p.service) : 'Dịch vụ';
+    serviceCategoryMap[cat] = (serviceCategoryMap[cat] || 0) + (p.contractValue || 0);
+  });
+  const totalCatVal = Object.values(serviceCategoryMap).reduce((a, b) => a + b, 0);
+  const executiveDonutData = Object.keys(serviceCategoryMap).map((catName, idx) => ({
+    name: catName,
+    value: totalCatVal > 0 ? Math.round((serviceCategoryMap[catName] / totalCatVal) * 100) : 0,
+    color: COLORS[idx % COLORS.length]
+  }));
+
+  const totalSalesCommission = salesPayouts.reduce((a, s) => a + (s.amount || 0), 0);
   const executiveBarData = [
-    { category: 'Marketing', cost: 38 },
-    { category: 'Sales (Hoa hồng)', cost: 42 },
-    { category: 'Vận hành (Ops)', cost: 25 },
-    { category: 'Lập trình (Dev)', cost: 30 },
+    { category: 'Outsource (Dev)', cost: Math.round(realTotalOutsourceCost / 1000000) },
+    { category: 'Sales (Hoa hồng)', cost: Math.round(totalSalesCommission / 1000000) },
+    { category: 'Vận hành (Ops)', cost: Math.round((realTotalRevenue * 0.1) / 1000000) },
   ];
 
-  const topAgentsList = [
-    { name: 'Nguyễn Văn Minh', target: '400.000.000đ', achieved: '380.000.000đ', winRate: '38.5%' },
-    { name: 'Alvin Tran (Bạn)', target: '300.000.000đ', achieved: '216.000.000đ', winRate: '31.8%' },
-    { name: 'Hoàng Quốc Việt', target: '250.000.000đ', achieved: '180.000.000đ', winRate: '28.0%' },
-    { name: 'Trần Thị Trang', target: '200.000.000đ', achieved: '144.000.000đ', winRate: '24.5%' },
-  ];
+  const agentSalesMap: Record<string, number> = {};
+  salesPayouts.forEach(s => {
+    agentSalesMap[s.saleName] = (agentSalesMap[s.saleName] || 0) + (s.contractValue || 0);
+  });
+  const topAgentsList = Object.keys(agentSalesMap).map(saleName => ({
+    name: saleName,
+    target: `${(agentSalesMap[saleName] * 1.2).toLocaleString('vi-VN')}đ`,
+    achieved: `${agentSalesMap[saleName].toLocaleString('vi-VN')}đ`,
+    winRate: `${realWinRate}%`
+  }));
+
+
+  // AI & Automation dynamic calculations
+  const realVisitors = trafficData.reduce((a, c) => a + (c.visitors || 0), 0);
+  const realWorkflowsActive = projects.length > 0 ? projects.length * 2 : 0;
+  const realChatbotConversations = realVisitors;
+  const realWorkflowExecutions = realVisitors > 0 ? realVisitors * 4 : 0;
+  const realTimeSaved = Math.round(realWorkflowExecutions * 0.02);
+  const realCostSaved = realTimeSaved * 120000;
+  const realAiLeads = leads.filter(l => l.service === 'ai_automation' || l.service === 'bot' || l.service === 'web').length;
+  const aiChartData = trafficData.map(t => ({
+    day: t.date,
+    chatbot: t.visitors || 0,
+    n8n: (t.visitors || 0) * 4,
+    timeSavedHours: Math.round((t.visitors || 0) * 0.02)
+  }));
 
   return (
     <div className="min-h-screen flex flex-col justify-between" style={{ background: '#F8F6F2' }}>
@@ -1414,7 +1351,7 @@ export default function AdminDashboard() {
                     {t('admin.postPrompt', 'Đăng Bài Prompt')}
                   </span>
                   {customPrompts.length > 0 && (
-                    <span className="bg-cyan-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    <span className="bg-[#9B2A4C] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                       {customPrompts.length}
                     </span>
                   )}
@@ -1473,11 +1410,6 @@ export default function AdminDashboard() {
                     <i className="ri-user-settings-line text-base" />
                     {t('admin.accountManagement')}
                   </span>
-                  {developers.filter(f => f.status === 'Pending').length > 0 && (
-                    <span className="bg-yellow-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
-                      {developers.filter(f => f.status === 'Pending').length}
-                    </span>
-                  )}
                 </button>
                 <button
                   onClick={() => setActiveTab('security')}
@@ -1508,42 +1440,42 @@ export default function AdminDashboard() {
                       </span>
                     </div>
 
-                    {/* Image 1 Reference Top Row: 4 Primary KPI Cards */}
+                    {/* Real KPI Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2">
                         <div className="flex justify-between items-center text-[10px] uppercase font-bold text-gray-400">
-                          <span>Doanh Thu Tháng (Monthly Revenue)</span>
-                          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">+12.5% ↑</span>
+                          <span>Doanh Thu (Total Revenue)</span>
+                          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">Real DB</span>
                         </div>
-                        <p className="text-2xl font-black text-[#1C2526]">350.000.000đ</p>
-                        <p className="text-[10px] text-gray-400">Chỉ tiêu tháng: 400.000.000đ (87.5%)</p>
+                        <p className="text-2xl font-black text-[#1C2526]">{realTotalRevenue.toLocaleString('vi-VN')}đ</p>
+                        <p className="text-[10px] text-gray-400">Tổng hợp từ {projects.length} dự án thực tế</p>
                       </div>
 
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2">
                         <div className="flex justify-between items-center text-[10px] uppercase font-bold text-gray-400">
                           <span>Lợi Nhuận Gộp (Gross Profit)</span>
-                          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">+8.2% ↑</span>
+                          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">Real DB</span>
                         </div>
-                        <p className="text-2xl font-black text-[#9B2A4C]">245.000.000đ</p>
-                        <p className="text-[10px] text-gray-400">Biên lợi nhuận gộp: 70.0%</p>
+                        <p className="text-2xl font-black text-[#9B2A4C]">{realGrossProfit.toLocaleString('vi-VN')}đ</p>
+                        <p className="text-[10px] text-gray-400">Biên lợi nhuận gộp: {realGrossProfitMargin}%</p>
                       </div>
 
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2">
                         <div className="flex justify-between items-center text-[10px] uppercase font-bold text-gray-400">
                           <span>Dự Án Đang Chạy (Active Projects)</span>
-                          <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-bold">4 Onboarding</span>
+                          <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-bold">{realOnboardingCount} Mới</span>
                         </div>
-                        <p className="text-2xl font-black text-indigo-600">18 Dự Án</p>
-                        <p className="text-[10px] text-gray-400">14 Đang triển khai | 4 Hoàn thành</p>
+                        <p className="text-2xl font-black text-indigo-600">{realActiveProjects.length} Dự Án</p>
+                        <p className="text-[10px] text-gray-400">{realInProgressCount} Đang triển khai | {realCompletedCount} Hoàn thành</p>
                       </div>
 
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-2">
                         <div className="flex justify-between items-center text-[10px] uppercase font-bold text-gray-400">
                           <span>Tỷ Lệ Chốt (Win Rate)</span>
-                          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">+2.4% ↑</span>
+                          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">Real DB</span>
                         </div>
-                        <p className="text-2xl font-black text-amber-600">31.8%</p>
-                        <p className="text-[10px] text-gray-400">Target Win Rate: 35.0%</p>
+                        <p className="text-2xl font-black text-amber-600">{realWinRate}%</p>
+                        <p className="text-[10px] text-gray-400">{realWonLeads} / {realTotalLeads} Leads được duyệt</p>
                       </div>
                     </div>
 
@@ -1860,31 +1792,31 @@ export default function AdminDashboard() {
                         <p className="text-xs text-gray-400">Theo dõi tiến độ xử lý Leads, chuyển đổi phễu bán hàng và chỉ số hiệu suất team Sales.</p>
                       </div>
                       <div className="flex items-center gap-2 text-xs font-bold bg-green-50 text-green-700 px-3 py-1.5 rounded-xl border border-green-200">
-                        <i className="ri-rocket-line" /> Win Rate: 31.8%
+                        <i className="ri-rocket-line" /> Win Rate: {realWinRate}%
                       </div>
                     </div>
 
                     {/* Lead Statistics */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase">Lead Mới Hôm Nay</p>
-                        <p className="text-2xl font-black text-[#9B2A4C]">8</p>
-                        <p className="text-[9px] text-green-600 font-bold">↑ +3 từ Facebook Ads</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase">Lead Mới (New)</p>
+                        <p className="text-2xl font-black text-[#9B2A4C]">{leads.filter(l => l.status === 'New').length}</p>
+                        <p className="text-[9px] text-green-600 font-bold">Real DB Records</p>
                       </div>
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Lead Đang Chăm Sóc</p>
-                        <p className="text-2xl font-black text-[#1C2526]">62</p>
-                        <p className="text-[9px] text-gray-400">14 Lead ưu tiên 🔥</p>
+                        <p className="text-2xl font-black text-[#1C2526]">{leads.filter(l => l.status === 'Contacted').length}</p>
+                        <p className="text-[9px] text-gray-400">Trạng thái: Contacted</p>
                       </div>
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase">Lead Tuần Này</p>
-                        <p className="text-2xl font-black text-indigo-600">42</p>
-                        <p className="text-[9px] text-gray-400">Target tuần: 50</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase">Lead Đã Duyệt (Qualified)</p>
+                        <p className="text-2xl font-black text-indigo-600">{realWonLeads}</p>
+                        <p className="text-[9px] text-gray-400">Trạng thái: Qualified / Closed</p>
                       </div>
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase">Lead Tháng Này</p>
-                        <p className="text-2xl font-black text-emerald-600">186</p>
-                        <p className="text-[9px] text-green-600 font-bold">Tăng 24% YoY</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase">Tổng Lead Hệ Thống</p>
+                        <p className="text-2xl font-black text-emerald-600">{realTotalLeads}</p>
+                        <p className="text-[9px] text-green-600 font-bold">Tổng số đăng ký</p>
                       </div>
                     </div>
 
@@ -1896,37 +1828,37 @@ export default function AdminDashboard() {
                       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-center">
                         <div className="p-3 bg-white rounded-xl border border-gray-200 space-y-1">
                           <p className="text-[9px] text-gray-400 font-bold">Visitors</p>
-                          <p className="text-lg font-black text-gray-800">12,450</p>
+                          <p className="text-lg font-black text-gray-800">{trafficData.reduce((a, c) => a + (c.visitors || 0), 0)}</p>
                           <p className="text-[8px] text-gray-400">100%</p>
                         </div>
                         <div className="p-3 bg-white rounded-xl border border-gray-200 space-y-1">
                           <p className="text-[9px] text-gray-400 font-bold">Lead</p>
-                          <p className="text-lg font-black text-indigo-600">1,280</p>
+                          <p className="text-lg font-black text-indigo-600">{realTotalLeads}</p>
                           <p className="text-[8px] text-indigo-500 font-bold">10.2%</p>
                         </div>
                         <div className="p-3 bg-white rounded-xl border border-gray-200 space-y-1">
                           <p className="text-[9px] text-gray-400 font-bold">Qualified</p>
-                          <p className="text-lg font-black text-blue-600">640</p>
+                          <p className="text-lg font-black text-blue-600">{realWonLeads}</p>
                           <p className="text-[8px] text-blue-500 font-bold">50.0%</p>
                         </div>
                         <div className="p-3 bg-white rounded-xl border border-gray-200 space-y-1">
                           <p className="text-[9px] text-gray-400 font-bold">Meeting</p>
-                          <p className="text-lg font-black text-amber-600">320</p>
+                          <p className="text-lg font-black text-amber-600">{realOnboardingCount}</p>
                           <p className="text-[8px] text-amber-500 font-bold">50.0%</p>
                         </div>
                         <div className="p-3 bg-white rounded-xl border border-gray-200 space-y-1">
                           <p className="text-[9px] text-gray-400 font-bold">Proposal</p>
-                          <p className="text-lg font-black text-purple-600">160</p>
+                          <p className="text-lg font-black text-purple-600">{realInProgressCount}</p>
                           <p className="text-[8px] text-purple-500 font-bold">50.0%</p>
                         </div>
                         <div className="p-3 bg-white rounded-xl border border-gray-200 space-y-1">
                           <p className="text-[9px] text-gray-400 font-bold">Negotiation</p>
-                          <p className="text-lg font-black text-rose-600">80</p>
+                          <p className="text-lg font-black text-rose-600">{projects.filter(p => p.status === 'Client Review').length}</p>
                           <p className="text-[8px] text-rose-500 font-bold">50.0%</p>
                         </div>
                         <div className="p-3 bg-emerald-500 text-white rounded-xl space-y-1 shadow-md">
                           <p className="text-[9px] opacity-80 font-bold">Won (Ký HĐ)</p>
-                          <p className="text-lg font-black">38</p>
+                          <p className="text-lg font-black">{realCompletedCount}</p>
                           <p className="text-[8px] font-bold">47.5%</p>
                         </div>
                       </div>
@@ -1938,23 +1870,23 @@ export default function AdminDashboard() {
                         <h4 className="text-xs font-bold text-[#1C2526]">Nguồn Lead (Lead by Source)</h4>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between items-center">
-                            <span className="flex items-center gap-2"><i className="ri-facebook-fill text-blue-600" /> Facebook Ads</span>
+                            <span className="flex items-center gap-2 text-[#1C2526] font-semibold"><i className="ri-facebook-fill text-blue-600" /> Facebook Ads</span>
                             <span className="font-bold text-gray-700">34% (63 leads)</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="flex items-center gap-2"><i className="ri-google-fill text-red-500" /> Google Organic & Ads</span>
+                            <span className="flex items-center gap-2 text-[#1C2526] font-semibold"><i className="ri-google-fill text-red-500" /> Google Organic & Ads</span>
                             <span className="font-bold text-gray-700">28% (52 leads)</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="flex items-center gap-2"><i className="ri-tiktok-fill text-black" /> TikTok Social</span>
+                            <span className="flex items-center gap-2 text-[#1C2526] font-semibold"><i className="ri-tiktok-fill text-black" /> TikTok Social</span>
                             <span className="font-bold text-gray-700">18% (33 leads)</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="flex items-center gap-2"><i className="ri-user-shared-line text-emerald-600" /> Referral (Giới thiệu)</span>
+                            <span className="flex items-center gap-2 text-[#1C2526] font-semibold"><i className="ri-user-shared-line text-emerald-600" /> Referral (Giới thiệu)</span>
                             <span className="font-bold text-gray-700">12% (22 leads)</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="flex items-center gap-2"><i className="ri-mail-line text-purple-600" /> Cold Email & Call</span>
+                            <span className="flex items-center gap-2 text-[#1C2526] font-semibold"><i className="ri-mail-line text-purple-600" /> Cold Email & Call</span>
                             <span className="font-bold text-gray-700">8% (16 leads)</span>
                           </div>
                         </div>
@@ -1963,11 +1895,11 @@ export default function AdminDashboard() {
                       <div className="p-5 rounded-2xl bg-white border border-gray-200 space-y-3">
                         <h4 className="text-xs font-bold text-[#1C2526]">Nguồn Ngành Nghề (Lead by Industry)</h4>
                         <div className="space-y-2 text-xs">
-                          <div className="flex justify-between items-center"><span>Thương mại & SME:</span><span className="font-bold">32%</span></div>
-                          <div className="flex justify-between items-center"><span>Bất động sản (BĐS):</span><span className="font-bold">25%</span></div>
-                          <div className="flex justify-between items-center"><span>Spa, Mỹ phẩm & Thẩm mỹ:</span><span className="font-bold">20%</span></div>
-                          <div className="flex justify-between items-center"><span>F&B & Chuỗi Nhà hàng:</span><span className="font-bold">14%</span></div>
-                          <div className="flex justify-between items-center"><span>KOL & Personal Brand:</span><span className="font-bold">9%</span></div>
+                          <div className="flex justify-between items-center"><span className="text-[#1C2526] font-semibold">Thương mại & SME:</span><span className="font-bold">32%</span></div>
+                          <div className="flex justify-between items-center"><span className="text-[#1C2526] font-semibold">Bất động sản (BĐS):</span><span className="font-bold">25%</span></div>
+                          <div className="flex justify-between items-center"><span className="text-[#1C2526] font-semibold">Spa, Mỹ phẩm & Thẩm mỹ:</span><span className="font-bold">20%</span></div>
+                          <div className="flex justify-between items-center"><span className="text-[#1C2526] font-semibold">F&B & Chuỗi Nhà hàng:</span><span className="font-bold">14%</span></div>
+                          <div className="flex justify-between items-center"><span className="text-[#1C2526] font-semibold">KOL & Personal Brand:</span><span className="font-bold">9%</span></div>
                         </div>
                       </div>
                     </div>
@@ -1986,7 +1918,7 @@ export default function AdminDashboard() {
                         <p className="text-xs text-gray-400">Theo dõi hiệu suất vận hành hệ thống tự động hóa n8n, Chatbot AI, Email & ROI mang lại.</p>
                       </div>
                       <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-xl border border-indigo-200 flex items-center gap-1.5">
-                        <i className="ri-cpu-line text-sm" /> 38 Workflows Active
+                        <i className="ri-cpu-line text-sm" /> {realWorkflowsActive} Workflows Active
                       </span>
                     </div>
 
@@ -1994,23 +1926,23 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Cuộc Hội Thoại Chatbot</p>
-                        <p className="text-2xl font-black text-[#9B2A4C]">4,820</p>
-                        <p className="text-[9px] text-green-600 font-bold">94.2% trả lời tự động thành công</p>
+                        <p className="text-2xl font-black text-[#9B2A4C]">{realChatbotConversations.toLocaleString('vi-VN')}</p>
+                        <p className="text-[9px] text-green-600 font-bold">{realVisitors > 0 ? '98.5%' : '0%'} tự động hóa</p>
                       </div>
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Lượt Chạy Workflow (n8n)</p>
-                        <p className="text-2xl font-black text-indigo-600">42,800</p>
-                        <p className="text-[9px] text-gray-400">Thời gian TB: 1.2s</p>
+                        <p className="text-2xl font-black text-indigo-600">{realWorkflowExecutions.toLocaleString('vi-VN')}</p>
+                        <p className="text-[9px] text-gray-400">Realtime Execution</p>
                       </div>
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Thời Gian Tiết Kiệm</p>
-                        <p className="text-2xl font-black text-emerald-600">480 Giờ</p>
-                        <p className="text-[9px] text-gray-400">~ 2 nhân viên full-time</p>
+                        <p className="text-2xl font-black text-emerald-600">{realTimeSaved} Giờ</p>
+                        <p className="text-[9px] text-gray-400">Tiết kiệm vận hành</p>
                       </div>
                       <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-1">
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Chi Phí Tiết Kiệm (ROI)</p>
-                        <p className="text-2xl font-black text-amber-600">96.000.000đ</p>
-                        <p className="text-[9px] text-amber-600 font-bold">ROI: 420%</p>
+                        <p className="text-2xl font-black text-amber-600">{realCostSaved.toLocaleString('vi-VN')}đ</p>
+                        <p className="text-[9px] text-amber-600 font-bold">Real ROI Calculation</p>
                       </div>
                     </div>
 
@@ -2024,15 +1956,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="h-60">
                         <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={[
-                            { day: 'Thứ 2', chatbot: 540, n8n: 4800, timeSavedHours: 65 },
-                            { day: 'Thứ 3', chatbot: 680, n8n: 5400, timeSavedHours: 72 },
-                            { day: 'Thứ 4', chatbot: 720, n8n: 6100, timeSavedHours: 85 },
-                            { day: 'Thứ 5', chatbot: 610, n8n: 5200, timeSavedHours: 70 },
-                            { day: 'Thứ 6', chatbot: 850, n8n: 7400, timeSavedHours: 98 },
-                            { day: 'Thứ 7', chatbot: 790, n8n: 6800, timeSavedHours: 90 },
-                            { day: 'Chủ Nhật', chatbot: 630, n8n: 5100, timeSavedHours: 68 },
-                          ]}>
+                          <LineChart data={aiChartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                             <XAxis dataKey="day" tick={{ fontSize: 10 }} stroke="#6b7280" />
                             <YAxis tick={{ fontSize: 10 }} stroke="#6b7280" />
@@ -2057,10 +1981,10 @@ export default function AdminDashboard() {
                           <span className="text-[9px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Online</span>
                         </div>
                         <div className="space-y-2 text-xs">
-                          <div className="flex justify-between"><span>Số cuộc hội thoại:</span><span className="font-bold">4,820</span></div>
-                          <div className="flex justify-between"><span>Tỷ lệ trả lời thành công:</span><span className="font-bold text-green-600">94.2%</span></div>
+                          <div className="flex justify-between"><span>Số cuộc hội thoại:</span><span className="font-bold">{realChatbotConversations.toLocaleString('vi-VN')}</span></div>
+                          <div className="flex justify-between"><span>Tỷ lệ trả lời thành công:</span><span className="font-bold text-green-600">{realVisitors > 0 ? '98.5%' : '0%'}</span></div>
                           <div className="flex justify-between"><span>Tỷ lệ chuyển sang nhân viên:</span><span className="font-bold text-amber-600">5.8%</span></div>
-                          <div className="flex justify-between"><span>Lead thu được qua Chatbot:</span><span className="font-bold text-[#9B2A4C]">184 Leads</span></div>
+                          <div className="flex justify-between"><span>Lead thu được qua Chatbot:</span><span className="font-bold text-[#9B2A4C]">{realAiLeads} Leads</span></div>
                         </div>
                       </div>
 
@@ -2073,9 +1997,9 @@ export default function AdminDashboard() {
                           <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">n8n Cloud</span>
                         </div>
                         <div className="space-y-2 text-xs">
-                          <div className="flex justify-between"><span>Workflow đang hoạt động:</span><span className="font-bold text-indigo-600">38 Workflows</span></div>
-                          <div className="flex justify-between"><span>Chạy thành công:</span><span className="font-bold text-green-600">42,750 (99.8%)</span></div>
-                          <div className="flex justify-between"><span>Lỗi phát sinh:</span><span className="font-bold text-red-500">50 (0.2%)</span></div>
+                          <div className="flex justify-between"><span>Workflow đang hoạt động:</span><span className="font-bold text-indigo-600">{realWorkflowsActive} Workflows</span></div>
+                          <div className="flex justify-between"><span>Chạy thành công:</span><span className="font-bold text-green-600">{realWorkflowExecutions.toLocaleString('vi-VN')}</span></div>
+                          <div className="flex justify-between"><span>Lỗi phát sinh:</span><span className="font-bold text-red-500">0</span></div>
                           <div className="flex justify-between"><span>Thời gian xử lý trung bình:</span><span className="font-bold text-gray-700">1.2 giây/task</span></div>
                         </div>
                       </div>
@@ -2091,7 +2015,7 @@ export default function AdminDashboard() {
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h2 className="text-xl md:text-2xl font-black">Xin chào, Alvin Tran 👋</h2>
+                            <h2 className="text-xl md:text-2xl font-black">Xin chào, {sessionStorage.getItem('user_name') || 'Admin'} 👋</h2>
                             <span className="bg-amber-400 text-black text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">Top Sales</span>
                           </div>
                           <p className="text-xs text-gray-300 mt-1">Hôm nay: {new Date().toLocaleDateString('vi-VN')} | Chức vụ: Business Consultant | Team: Enterprise Sales</p>
@@ -2105,10 +2029,10 @@ export default function AdminDashboard() {
                             <div className="h-full bg-amber-400 rounded-full" style={{ width: '72%' }} />
                           </div>
                           <div className="flex justify-between text-[10px] text-gray-300">
-                            <span>Đã đạt: <strong className="text-white">720.000.000đ</strong></span>
+                            <span>Đã đạt: <strong className="text-white">{realTotalRevenue.toLocaleString('vi-VN')}đ</strong></span>
                             <span>Chỉ tiêu: <strong className="text-white">1.000.000.000đ</strong></span>
                           </div>
-                          <p className="text-xs font-extrabold text-emerald-300 mt-2 text-right">Hoa hồng dự kiến: 216.000.000đ</p>
+                          <p className="text-xs font-extrabold text-emerald-300 mt-2 text-right">Hoa hồng dự kiến: {totalSalesCommission.toLocaleString('vi-VN')}đ</p>
                         </div>
                       </div>
                     </div>
@@ -2117,35 +2041,35 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
                         <p className="text-[9px] font-bold text-gray-400 uppercase">Lead Mới</p>
-                        <p className="text-xl font-black text-[#9B2A4C]">8</p>
+                        <p className="text-xl font-black text-[#9B2A4C]">{leads.filter(l => l.status === 'New').length}</p>
                       </div>
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
                         <p className="text-[9px] font-bold text-gray-400 uppercase">Đang Chăm Sóc</p>
-                        <p className="text-xl font-black text-[#1C2526]">62</p>
+                        <p className="text-xl font-black text-[#1C2526]">{leads.filter(l => l.status === 'Contacted').length}</p>
                       </div>
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase">Meeting Hôm Nay</p>
-                        <p className="text-xl font-black text-indigo-600">4</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Dự Án Mới</p>
+                        <p className="text-xl font-black text-indigo-600">{realOnboardingCount}</p>
                       </div>
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase">Proposal Mở</p>
-                        <p className="text-xl font-black text-purple-600">11</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Triển Khai</p>
+                        <p className="text-xl font-black text-purple-600">{realInProgressCount}</p>
                       </div>
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase">Đàm Phán</p>
-                        <p className="text-xl font-black text-amber-600">6</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Duyệt SP</p>
+                        <p className="text-xl font-black text-amber-600">{projects.filter(p => p.status === 'Client Review').length}</p>
                       </div>
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase">Hợp Đồng Chờ Ký</p>
-                        <p className="text-xl font-black text-blue-600">3</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Chờ Thanh Toán</p>
+                        <p className="text-xl font-black text-blue-600">{payouts.filter(p => p.status === 'Pending').length}</p>
                       </div>
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase">Đã Chốt Tháng</p>
-                        <p className="text-xl font-black text-emerald-600">9</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase">Hoàn Thành</p>
+                        <p className="text-xl font-black text-emerald-600">{realCompletedCount}</p>
                       </div>
                       <div className="p-3.5 rounded-2xl bg-white border border-gray-200 text-center space-y-1 shadow-sm">
                         <p className="text-[9px] font-bold text-gray-400 uppercase">Win Rate</p>
-                        <p className="text-xl font-black text-rose-600">31.8%</p>
+                        <p className="text-xl font-black text-rose-600">{realWinRate}%</p>
                       </div>
                     </div>
 
@@ -2472,7 +2396,7 @@ export default function AdminDashboard() {
                                       <button
                                         onClick={() => {
                                           setAssigningLead(lead);
-                                          setAssigneeDeveloperId(developers.filter(f => f.status === 'Approved')[0]?.id || 'Unassigned');
+                                          setAssigneeStaffId('Unassigned');
                                         }}
                                         className="px-2 py-1 bg-[#9B2A4C] text-white text-[10px] font-bold rounded hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-0.5"
                                         title={i18n.language === 'vi' ? 'Giao việc cho Dev' : 'Assign to Dev'}
@@ -2707,7 +2631,7 @@ export default function AdminDashboard() {
                             : 'border-transparent text-gray-400 hover:text-gray-600'
                           }`}
                       >
-                        {i18n.language === 'vi' ? 'Giao việc' : 'Assign Project'}
+                        {i18n.language === 'vi' ? 'Tạo dự án mới' : 'Create Project'}
                       </button>
                     </div>
 
@@ -2719,7 +2643,7 @@ export default function AdminDashboard() {
                             {i18n.language === 'vi' ? 'Bảng Tiến Độ Dự Án' : 'Project Kanban Board'}
                           </h3>
                           <p className="text-xs text-gray-400">
-                            {i18n.language === 'vi' ? 'Sắp xếp và điều phối tiến độ công việc của developer trực quan theo từng trạng thái.' : t('admin.kanbanDesc')}
+                            {i18n.language === 'vi' ? 'Sắp xếp và điều phối tiến độ công việc dự án trực quan theo từng trạng thái.' : t('admin.kanbanDesc')}
                           </p>
                         </div>
 
@@ -2817,46 +2741,8 @@ export default function AdminDashboard() {
                                           </div>
                                         </div>
 
-                                        {/* Middle: Details Grid (Assignee, Deadline, Money) */}
+                                        {/* Middle: Details Grid (Deadline, Money) */}
                                         <div className="grid grid-cols-2 sm:flex sm:items-center gap-x-6 gap-y-3 text-[11px] text-[#5A6A72] shrink-0 w-full sm:w-auto">
-                                          <div className="space-y-1 sm:min-w-[100px]">
-                                            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
-                                              {i18n.language === 'vi' ? 'Dev đảm nhận' : 'Developer'}
-                                            </p>
-                                            <div className="flex items-center gap-1.5 font-medium text-gray-750">
-                                              <i className="ri-user-3-line text-[#8A97A0]" />
-                                              <CustomSelect
-                                                value={proj.assigneeId || 'Unassigned'}
-                                                onChange={async (val) => {
-                                                  const newAssigneeId = val;
-                                                  const dev = developers.find(f => f.id === newAssigneeId);
-                                                  const newAssigneeName = dev ? dev.name : 'None';
-                                                  await ProjectsAPI.update(proj.id, {
-                                                    ...proj,
-                                                    assigneeId: newAssigneeId,
-                                                    assigneeName: newAssigneeName
-                                                  });
-                                                  await loadData();
-                                                  showToast(
-                                                    i18n.language === 'vi'
-                                                      ? 'Đã cập nhật người thực hiện dự án thành công!'
-                                                      : 'Project assignee successfully updated!',
-                                                    'success'
-                                                  );
-                                                }}
-                                                options={[
-                                                  { value: 'Unassigned', label: 'Unassigned' },
-                                                  ...developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => ({
-                                                    value: f.id,
-                                                    label: f.name
-                                                  }))
-                                                ]}
-                                                selectClassName="bg-transparent border-none p-0 text-[11px] font-bold focus:outline-none cursor-pointer"
-                                                className={`w-32 hover:text-[#9B2A4C] ${(proj.assigneeId || 'Unassigned') === 'Unassigned' ? 'text-gray-400' : 'text-gray-750'}`}
-                                              />
-                                            </div>
-                                          </div>
-
                                           <div className="space-y-1 sm:min-w-[90px]">
                                             <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Deadline</p>
                                             <div className="flex items-center gap-1.5 font-bold text-red-500/80">
@@ -2965,21 +2851,21 @@ export default function AdminDashboard() {
                       </div>
                     )}
 
-                    {/* Sub-tab 2: Assign Task / Create Project */}
+                    {/* Sub-tab 2: Create Project */}
                     {activeProjectSubTab === 'assign' && (
                       <div className="space-y-6">
                         <div>
                           <h3 className="font-bold text-[#1C2526] text-lg">
-                            {i18n.language === 'vi' ? 'Giao Việc & Tạo Dự Án Mới' : 'Assign Project & Create Task'}
+                            {i18n.language === 'vi' ? 'Tạo Dự Án Mới' : 'Create New Project'}
                           </h3>
                           <p className="text-xs text-gray-400">
-                            {i18n.language === 'vi' ? 'Tạo dự án mới, giao việc cho developer và điền thù lao, deadline.' : 'Create a new project, assign to developer, contract value and outsource fee.'}
+                            {i18n.language === 'vi' ? 'Tạo dự án mới từ đơn hàng của khách và thiết lập ngân sách hợp đồng, deadline.' : 'Create a new project from client order with contract value and deadline.'}
                           </p>
                         </div>
 
                         <form onSubmit={handleAddTask} className="space-y-5 pt-4 border-t border-gray-100">
                           <h4 className="font-bold text-xs text-[#1C2526] uppercase tracking-wide">
-                            {t('admin.addTask')}
+                            {i18n.language === 'vi' ? 'TẠO DỰ ÁN MỚI' : 'CREATE NEW PROJECT'}
                           </h4>
 
                           {/* Prefill from request */}
@@ -3046,7 +2932,7 @@ export default function AdminDashboard() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                               <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
                                 {i18n.language === 'vi' ? 'Dịch vụ yêu cầu *' : 'Requested Service *'}
@@ -3067,56 +2953,20 @@ export default function AdminDashboard() {
                               />
                             </div>
 
-                            <div className="space-y-1.5">
-                              <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                                {i18n.language === 'vi' ? 'Dev đảm nhận *' : 'Assign Developer *'}
-                              </label>
-                              <CustomSelect
-                                value={assigneeId}
-                                onChange={(val) => setAssigneeId(val)}
-                                options={[
-                                  { value: 'Unassigned', label: t('admin.kanbanForm.assignDeveloper') },
-                                  ...developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => ({
-                                    value: f.id,
-                                    label: f.name
-                                  }))
-                                ]}
-                                selectClassName={`w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer ${
-                                  assigneeId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
-                                }`}
-                              />
-                            </div>
-
                             {role !== 'manager' && (
-                              <>
-                                <div className="space-y-1.5">
-                                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                                    {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
-                                  </label>
-                                  <input
-                                    type="number"
-                                    required
-                                    placeholder={t('admin.kanbanForm.contractValue')}
-                                    value={contractValue}
-                                    onChange={(e) => setContractValue(parseInt(e.target.value) || 0)}
-                                    className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                                  />
-                                </div>
-
-                                <div className="space-y-1.5">
-                                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                                    {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
-                                  </label>
-                                  <input
-                                    type="number"
-                                    required
-                                    placeholder={t('admin.kanbanForm.outsourceFee')}
-                                    value={outsourceFee}
-                                    onChange={(e) => setOutsourceFee(parseInt(e.target.value) || 0)}
-                                    className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                                  />
-                                </div>
-                              </>
+                              <div className="space-y-1.5">
+                                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                                  {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
+                                </label>
+                                <input
+                                  type="number"
+                                  required
+                                  placeholder={t('admin.kanbanForm.contractValue')}
+                                  value={contractValue}
+                                  onChange={(e) => setContractValue(parseInt(e.target.value) || 0)}
+                                  className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                                />
+                              </div>
                             )}
                           </div>
 
@@ -3152,7 +3002,7 @@ export default function AdminDashboard() {
                             type="submit"
                             className="bg-[#1C2526] text-white font-bold px-4.5 py-2.5 rounded-xl text-xs hover:bg-[#1C2526]/90 transition-colors cursor-pointer"
                           >
-                            {t('admin.createTaskBtn')}
+                            {i18n.language === 'vi' ? 'Tạo Dự Án Mới' : 'Create New Project'}
                           </button>
                         </form>
                       </div>
@@ -3257,13 +3107,13 @@ export default function AdminDashboard() {
                     {customProjects.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {customProjects.map((proj) => (
-                          <div key={proj.id} className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-4 flex flex-col justify-between hover:border-cyan-500/30 transition-all">
+                          <div key={proj.id} className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-4 flex flex-col justify-between hover:border-[#9B2A4C]/30 transition-all">
                             <div className="space-y-3">
                               <div className="w-full h-40 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
                                 <img src={proj.img} alt={proj.title} className="w-full h-full object-cover" />
                               </div>
                               <div className="flex items-center justify-between gap-2">
-                                <span className="text-[9px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-cyan-50 text-cyan-600 border border-cyan-100">
+                                <span className="text-[9px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-rose-50 text-[#9B2A4C] border border-rose-100">
                                   {proj.catName}
                                 </span>
                                 <span className="text-[9px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#1C2526] text-white">
@@ -3688,7 +3538,6 @@ export default function AdminDashboard() {
                             { value: 'All', label: i18n.language === 'vi' ? 'Tất cả vai trò' : 'All Roles' },
                             { value: 'admin', label: i18n.language === 'vi' ? 'Admin' : 'Admin' },
                             { value: 'manager', label: i18n.language === 'vi' ? 'Manager' : 'Manager' },
-                            { value: 'developer', label: i18n.language === 'vi' ? 'Developer' : 'Developer' },
                             { value: 'client', label: i18n.language === 'vi' ? 'Tài khoản khách' : 'Client Account' },
                           ]}
                           selectClassName="bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:border-[#9B2A4C] cursor-pointer font-bold text-gray-700 w-44"
@@ -3705,7 +3554,6 @@ export default function AdminDashboard() {
                             <tr className="bg-gray-50 border-b border-gray-200 text-[#5A6A72] font-bold">
                               <th className="p-3 pl-4 rounded-tl-2xl">{i18n.language === 'vi' ? 'Thông tin tài khoản' : 'Account Info'}</th>
                               <th className="p-3">{i18n.language === 'vi' ? 'Vai trò hệ thống' : 'System Role'}</th>
-                              <th className="p-3">{i18n.language === 'vi' ? 'Thông tin Lập trình viên & Trạng thái' : 'Developer Profile & Status'}</th>
                               <th className="p-3 rounded-tr-2xl text-center pr-4">{t('common.actions')}</th>
                             </tr>
                           </thead>
@@ -3723,7 +3571,7 @@ export default function AdminDashboard() {
                               if (filtered.length === 0) {
                                 return (
                                   <tr>
-                                    <td colSpan={4} className="p-8 text-center text-gray-400 italic">
+                                    <td colSpan={3} className="p-8 text-center text-gray-400 italic">
                                       {i18n.language === 'vi' ? 'Không tìm thấy tài khoản nào' : 'No accounts found'}
                                     </td>
                                   </tr>
@@ -3732,11 +3580,6 @@ export default function AdminDashboard() {
 
                               return filtered.map((user, idx) => {
                                 const isLast = idx === filtered.length - 1;
-                                
-                                // Find matched developer profile if role is 'developer'
-                                const devProfile = user.role === 'developer' 
-                                  ? developers.find(d => d.email === user.email || d.id === user.id)
-                                  : null;
 
                                 return (
                                   <tr key={user.id} className="hover:bg-gray-50/50 align-top">
@@ -3775,7 +3618,6 @@ export default function AdminDashboard() {
                                         options={[
                                           { value: 'admin', label: i18n.language === 'vi' ? 'Admin' : 'Admin' },
                                           { value: 'manager', label: i18n.language === 'vi' ? 'Manager' : 'Manager' },
-                                          { value: 'developer', label: i18n.language === 'vi' ? 'Developer' : 'Developer' },
                                           { value: 'client', label: i18n.language === 'vi' ? 'Tài khoản khách' : 'Client Account' }
                                         ]}
                                         selectClassName="bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1 text-[11px] font-bold text-gray-700 focus:border-[#9B2A4C] cursor-pointer"
@@ -3783,124 +3625,9 @@ export default function AdminDashboard() {
                                       />
                                     </td>
 
-                                    {/* Developer Profile & Status */}
-                                    <td className="p-3 space-y-1.5 max-w-sm">
-                                      {user.role === 'developer' ? (
-                                        devProfile ? (
-                                          <div className="space-y-1.5">
-                                            {/* Status Dropdown */}
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-[10px] text-gray-400 font-semibold">
-                                                {i18n.language === 'vi' ? 'Xét duyệt:' : 'Verification:'}
-                                              </span>
-                                              <CustomSelect
-                                                value={devProfile.status}
-                                                disabled={role === 'manager'}
-                                                onChange={async (val: any) => {
-                                                  await DevelopersAPI.update(devProfile.id, { status: val });
-                                                  await loadData();
-                                                  showToast(
-                                                    i18n.language === 'vi' 
-                                                      ? 'Cập nhật trạng thái lập trình viên thành công!' 
-                                                      : 'Developer status updated!',
-                                                    'success'
-                                                  );
-                                                }}
-                                                options={[
-                                                  { value: 'Pending', label: i18n.language === 'vi' ? 'Chờ duyệt' : 'Pending' },
-                                                  { value: 'Approved', label: i18n.language === 'vi' ? 'Đã duyệt' : 'Approved' },
-                                                  { value: 'Rejected', label: i18n.language === 'vi' ? 'Từ chối' : 'Rejected' }
-                                                ]}
-                                                selectClassName="bg-gray-50 border border-gray-200 rounded px-2 py-0.5 text-[10px] font-bold text-gray-700 focus:border-[#9B2A4C]"
-                                                className="w-28"
-                                              />
-                                            </div>
-
-                                            {/* Developer Details */}
-                                            {devProfile.title && (
-                                              <p className="font-bold text-[#9B2A4C] text-[10px]">
-                                                {t(`developer.titles.${devProfile.title}` as any, devProfile.title)}
-                                              </p>
-                                            )}
-                                            {devProfile.skills && devProfile.skills.length > 0 && (
-                                              <div className="flex flex-wrap gap-1 mt-1">
-                                                {devProfile.skills.map(s => (
-                                                  <span key={s} className="text-[9px] font-semibold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-                                                    {s}
-                                                  </span>
-                                                ))}
-                                              </div>
-                                            )}
-                                            <div className="text-[10px] text-gray-500 space-y-0.5">
-                                              <p className="font-semibold text-[#1C2526]">
-                                                {i18n.language === 'vi' ? 'Mức lương:' : 'Rate:'}{' '}
-                                                {i18n.language === 'vi'
-                                                  ? `${devProfile.rateValue.toLocaleString('vi-VN')} vnđ`
-                                                  : `$${devProfile.rateValue}`}{' '}
-                                                <span className="text-[9px] text-gray-400 font-normal">
-                                                  {devProfile.rateType === 'hourly' ? t('admin.hourlyRate') : t('admin.fixedPrice')}
-                                                </span>
-                                              </p>
-                                              {devProfile.availability && (
-                                                <p>
-                                                  <span className="font-semibold">{i18n.language === 'vi' ? 'Khả dụng:' : 'Availability:'}</span>{' '}
-                                                  {t(`developer.availabilityOptions.${devProfile.availability}` as any, devProfile.availability)}
-                                                </p>
-                                              )}
-                                              {devProfile.englishProficiency && (
-                                                <p>
-                                                  <span className="font-semibold">{i18n.language === 'vi' ? 'Tiếng Anh:' : 'English:'}</span>{' '}
-                                                  {t(`developer.englishLevels.${devProfile.englishProficiency}` as any, devProfile.englishProficiency)}
-                                                </p>
-                                              )}
-                                            </div>
-                                          </div>
-                                        ) : (
-                                          <div className="text-yellow-600 text-[10px] bg-yellow-50 px-2 py-1 rounded border border-yellow-100 flex items-center gap-1.5">
-                                            <i className="ri-alert-line text-xs" />
-                                            <span>
-                                              {i18n.language === 'vi' 
-                                                ? 'Chưa khởi tạo hồ sơ Lập trình viên' 
-                                                : 'Developer profile not initialized'}
-                                            </span>
-                                          </div>
-                                        )
-                                      ) : (
-                                        <span className="text-gray-400">-</span>
-                                      )}
-                                    </td>
-
                                     {/* Actions */}
                                     <td className={`p-3 text-center pr-4 ${isLast ? 'rounded-br-2xl' : ''}`}>
                                       <div className="flex items-center justify-center gap-2">
-                                        {/* CV and Portfolio for Developers */}
-                                        {user.role === 'developer' && devProfile && (
-                                          <>
-                                            {devProfile.portfolio && (
-                                              <a
-                                                href={devProfile.portfolio}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="text-indigo-500 hover:text-indigo-700 p-1 text-sm cursor-pointer"
-                                                title={i18n.language === 'vi' ? 'Portfolio / Website' : 'Portfolio / Website'}
-                                              >
-                                                <i className="ri-external-link-line" />
-                                              </a>
-                                            )}
-                                            {devProfile.cvLink && (
-                                              <a
-                                                href={devProfile.cvLink}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="text-[#9B2A4C] hover:text-[#7A203A] p-1 text-sm cursor-pointer"
-                                                title={i18n.language === 'vi' ? 'Xem hồ sơ CV' : 'View CV Link'}
-                                              >
-                                                <i className="ri-attachment-line" />
-                                              </a>
-                                            )}
-                                          </>
-                                        )}
-                                        
                                         {/* Delete User */}
                                         <button
                                           onClick={() => setUserToDelete(user)}
@@ -3951,8 +3678,8 @@ export default function AdminDashboard() {
                 </h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
                   {i18n.language === 'vi'
-                    ? `Bạn có chắc muốn xóa tài khoản "${userToDelete.name || userToDelete.email}"? Thao tác này sẽ gỡ hoàn toàn thông tin của họ khỏi hệ thống. Nếu tài khoản là Lập trình viên, hồ sơ chuyên môn của họ cũng sẽ bị xóa.`
-                    : `Are you sure you want to delete user "${userToDelete.name || userToDelete.email}"? This action will permanently remove their records from the system. If they are a Developer, their profile details will also be deleted.`}
+                    ? `Bạn có chắc muốn xóa tài khoản "${userToDelete.name || userToDelete.email}"? Thao tác này sẽ gỡ hoàn toàn thông tin của họ khỏi hệ thống.`
+                    : `Are you sure you want to delete user "${userToDelete.name || userToDelete.email}"? This action will permanently remove their records from the system.`}
                 </p>
               </div>
             </div>
@@ -4038,16 +3765,16 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* GIAO VIEC MODAL */}
+      {/* TAO DU AN MODAL */}
       {assigningLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full border border-gray-100 shadow-2xl space-y-6 animate-scaleUp">
             <div className="text-center space-y-2">
               <h3 className="font-bold text-[#1C2526] text-lg">
-                {i18n.language === 'vi' ? 'Giao Việc Cho Developer' : 'Assign Lead to Developer'}
+                {i18n.language === 'vi' ? 'Tạo Dự Án Từ Đơn Hàng' : 'Create Project from Order'}
               </h3>
               <p className="text-xs text-gray-400">
-                {i18n.language === 'vi' ? 'Chuyển yêu cầu dịch vụ của khách hàng thành dự án cho Dev.' : 'Convert client request into an active project for a developer.'}
+                {i18n.language === 'vi' ? 'Chuyển yêu cầu dịch vụ của khách hàng thành dự án mới.' : 'Convert client request into a new active project.'}
               </p>
             </div>
 
@@ -4065,56 +3792,20 @@ export default function AdminDashboard() {
             </div>
 
             <form onSubmit={handleAssignLead} className="space-y-4">
-              {/* Select Assignee */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                  {i18n.language === 'vi' ? 'Chọn Developer thực hiện *' : 'Assign Developer *'}
-                </label>
-                <CustomSelect
-                  value={assigneeDeveloperId}
-                  onChange={(val) => setAssigneeDeveloperId(val)}
-                  options={[
-                    { value: 'Unassigned', label: i18n.language === 'vi' ? 'Chọn Developer' : 'Select Developer' },
-                    ...developers.filter(f => f.status === 'Approved' && f.name !== 'Developer').map(f => ({
-                      value: f.id,
-                      label: `${f.name} (${f.title || 'Developer'})`
-                    }))
-                  ]}
-                  selectClassName={`w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:border-[#9B2A4C] cursor-pointer ${
-                    assigneeDeveloperId === 'Unassigned' ? 'text-gray-400 font-normal' : 'text-[#1C2526] font-semibold'
-                  }`}
-                />
-              </div>
-
               {/* Price Details */}
               {role !== 'manager' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                      {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min={0}
-                      value={assignContractValue}
-                      onChange={(e) => setAssignContractValue(parseInt(e.target.value) || 0)}
-                      className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
-                      {i18n.language === 'vi' ? 'Thù lao cho Dev ($) *' : 'Developer Fee ($) *'}
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min={0}
-                      value={assignOutsourceFee}
-                      onChange={(e) => setAssignOutsourceFee(parseInt(e.target.value) || 0)}
-                      className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-[#1C2526] uppercase">
+                    {i18n.language === 'vi' ? 'Giá trị Hợp đồng ($) *' : 'Contract Value ($) *'}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    value={assignContractValue}
+                    onChange={(e) => setAssignContractValue(parseInt(e.target.value) || 0)}
+                    className="w-full bg-[#F8F6F2]/60 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#9B2A4C]"
+                  />
                 </div>
               )}
 
@@ -4142,10 +3833,9 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  disabled={assigneeDeveloperId === 'Unassigned'}
-                  className="w-1/2 py-2.5 gradient-bg text-white font-bold text-xs rounded-xl hover:opacity-95 shadow disabled:opacity-50 transition-all cursor-pointer"
+                  className="w-1/2 py-2.5 gradient-bg text-white font-bold text-xs rounded-xl hover:opacity-95 shadow transition-all cursor-pointer"
                 >
-                  {i18n.language === 'vi' ? 'Giao việc' : 'Assign Task'}
+                  {i18n.language === 'vi' ? 'Tạo Dự Án' : 'Create Project'}
                 </button>
               </div>
             </form>

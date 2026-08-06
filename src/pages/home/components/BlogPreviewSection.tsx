@@ -15,11 +15,11 @@ export default function BlogPreviewSection() {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div className="space-y-2">
-            <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-cyan-400 px-3 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-rose-400 px-3 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 border border-[#9B2A4C]/20 dark:border-rose-400/30">
               Knowledge & Insights
             </span>
             <h2 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white tracking-tight">
-              Bài Viết & <span className="text-[#9B2A4C] dark:text-cyan-400">Chia Sẻ Hot</span>
+              Bài Viết & <span className="text-[#9B2A4C] dark:text-rose-400">Chia Sẻ Hot</span>
             </h2>
             <p className="text-sm text-[#5A6A72] dark:text-gray-400 max-w-lg">
               Cập nhật các chủ đề hot nhất trên mạng xã hội, xu hướng AI & chiến lược truyền thông mới nhất.
@@ -28,7 +28,7 @@ export default function BlogPreviewSection() {
 
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#9B2A4C] dark:text-cyan-400 hover:underline uppercase tracking-wider shrink-0"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#9B2A4C] dark:text-rose-400 hover:underline uppercase tracking-wider shrink-0"
           >
             {i18n.language === 'vi' ? 'Xem tất cả bài viết' : 'Read All Articles'}
             <i className="ri-arrow-right-line" />
@@ -41,7 +41,7 @@ export default function BlogPreviewSection() {
             <article
               key={item.id}
               onClick={() => navigate(`/blog/${item.id}`)}
-              className="group cursor-pointer rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl hover:border-[#9B2A4C]/30 dark:hover:border-cyan-500/30 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+              className="group cursor-pointer rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl hover:border-[#9B2A4C]/30 dark:hover:border-rose-400/30 transition-all duration-300 flex flex-col justify-between overflow-hidden"
             >
               <div className="space-y-4">
                 {/* Article Cover Image */}
@@ -67,7 +67,7 @@ export default function BlogPreviewSection() {
                     </span>
                   </div>
 
-                  <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-cyan-400 transition-colors leading-snug line-clamp-2">
+                  <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-rose-400 transition-colors leading-snug line-clamp-2">
                     {item.title}
                   </h3>
 
@@ -87,7 +87,7 @@ export default function BlogPreviewSection() {
                   <span className="text-[11px] text-gray-400">{item.author}</span>
                 </div>
 
-                <span className="text-[#9B2A4C] dark:text-cyan-400 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                <span className="text-[#9B2A4C] dark:text-rose-400 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                   Đọc chi tiết <i className="ri-arrow-right-line" />
                 </span>
               </div>

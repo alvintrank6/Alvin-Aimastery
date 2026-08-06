@@ -11,11 +11,11 @@ export default function AboutPage() {
       <main className="max-w-5xl mx-auto px-4 md:px-8 space-y-12 pb-20 md:pb-28">
         {/* Header */}
         <div className="space-y-4 text-center max-w-2xl mx-auto">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-cyan-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-rose-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 border border-[#9B2A4C]/20 dark:border-rose-400/30">
             Hành Trình & Sự Nghiệp
           </span>
           <h1 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white">
-            About <span className="text-[#9B2A4C] dark:text-cyan-400">Alvin Tran</span>
+            About <span className="text-[#9B2A4C] dark:text-rose-400">Alvin Tran</span>
           </h1>
           <p className="text-sm text-[#5A6A72] dark:text-gray-400">
             Marketer, AI Automation Specialist & Communications Strategist tại AI Mastery.
@@ -48,7 +48,7 @@ export default function AboutPage() {
                   <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white">
                     Bộ Phận Kinh Doanh & AI Marketing
                   </h3>
-                  <p className="text-xs text-[#9B2A4C] dark:text-cyan-400 font-bold">
+                  <p className="text-xs text-[#9B2A4C] dark:text-rose-400 font-bold">
                     AI Mastery
                   </p>
                 </div>
@@ -65,7 +65,7 @@ export default function AboutPage() {
                   <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white">
                     Founder & Marketing Lead
                   </h3>
-                  <p className="text-xs text-[#9B2A4C] dark:text-cyan-400 font-bold">
+                  <p className="text-xs text-[#9B2A4C] dark:text-rose-400 font-bold">
                     Senn Cosmetics & ByeBye Pimple
                   </p>
                 </div>

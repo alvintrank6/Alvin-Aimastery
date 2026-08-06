@@ -74,11 +74,11 @@ export default function PromptsPage() {
       <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-12 pb-20 md:pb-28">
         {/* Header Banner */}
         <div className="space-y-4 text-center max-w-3xl mx-auto">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-cyan-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-rose-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 border border-[#9B2A4C]/20 dark:border-rose-400/30">
             AI Prompt Engineering Library
           </span>
           <h1 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white tracking-tight">
-            Thư Viện <span className="text-[#9B2A4C] dark:text-cyan-400">Prompt Hub Cao Cấp</span>
+            Thư Viện <span className="text-[#9B2A4C] dark:text-rose-400">Prompt Hub Cao Cấp</span>
           </h1>
           <p className="text-sm md:text-base text-[#5A6A72] dark:text-gray-400 leading-relaxed">
             Bộ câu lệnh Prompt tối ưu sẵn cho ChatGPT-4o, Claude 3.5, DeepSeek R1 & Midjourney v7 giúp bạn x5 năng suất Marketing & Automation.
@@ -96,7 +96,7 @@ export default function PromptsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm câu lệnh, sản phẩm, ngành..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 text-xs font-medium text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400 shadow-sm"
+                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 text-xs font-medium text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400 shadow-sm"
               />
             </div>
 
@@ -109,7 +109,7 @@ export default function PromptsPage() {
                   onClick={() => setSelectedModel(m)}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     selectedModel === m
-                      ? 'bg-[#1C2526] text-white dark:bg-cyan-400 dark:text-black shadow-md'
+                      ? 'bg-[#1C2526] text-white dark:bg-rose-600 dark:text-white shadow-md'
                       : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                   }`}
                 >
@@ -151,7 +151,7 @@ export default function PromptsPage() {
                   {/* Top Badges & Title */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-cyan-500/10 dark:text-cyan-400 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+                      <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-rose-400/10 dark:text-rose-400 border border-[#9B2A4C]/20 dark:border-rose-400/30">
                         {item.category}
                       </span>
                       <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full text-white ${item.badgeColor}`}>
@@ -185,7 +185,7 @@ export default function PromptsPage() {
                             onClick={() => setActiveTabMap({ ...activeTabMap, [item.id]: 'user' })}
                             className={`text-xs font-bold px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                               activeTab === 'user'
-                                ? 'bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-cyan-500/10 dark:text-cyan-400'
+                                ? 'bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-rose-400/10 dark:text-rose-400'
                                 : 'text-gray-400 hover:text-gray-600'
                             }`}
                           >
@@ -195,7 +195,7 @@ export default function PromptsPage() {
                             onClick={() => setActiveTabMap({ ...activeTabMap, [item.id]: 'system' })}
                             className={`text-xs font-bold px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                               activeTab === 'system'
-                                ? 'bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-cyan-500/10 dark:text-cyan-400'
+                                ? 'bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-rose-400/10 dark:text-rose-400'
                                 : 'text-gray-400 hover:text-gray-600'
                             }`}
                           >
@@ -205,7 +205,7 @@ export default function PromptsPage() {
                             onClick={() => setActiveTabMap({ ...activeTabMap, [item.id]: 'example' })}
                             className={`text-xs font-bold px-3 py-1 rounded-lg transition-colors cursor-pointer ${
                               activeTab === 'example'
-                                ? 'bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-cyan-500/10 dark:text-cyan-400'
+                                ? 'bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-rose-400/10 dark:text-rose-400'
                                 : 'text-gray-400 hover:text-gray-600'
                             }`}
                           >
@@ -224,7 +224,7 @@ export default function PromptsPage() {
                                 : item.exampleOutput;
                             handleCopyText(`${item.id}-${activeTab}`, textToCopy);
                           }}
-                          className="text-xs font-bold text-[#9B2A4C] dark:text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-xs font-bold text-[#9B2A4C] dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           {copiedId === `${item.id}-${activeTab}` ? (
                             <>
@@ -256,7 +256,7 @@ export default function PromptsPage() {
                   <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
                     <button
                       onClick={() => openPromptModal(item)}
-                      className="px-5 py-2.5 rounded-full bg-[#1C2526] dark:bg-cyan-500 text-white dark:text-black font-bold text-xs hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                      className="px-5 py-2.5 rounded-full bg-[#1C2526] dark:bg-rose-600 text-white font-bold text-xs hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
                     >
                       <i className="ri-[#9B2A4C] ri-magic-line" /> Điền Thông Số & Test Prompt
                     </button>
@@ -296,7 +296,7 @@ export default function PromptsPage() {
             {/* Modal Header */}
             <div className="flex items-start justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-4">
               <div>
-                <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-cyan-500/10 dark:text-cyan-400">
+                <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-[#9B2A4C]/10 text-[#9B2A4C] dark:bg-rose-400/10 dark:text-rose-400">
                   {activeModalPrompt.category}
                 </span>
                 <h3 className="text-lg md:text-2xl font-black text-[#1C2526] dark:text-white mt-2">
@@ -313,7 +313,7 @@ export default function PromptsPage() {
 
             {/* Input Variables Form */}
             <div className="space-y-4">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#9B2A4C] dark:text-cyan-400">
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#9B2A4C] dark:text-rose-400">
                 1. Điền Thông Số Sản Phẩm / Dịch Vụ Của Bạn
               </h4>
 
@@ -330,7 +330,7 @@ export default function PromptsPage() {
                         setCustomValues({ ...customValues, [v.name]: e.target.value })
                       }
                       placeholder={v.placeholder}
-                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400 select-text cursor-text relative z-10 pointer-events-auto"
+                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-gray-700 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400 select-text cursor-text relative z-10 pointer-events-auto"
                     />
                   </div>
                 ))}
@@ -340,7 +340,7 @@ export default function PromptsPage() {
             {/* Generated Custom Prompt Output */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#9B2A4C] dark:text-cyan-400">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#9B2A4C] dark:text-rose-400">
                   2. Câu Lệnh Đã Được Tối Ưu Hóa (Sẵn Sàng Copy)
                 </h4>
                 <button
@@ -350,7 +350,7 @@ export default function PromptsPage() {
                       `${activeModalPrompt.systemPrompt}\n\n${getCustomizedPrompt(activeModalPrompt)}`
                     )
                   }
-                  className="px-4 py-1.5 rounded-full bg-[#9B2A4C] dark:bg-cyan-500 text-white dark:text-black font-bold text-xs hover:scale-105 transition-transform flex items-center gap-1 cursor-pointer"
+                  className="px-4 py-1.5 rounded-full bg-[#9B2A4C] dark:bg-rose-600 text-white font-bold text-xs hover:scale-105 transition-transform flex items-center gap-1 cursor-pointer"
                 >
                   {copiedId === 'modal-custom' ? (
                     <>
@@ -364,7 +364,7 @@ export default function PromptsPage() {
                 </button>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0E1524] text-cyan-300 font-mono text-xs max-h-60 overflow-y-auto border border-gray-800 leading-relaxed whitespace-pre-wrap">
+              <div className="p-4 rounded-2xl bg-[#0E1524] text-purple-300 font-mono text-xs max-h-60 overflow-y-auto border border-gray-800 leading-relaxed whitespace-pre-wrap">
                 {activeModalPrompt.systemPrompt}
                 {'\n\n'}
                 {getCustomizedPrompt(activeModalPrompt)}

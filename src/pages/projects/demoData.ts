@@ -1126,22 +1126,22 @@ const EDUMASTER_LMS_HTML = `
 <body class="bg-[#0B0F19] text-white antialiased min-h-screen">
 
   <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
-    <div class="font-black text-xl text-cyan-400 flex items-center gap-2">
-      <span class="w-8 h-8 rounded-lg bg-cyan-500 text-black flex items-center justify-center font-black">E</span>
+    <div class="font-black text-xl text-[#9B2A4C] flex items-center gap-2">
+      <span class="w-8 h-8 rounded-lg bg-[#9B2A4C] text-white flex items-center justify-center font-black">E</span>
       EDUMASTER LMS
     </div>
-    <button onclick="alert('🎓 Đã kích hoạt quyền học thử Khóa học AI Automation!')" class="bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs px-5 py-2.5 rounded-full shadow-lg shadow-cyan-500/20 cursor-pointer">
+    <button onclick="alert('🎓 Đã kích hoạt quyền học thử Khóa học AI Automation!')" class="bg-[#9B2A4C] hover:bg-[#82213e] text-white font-extrabold text-xs px-5 py-2.5 rounded-full shadow-lg shadow-[#9B2A4C]/20 cursor-pointer">
       <i class="ri-play-circle-line mr-1"></i> Học Thử Video DRM
     </button>
   </header>
 
   <section class="p-6 max-w-7xl mx-auto space-y-8 pt-6">
-    <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-500/20 p-8 md:p-14 text-center space-y-6 shadow-2xl">
-      <span class="bg-cyan-500/10 text-cyan-400 text-xs font-black uppercase px-4 py-1.5 rounded-full border border-cyan-500/20 tracking-wider">
+    <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-purple-950 via-slate-900 to-slate-950 border border-[#9B2A4C]/30 p-8 md:p-14 text-center space-y-6 shadow-2xl">
+      <span class="bg-[#9B2A4C]/10 text-rose-400 text-xs font-black uppercase px-4 py-1.5 rounded-full border border-[#9B2A4C]/20 tracking-wider">
         Nền Tảng Đào Tạo Công Nghệ AI 2026
       </span>
       <h1 class="text-3xl md:text-5xl font-black text-white leading-tight">
-        Làm Chủ Công Nghệ AI Automation <br/><span class="text-cyan-400">Tăng Gấp 5 Lần Hiệu Suất</span>
+        Làm Chủ Công Nghệ AI Automation <br/><span class="text-rose-400">Tăng Gấp 5 Lần Hiệu Suất</span>
       </h1>
       <p class="text-slate-300 text-xs md:text-sm max-w-2xl mx-auto leading-relaxed">
         Hơn 150+ bài giảng HD chất lượng cao, thực hành dự án thực tế kèm chứng chỉ kiểm định y khoa và công nghệ.
@@ -1149,7 +1149,7 @@ const EDUMASTER_LMS_HTML = `
 
       <div class="relative max-w-3xl mx-auto rounded-2xl overflow-hidden border border-slate-700 shadow-2xl aspect-video bg-black flex justify-center items-center">
         <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&auto=format&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover opacity-30" />
-        <button onclick="alert('▶️ Đang phát Video Bài 1: Tổng quan quy trình tự động hóa n8n & ChatGPT')" class="relative w-16 h-16 rounded-full bg-cyan-500 text-black flex items-center justify-center text-2xl font-black shadow-xl hover:scale-110 transition-transform cursor-pointer">
+        <button onclick="alert('▶️ Đang phát Video Bài 1: Tổng quan quy trình tự động hóa n8n & ChatGPT')" class="relative w-16 h-16 rounded-full bg-[#9B2A4C] text-white flex items-center justify-center text-2xl font-black shadow-xl hover:scale-110 transition-transform cursor-pointer">
           <i class="ri-play-fill"></i>
         </button>
       </div>

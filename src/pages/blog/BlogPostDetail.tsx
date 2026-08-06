@@ -21,7 +21,7 @@ export const BlogPostDetail: React.FC = () => {
       <div className="min-h-screen pt-28 pb-12 transition-colors">
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-6">
-          <div className="text-6xl font-black text-[#9B2A4C] dark:text-cyan-400">404</div>
+          <div className="text-6xl font-black text-[#9B2A4C] dark:text-rose-400">404</div>
           <h1 className="text-2xl font-bold text-[#1C2526] dark:text-white">
             Bài viết không tồn tại hoặc đã bị gỡ bỏ
           </h1>
@@ -57,7 +57,7 @@ export const BlogPostDetail: React.FC = () => {
         <div>
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#9B2A4C] dark:text-gray-400 dark:hover:text-cyan-400 transition-colors uppercase tracking-wider"
+            className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#9B2A4C] dark:text-gray-400 dark:hover:text-rose-400 transition-colors uppercase tracking-wider"
           >
             <i className="ri-arrow-left-line text-sm" /> Tất cả bài viết
           </Link>
@@ -66,7 +66,7 @@ export const BlogPostDetail: React.FC = () => {
         {/* Header Metadata */}
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3 text-xs font-bold">
-            <span className="px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 text-[#9B2A4C] dark:text-cyan-400 border border-[#9B2A4C]/20 dark:border-cyan-500/20 uppercase tracking-wider">
+            <span className="px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 text-[#9B2A4C] dark:text-rose-400 border border-[#9B2A4C]/20 dark:border-rose-400/30 uppercase tracking-wider">
               {post.category}
             </span>
             <span className="text-gray-400">•</span>
@@ -95,7 +95,7 @@ export const BlogPostDetail: React.FC = () => {
               onError={(e) => {
                 e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80';
               }}
-              className="w-11 h-11 rounded-full object-cover border-2 border-[#9B2A4C] dark:border-cyan-400 shadow-md"
+              className="w-11 h-11 rounded-full object-cover border-2 border-[#9B2A4C] dark:border-rose-400 shadow-md"
             />
             <div>
               <div className="text-xs font-bold text-[#1C2526] dark:text-white">{post.author}</div>
@@ -117,8 +117,8 @@ export const BlogPostDetail: React.FC = () => {
         </div>
 
         {/* Article Intro Callout Box */}
-        <div className="p-6 rounded-2xl bg-[#9B2A4C]/5 dark:bg-cyan-500/5 border-l-4 border-[#9B2A4C] dark:border-cyan-400 space-y-2">
-          <h4 className="text-xs font-black uppercase tracking-wider text-[#9B2A4C] dark:text-cyan-400 flex items-center gap-1.5">
+        <div className="p-6 rounded-2xl bg-[#9B2A4C]/5 dark:bg-rose-400/5 border-l-4 border-[#9B2A4C] dark:border-rose-400 space-y-2">
+          <h4 className="text-xs font-black uppercase tracking-wider text-[#9B2A4C] dark:text-rose-400 flex items-center gap-1.5">
             <i className="ri-bookmark-3-line" /> Tóm tắt nội dung chính
           </h4>
           <p className="text-sm md:text-base font-semibold text-[#1C2526] dark:text-gray-200 leading-relaxed italic">
@@ -144,7 +144,7 @@ export const BlogPostDetail: React.FC = () => {
               )}
 
               {sec.quote && (
-                <blockquote className="p-5 my-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-md font-medium text-sm text-[#9B2A4C] dark:text-cyan-300 italic flex gap-3 items-start">
+                <blockquote className="p-5 my-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-md font-medium text-sm text-[#9B2A4C] dark:text-rose-300 italic flex gap-3 items-start">
                   <i className="ri-[#9B2A4C] ri-double-quotes-l text-2xl shrink-0" />
                   <span>{sec.quote}</span>
                 </blockquote>
@@ -192,10 +192,10 @@ export const BlogPostDetail: React.FC = () => {
           <img
             src={post.authorAvatar}
             alt={post.author}
-            className="w-20 h-20 rounded-2xl object-cover shrink-0 border-2 border-[#9B2A4C] dark:border-cyan-400 shadow-lg"
+            className="w-20 h-20 rounded-2xl object-cover shrink-0 border-2 border-[#9B2A4C] dark:border-rose-400 shadow-lg"
           />
           <div className="space-y-2 text-center sm:text-left flex-1">
-            <div className="text-xs font-bold uppercase text-[#9B2A4C] dark:text-cyan-400 tracking-wider">
+            <div className="text-xs font-bold uppercase text-[#9B2A4C] dark:text-rose-400 tracking-wider">
               Tác giả bài viết
             </div>
             <h3 className="text-lg font-black text-[#1C2526] dark:text-white">{post.author}</h3>
@@ -242,7 +242,7 @@ export const BlogPostDetail: React.FC = () => {
                     </div>
 
                     <div className="p-4 space-y-2">
-                      <h4 className="text-xs font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                      <h4 className="text-xs font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-rose-400 transition-colors line-clamp-2 leading-snug">
                         {rel.title}
                       </h4>
                       <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
@@ -251,7 +251,7 @@ export const BlogPostDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="p-4 pt-0 text-[10px] font-bold text-[#9B2A4C] dark:text-cyan-400 flex items-center justify-between">
+                  <div className="p-4 pt-0 text-[10px] font-bold text-[#9B2A4C] dark:text-rose-400 flex items-center justify-between">
                     <span>{rel.date}</span>
                     <span className="inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                       Đọc bài <i className="ri-arrow-right-line" />

@@ -34,7 +34,7 @@ export default function Footer() {
                   href="https://www.facebook.com/alvin.tran.872661/"
                   target="_blank"
                   rel="nofollow noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 text-[#5A6A72] dark:text-gray-300 hover:text-[#9B2A4C] dark:hover:text-cyan-400 hover:border-[#9B2A4C]/30 transition-all cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 text-[#5A6A72] dark:text-gray-300 hover:text-[#9B2A4C] dark:hover:text-rose-400 hover:border-[#9B2A4C]/30 transition-all cursor-pointer"
                   aria-label="Facebook"
                 >
                   <i className="ri-facebook-fill text-sm" />
@@ -43,7 +43,7 @@ export default function Footer() {
                   href="https://www.instagram.com/alvintran_95/"
                   target="_blank"
                   rel="nofollow noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 text-[#5A6A72] dark:text-gray-300 hover:text-[#9B2A4C] dark:hover:text-cyan-400 hover:border-[#9B2A4C]/30 transition-all cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-800 text-[#5A6A72] dark:text-gray-300 hover:text-[#9B2A4C] dark:hover:text-rose-400 hover:border-[#9B2A4C]/30 transition-all cursor-pointer"
                   aria-label="Instagram"
                 >
                   <i className="ri-instagram-line text-sm" />
@@ -56,19 +56,19 @@ export default function Footer() {
               <h4 className="text-[#1C2526] dark:text-white text-xs font-bold uppercase tracking-wider">{t('footer.navTitle')}</h4>
               <ul className="space-y-2.5 text-xs font-semibold text-[#5A6A72] dark:text-gray-400">
                 <li>
-                  <Link to="/" className="hover:text-[#9B2A4C] dark:hover:text-cyan-400 transition-colors">Home</Link>
+                  <Link to="/" className="hover:text-[#9B2A4C] dark:hover:text-rose-400 transition-colors">Home</Link>
                 </li>
                 <li>
-                  <Link to="/about" className="hover:text-[#9B2A4C] dark:hover:text-cyan-400 transition-colors">About</Link>
+                  <Link to="/about" className="hover:text-[#9B2A4C] dark:hover:text-rose-400 transition-colors">About</Link>
                 </li>
                 <li>
-                  <Link to="/projects" className="hover:text-[#9B2A4C] dark:hover:text-cyan-400 transition-colors">Projects</Link>
+                  <Link to="/projects" className="hover:text-[#9B2A4C] dark:hover:text-rose-400 transition-colors">Projects</Link>
                 </li>
                 <li>
-                  <Link to="/prompts" className="hover:text-[#9B2A4C] dark:hover:text-cyan-400 transition-colors">Prompt Hub</Link>
+                  <Link to="/prompts" className="hover:text-[#9B2A4C] dark:hover:text-rose-400 transition-colors">Prompt Hub</Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="hover:text-[#9B2A4C] dark:hover:text-cyan-400 transition-colors">Contact</Link>
+                  <Link to="/contact" className="hover:text-[#9B2A4C] dark:hover:text-rose-400 transition-colors">Contact</Link>
                 </li>
               </ul>
             </div>
@@ -79,7 +79,7 @@ export default function Footer() {
               <ul className="space-y-2.5 text-xs font-semibold text-[#5A6A72] dark:text-gray-400">
                 {services.map(svc => (
                   <li key={svc.id}>
-                    <Link to={`/services/${svc.id}`} className="hover:text-[#9B2A4C] dark:hover:text-cyan-400 transition-colors">
+                    <Link to={`/services/${svc.id}`} className="hover:text-[#9B2A4C] dark:hover:text-rose-400 transition-colors">
                       {t(`services.list.${svc.id}.title` as any)}
                     </Link>
                   </li>
@@ -92,15 +92,15 @@ export default function Footer() {
               <h4 className="text-[#1C2526] dark:text-white text-xs font-bold uppercase tracking-wider">{t('footer.contactTitle')}</h4>
               <ul className="space-y-3 text-[#5A6A72] dark:text-gray-400 text-xs font-semibold">
                 <li className="flex items-center gap-2">
-                  <i className="ri-phone-line text-[#9B2A4C] dark:text-cyan-400 text-sm" />
+                  <i className="ri-phone-line text-[#9B2A4C] dark:text-rose-400 text-sm" />
                   {t('footer.phone')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <i className="ri-map-pin-line text-[#9B2A4C] dark:text-cyan-400 text-sm" />
+                  <i className="ri-map-pin-line text-[#9B2A4C] dark:text-rose-400 text-sm" />
                   {t('footer.address')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <i className="ri-mail-line text-[#9B2A4C] dark:text-cyan-400 text-sm" />
+                  <i className="ri-mail-line text-[#9B2A4C] dark:text-rose-400 text-sm" />
                   {t('footer.email')}
                 </li>
               </ul>

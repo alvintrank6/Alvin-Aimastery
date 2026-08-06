@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL 
   ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api` 
-  : 'http://localhost:3001/api';
+  : 'http://localhost:3000/api';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -19,23 +19,18 @@ export const LeadsAPI = {
   delete: (id: string) => api.delete(`/leads/${id}`).then(res => res.data),
 };
 
-export const DevelopersAPI = {
-  getAll: () => api.get('/developers').then(res => res.data),
-  create: (data: any) => api.post('/developers', data).then(res => res.data),
-  update: (id: string, data: any) => api.put(`/developers/${id}`, data).then(res => res.data),
-  delete: (id: string) => api.delete(`/developers/${id}`).then(res => res.data),
-};
-
 export const ProjectsAPI = {
   getAll: () => api.get('/projects').then(res => res.data),
   create: (data: any) => api.post('/projects', data).then(res => res.data),
   update: (id: string, data: any) => api.put(`/projects/${id}`, data).then(res => res.data),
+  delete: (id: string) => api.delete(`/projects/${id}`).then(res => res.data),
 };
 
 export const PayoutsAPI = {
   getAll: () => api.get('/payouts').then(res => res.data),
   create: (data: any) => api.post('/payouts', data).then(res => res.data),
   update: (id: string, data: any) => api.put(`/payouts/${id}`, data).then(res => res.data),
+  delete: (id: string) => api.delete(`/payouts/${id}`).then(res => res.data),
 };
 
 export const AnalyticsAPI = {

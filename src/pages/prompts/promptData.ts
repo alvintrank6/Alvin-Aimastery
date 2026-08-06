@@ -118,7 +118,7 @@ H2: 2. Bảng So Sánh Chi Phí Vận Hành Thủ Công vs Vận Hành AI`,
     title: 'Chuỗi Bài Viết Viral Xây Dựng Thương Hiệu Cá Nhân Trê Threads & LinkedIn',
     category: 'Content & Social',
     model: 'ChatGPT 4o',
-    badgeColor: 'bg-cyan-600',
+    badgeColor: 'bg-[#9B2A4C]',
     summary: 'Biến trải nghiệm cá nhân thành chuỗi post bài Threads & LinkedIn thu hút hàng ngàn lượt tương tác tự nhiên.',
     systemPrompt: `You are a Personal Branding Specialist & Viral Ghostwriter for Tech Executives and Entrepreneurs on LinkedIn and Threads.
 Tone of Voice: Authentic, sharp, empathetic, vulnerable yet insightful.

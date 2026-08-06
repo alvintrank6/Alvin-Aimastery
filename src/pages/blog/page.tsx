@@ -34,11 +34,11 @@ export default function BlogPage() {
       <main className="max-w-7xl mx-auto px-4 md:px-8 space-y-12 pb-20 md:pb-28">
         {/* Page Header Banner */}
         <div className="space-y-4 text-center max-w-3xl mx-auto">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-cyan-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-rose-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 border border-[#9B2A4C]/20 dark:border-rose-400/30">
             Xu Hướng & Kiến Thức Hot
           </span>
           <h1 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white tracking-tight leading-tight">
-            Blog <span className="text-[#9B2A4C] dark:text-cyan-400">AI & Digital Marketing</span>
+            Blog <span className="text-[#9B2A4C] dark:text-rose-400">AI & Digital Marketing</span>
           </h1>
           <p className="text-sm md:text-base text-[#5A6A72] dark:text-gray-400 leading-relaxed">
             Tổng hợp những chủ đề hot nhất trên mạng xã hội, xu hướng AI mới nhất và chiến thuật tự động hóa tăng trưởng thực chiến.
@@ -49,7 +49,7 @@ export default function BlogPage() {
         {!searchQuery && selectedCategory === 'Tất cả' && featuredPost && (
           <div
             onClick={() => navigate(`/blog/${featuredPost.id}`)}
-            className="group cursor-pointer p-6 md:p-8 rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-2xl hover:shadow-cyan-500/10 hover:border-[#9B2A4C]/40 dark:hover:border-cyan-500/40 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+            className="group cursor-pointer p-6 md:p-8 rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-2xl hover:shadow-rose-500/10 hover:border-[#9B2A4C]/40 dark:hover:border-rose-400/40 transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
           >
             <div className="lg:col-span-7 relative aspect-video rounded-2xl overflow-hidden shadow-lg bg-slate-200 dark:bg-slate-800">
               <img
@@ -68,7 +68,7 @@ export default function BlogPage() {
 
             <div className="lg:col-span-5 space-y-4">
               <div className="flex items-center gap-3 text-xs font-bold text-gray-500 dark:text-gray-400">
-                <span className="text-[#9B2A4C] dark:text-cyan-400 uppercase tracking-wider">
+                <span className="text-[#9B2A4C] dark:text-rose-400 uppercase tracking-wider">
                   {featuredPost.category}
                 </span>
                 <span>•</span>
@@ -77,7 +77,7 @@ export default function BlogPage() {
                 <span>{featuredPost.date}</span>
               </div>
 
-              <h2 className="text-xl md:text-3xl font-black text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-cyan-400 transition-colors leading-tight">
+              <h2 className="text-xl md:text-3xl font-black text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-rose-400 transition-colors leading-tight">
                 {featuredPost.title}
               </h2>
 
@@ -97,7 +97,7 @@ export default function BlogPage() {
                   </span>
                 </div>
 
-                <span className="text-xs font-bold text-[#9B2A4C] dark:text-cyan-400 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                <span className="text-xs font-bold text-[#9B2A4C] dark:text-rose-400 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                   Đọc ngay <i className="ri-arrow-right-line" />
                 </span>
               </div>
@@ -132,7 +132,7 @@ export default function BlogPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm bài viết, từ khóa..."
-              className="w-full pl-10 pr-4 py-2 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-800 text-xs font-medium text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400 shadow-sm"
+              className="w-full pl-10 pr-4 py-2 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-800 text-xs font-medium text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400 shadow-sm"
             />
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function BlogPage() {
               <article
                 key={post.id}
                 onClick={() => navigate(`/blog/${post.id}`)}
-                className="group cursor-pointer rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl hover:border-[#9B2A4C]/40 dark:hover:border-cyan-500/40 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                className="group cursor-pointer rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl hover:border-[#9B2A4C]/40 dark:hover:border-rose-400/40 transition-all duration-300 flex flex-col justify-between overflow-hidden"
               >
                 <div className="space-y-4">
                   {/* Image Cover */}
@@ -174,7 +174,7 @@ export default function BlogPage() {
                       </span>
                     </div>
 
-                    <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-cyan-400 transition-colors leading-snug line-clamp-2">
+                    <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-rose-400 transition-colors leading-snug line-clamp-2">
                       {post.title}
                     </h3>
 
@@ -195,7 +195,7 @@ export default function BlogPage() {
                     <span className="text-[11px] text-gray-500 dark:text-gray-400">{post.author}</span>
                   </div>
 
-                  <span className="text-[#9B2A4C] dark:text-cyan-400 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                  <span className="text-[#9B2A4C] dark:text-rose-400 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                     Xem chi tiết <i className="ri-arrow-right-line" />
                   </span>
                 </div>

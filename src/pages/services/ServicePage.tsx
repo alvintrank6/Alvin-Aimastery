@@ -1859,7 +1859,7 @@ export function AppShowcase() {
                         </div>
                       </div>
                       <span className={`text-[10px] font-extrabold ${
-                        acTemp < 22 ? 'text-cyan-500' : acTemp > 25 ? 'text-orange-500' : 'text-emerald-500'
+                        acTemp < 22 ? 'text-[#9B2A4C]' : acTemp > 25 ? 'text-orange-500' : 'text-emerald-500'
                       }`}>{acTemp}°C</span>
                     </div>
 
@@ -2120,13 +2120,19 @@ export function ServiceShowcaseDispatcher({ serviceId }: { serviceId: string }) 
 }
 
 /* --- MAIN SERVICE PAGE COMPONENT --- */
-
 export default function ServicePage() {
   const { serviceId } = useParams<{ serviceId: string }>();
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const SERVICE_ALIAS_MAP: Record<string, string> = {
+    'ai-marketing': 'web',
+    'n8n-automation': 'n8n',
+    'web-design': 'web',
+    'odoo-erp': 'workflow',
+  };
 
-  const service = serviceId ? SERVICES_DATA[serviceId.toLowerCase()] : null;
+  const rawKey = serviceId ? serviceId.toLowerCase() : '';
+  const targetKey = SERVICE_ALIAS_MAP[rawKey] || rawKey;
+  const service = SERVICES_DATA[targetKey];
 
   // Retrieve localized process and whyUs lists from translation files
   let processList: Array<{ title: string; desc: string }> = [];

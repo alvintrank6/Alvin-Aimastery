@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const ThemeToggleSwitch: React.FC = () => {
   const [isDark, setIsDark] = useState<boolean>(false);
+  const location = useLocation();
 
   useEffect(() => {
     // Initial check
@@ -32,6 +34,11 @@ export const ThemeToggleSwitch: React.FC = () => {
       setIsDark(true);
     }
   };
+
+  // Do not show floating theme toggle switch on admin dashboard page
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 select-none pointer-events-auto">

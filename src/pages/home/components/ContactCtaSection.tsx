@@ -48,7 +48,7 @@ export default function ContactCtaSection() {
         
         {/* Section Title */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-cyan-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-rose-400 px-3.5 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 border border-[#9B2A4C]/20 dark:border-rose-400/30">
             Let's Connect
           </span>
           <h2 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white tracking-tight uppercase leading-tight">
@@ -96,21 +96,21 @@ export default function ContactCtaSection() {
 
                 <div className="pt-2 space-y-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                   <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 flex items-center justify-center text-[#9B2A4C] dark:text-cyan-400">
+                    <span className="w-8 h-8 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 flex items-center justify-center text-[#9B2A4C] dark:text-rose-400">
                       <i className="ri-phone-line" />
                     </span>
                     <span>Hotline: 0376960193</span>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 flex items-center justify-center text-[#9B2A4C] dark:text-cyan-400">
+                    <span className="w-8 h-8 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 flex items-center justify-center text-[#9B2A4C] dark:text-rose-400">
                       <i className="ri-mail-line" />
                     </span>
                     <span>Email: alvintrank95@gmail.com</span>
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <span className="w-8 h-8 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 flex items-center justify-center text-[#9B2A4C] dark:text-cyan-400 shrink-0 mt-0.5">
+                    <span className="w-8 h-8 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 flex items-center justify-center text-[#9B2A4C] dark:text-rose-400 shrink-0 mt-0.5">
                       <i className="ri-map-pin-line" />
                     </span>
                     <span className="leading-snug">
@@ -161,7 +161,7 @@ export default function ContactCtaSection() {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Nguyễn Văn A"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400"
                       />
                     </div>
 
@@ -175,7 +175,7 @@ export default function ContactCtaSection() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="example@gmail.com"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400"
                       />
                     </div>
                   </div>
@@ -191,7 +191,7 @@ export default function ContactCtaSection() {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="0376960193"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400"
                       />
                     </div>
 
@@ -202,7 +202,7 @@ export default function ContactCtaSection() {
                       <select
                         value={formData.service}
                         onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400"
                       >
                         <option value="ai-marketing">AI Marketing & Growth Strategy</option>
                         <option value="n8n-automation">AI & Workflow Automations (n8n)</option>

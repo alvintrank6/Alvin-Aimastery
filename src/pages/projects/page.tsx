@@ -174,13 +174,13 @@ export default function ProjectsPage() {
         
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#9B2A4C]/20 bg-[#9B2A4C]/10 dark:bg-cyan-500/10 dark:border-cyan-500/20 text-[#9B2A4C] dark:text-cyan-400 text-xs font-bold uppercase tracking-widest">
-            <span className="w-2 h-2 rounded-full bg-[#9B2A4C] dark:bg-cyan-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#9B2A4C]/20 bg-[#9B2A4C]/10 dark:bg-rose-400/10 dark:border-rose-400/30 text-[#9B2A4C] dark:text-rose-400 text-xs font-bold uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-[#9B2A4C] dark:bg-rose-400 animate-pulse" />
             Portfolio & Showcase
           </div>
 
           <h1 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white leading-tight">
-            Sản Phẩm Mẫu – <span className="text-[#9B2A4C] dark:text-cyan-400">Thực Chiến 20+ Ngành Nghề</span>
+            Sản Phẩm Mẫu – <span className="text-[#9B2A4C] dark:text-rose-400">Thực Chiến 20+ Ngành Nghề</span>
           </h1>
 
           <p className="text-sm md:text-base text-[#5A6A72] dark:text-gray-400 leading-relaxed">
@@ -190,19 +190,19 @@ export default function ProjectsPage() {
           {/* Stats Bar */}
           <div className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
             <div className="p-3 rounded-2xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-sm text-center">
-              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-cyan-400">150+</div>
+              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-rose-400">150+</div>
               <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400">Dự án hoàn thành</div>
             </div>
             <div className="p-3 rounded-2xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-sm text-center">
-              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-cyan-400">20+</div>
+              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-rose-400">20+</div>
               <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400">Ngành nghề</div>
             </div>
             <div className="p-3 rounded-2xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-sm text-center">
-              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-cyan-400">98%</div>
+              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-rose-400">98%</div>
               <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400">Khách hài lòng</div>
             </div>
             <div className="p-3 rounded-2xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-sm text-center">
-              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-cyan-400">5★</div>
+              <div className="text-xl md:text-2xl font-black text-[#9B2A4C] dark:text-rose-400">5★</div>
               <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400">Đánh giá trung bình</div>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function ProjectsPage() {
           <aside className="lg:col-span-3 bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 rounded-3xl p-5 shadow-xl space-y-4 lg:sticky lg:top-28">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
               <span className="text-xs font-black uppercase tracking-wider text-[#1C2526] dark:text-white flex items-center gap-2">
-                <i className="ri-filter-3-line text-[#9B2A4C] dark:text-cyan-400" />
+                <i className="ri-filter-3-line text-[#9B2A4C] dark:text-rose-400" />
                 Danh Mục Ngành Nghề
               </span>
               <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
@@ -237,7 +237,7 @@ export default function ProjectsPage() {
                     onClick={() => setSelectedCat(cat.id)}
                     className={`w-auto lg:w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                       isActive
-                        ? 'bg-[#9B2A4C] text-white dark:bg-cyan-500 dark:text-black shadow-md'
+                        ? 'bg-[#9B2A4C] text-white dark:bg-rose-600 dark:text-white shadow-md'
                         : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
@@ -245,7 +245,7 @@ export default function ProjectsPage() {
                     <span
                       className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ml-2 ${
                         isActive
-                          ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black'
+                          ? 'bg-white/20 text-white'
                           : 'bg-gray-200 dark:bg-gray-800 text-gray-500'
                       }`}
                     >
@@ -274,7 +274,7 @@ export default function ProjectsPage() {
                   placeholder="Tìm theo tên, công nghệ..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-cyan-400"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs text-[#1C2526] dark:text-white focus:outline-none focus:border-[#9B2A4C] dark:focus:border-rose-400"
                 />
               </div>
             </div>
@@ -291,7 +291,7 @@ export default function ProjectsPage() {
                 {filteredProducts.map((prod) => (
                   <div
                     key={prod.id}
-                    className="group rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden hover:shadow-2xl hover:border-[#9B2A4C]/30 dark:hover:border-cyan-500/30 transition-all duration-300 flex flex-col justify-between"
+                    className="group rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden hover:shadow-2xl hover:border-[#9B2A4C]/30 dark:hover:border-rose-400/30 transition-all duration-300 flex flex-col justify-between"
                   >
                     <div>
                       {/* Thumbnail Header */}
@@ -315,10 +315,10 @@ export default function ProjectsPage() {
                         )}
 
                         {/* Interactive Overlay on Hover */}
-                        <div className="absolute inset-0 bg-[#9B2A4C]/20 dark:bg-cyan-500/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-[#9B2A4C]/20 dark:bg-rose-500/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <button
                             onClick={() => setActiveDemoModal(prod)}
-                            className="py-2 px-5 rounded-full bg-white text-[#9B2A4C] dark:bg-cyan-400 dark:text-black font-extrabold text-xs shadow-xl hover:scale-110 transition-transform flex items-center gap-1.5 cursor-pointer"
+                            className="py-2 px-5 rounded-full bg-white text-[#9B2A4C] dark:bg-rose-500 dark:text-white font-extrabold text-xs shadow-xl hover:scale-110 transition-transform flex items-center gap-1.5 cursor-pointer"
                           >
                             <i className="ri-[#play-circle-line] text-base" />
                             Xem Demo Trực Tiếp
@@ -328,11 +328,11 @@ export default function ProjectsPage() {
 
                       {/* Card Content */}
                       <div className="p-5 space-y-2.5">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B2A4C] dark:text-cyan-400">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B2A4C] dark:text-rose-400">
                           {prod.catName}
                         </div>
 
-                        <h3 className="text-sm font-extrabold text-[#1C2526] dark:text-white leading-snug line-clamp-2 group-hover:text-[#9B2A4C] dark:group-hover:text-cyan-400 transition-colors">
+                        <h3 className="text-sm font-extrabold text-[#1C2526] dark:text-white leading-snug line-clamp-2 group-hover:text-[#9B2A4C] dark:group-hover:text-rose-400 transition-colors">
                           {prod.title}
                         </h3>
 
@@ -360,14 +360,14 @@ export default function ProjectsPage() {
                         {prod.priceLabel && (
                           <div className="text-[9px] font-bold text-gray-400">{prod.priceLabel}</div>
                         )}
-                        <div className="text-sm font-black text-[#9B2A4C] dark:text-cyan-400">
+                        <div className="text-sm font-black text-[#9B2A4C] dark:text-rose-400">
                           {prod.price} {prod.price !== 'Thỏa thuận' && 'đ'}
                         </div>
                       </div>
 
                       <button
                         onClick={() => setActiveDemoModal(prod)}
-                        className="py-2 px-3.5 rounded-xl border border-[#9B2A4C]/30 dark:border-cyan-400/30 text-[#9B2A4C] dark:text-cyan-400 hover:bg-[#9B2A4C] hover:text-white dark:hover:bg-cyan-400 dark:hover:text-black font-bold text-xs flex items-center gap-1 transition-all cursor-pointer"
+                        className="py-2 px-3.5 rounded-xl border border-[#9B2A4C]/30 dark:border-rose-400/30 text-[#9B2A4C] dark:text-rose-400 hover:bg-[#9B2A4C] hover:text-white dark:hover:bg-[#9B2A4C] dark:hover:text-white font-bold text-xs flex items-center gap-1 transition-all cursor-pointer"
                       >
                         <i className="ri-play-circle-line text-sm" />
                         Xem demo
@@ -436,7 +436,7 @@ export default function ProjectsPage() {
 
                 <button
                   onClick={() => openDemoInNewTab(activeDemoModal.id)}
-                  className="px-3 py-1 rounded-lg border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1 rounded-lg border border-[#9B2A4C]/40 text-[#9B2A4C] dark:text-rose-400 hover:bg-[#9B2A4C]/10 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                 >
                   Mở tab mới ↗
                 </button>

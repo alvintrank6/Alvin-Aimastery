@@ -63,12 +63,16 @@ export default function FeaturedProjectsSection() {
 
   const mappedCustom = customProjectsList.map((cp: any) => ({
     id: cp.id,
-    title: cp.name,
-    tag: cp.badge || 'Dự Án Mới',
-    desc: cp.description,
-    stats: `${cp.priceLabel} ${cp.price}`,
-    tech: cp.tags ? cp.tags.split(',').map((t: string) => t.trim()) : ['AI System'],
-    img: cp.image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80',
+    title: cp.title || cp.name || 'Dự Án Mới',
+    tag: cp.badge || cp.catName || 'Dự Án Mới',
+    desc: cp.desc || cp.description || '',
+    stats: `${cp.priceLabel || 'Giá từ'} ${cp.price || ''}`,
+    tech: Array.isArray(cp.tags)
+      ? cp.tags
+      : typeof cp.tags === 'string'
+      ? cp.tags.split(',').map((t: string) => t.trim())
+      : ['AI System'],
+    img: cp.img || cp.image || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80',
     demoUrl: cp.demoUrl || 'https://lamphongtech.vn/san-pham-mau.html',
   }));
 
@@ -81,11 +85,11 @@ export default function FeaturedProjectsSection() {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div className="space-y-2">
-            <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-cyan-400 px-3 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-cyan-500/10 border border-[#9B2A4C]/20 dark:border-cyan-500/20">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#9B2A4C] dark:text-rose-400 px-3 py-1 rounded-full bg-[#9B2A4C]/10 dark:bg-rose-400/10 border border-[#9B2A4C]/20 dark:border-rose-400/30">
               Featured Case Studies
             </span>
             <h2 className="text-3xl md:text-5xl font-black text-[#1C2526] dark:text-white tracking-tight">
-              Dự án <span className="text-[#9B2A4C] dark:text-cyan-400">Tiêu Biểu</span>
+              Dự án <span className="text-[#9B2A4C] dark:text-rose-400">Tiêu Biểu</span>
             </h2>
             <p className="text-sm text-[#5A6A72] dark:text-gray-400 max-w-lg">
               Các dự án thực chiến ứng dụng AI, tiếp thị số & tự động hóa mang lại giá trị chuyển đổi cao.
@@ -94,7 +98,7 @@ export default function FeaturedProjectsSection() {
 
           <Link
             to="/projects"
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#9B2A4C] dark:text-cyan-400 hover:underline uppercase tracking-wider shrink-0"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#9B2A4C] dark:text-rose-400 hover:underline uppercase tracking-wider shrink-0"
           >
             {i18n.language === 'vi' ? 'Xem tất cả dự án' : 'View All Projects'}
             <i className="ri-arrow-right-line" />
@@ -106,7 +110,7 @@ export default function FeaturedProjectsSection() {
           {projects.map((item) => (
             <div
               key={item.id}
-              className="group rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden hover:shadow-2xl hover:border-[#9B2A4C]/30 dark:hover:border-cyan-500/30 transition-all duration-300 flex flex-col justify-between"
+              className="group rounded-3xl bg-white dark:bg-[#131B2E] border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden hover:shadow-2xl hover:border-[#9B2A4C]/30 dark:hover:border-rose-400/30 transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                 {/* Thumbnail Image */}
@@ -127,10 +131,10 @@ export default function FeaturedProjectsSection() {
                   </span>
 
                   {/* Interactive Overlay */}
-                  <div className="absolute inset-0 bg-[#9B2A4C]/20 dark:bg-cyan-500/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[#9B2A4C]/20 dark:bg-rose-500/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button
                       onClick={() => setActiveDemoModal(item)}
-                      className="py-2 px-5 rounded-full bg-white text-[#9B2A4C] dark:bg-cyan-400 dark:text-black font-extrabold text-xs shadow-xl hover:scale-110 transition-transform flex items-center gap-1.5 cursor-pointer"
+                      className="py-2 px-5 rounded-full bg-white text-[#9B2A4C] dark:bg-rose-500 dark:text-white font-extrabold text-xs shadow-xl hover:scale-110 transition-transform flex items-center gap-1.5 cursor-pointer"
                     >
                       <i className="ri-play-circle-line text-base" />
                       Xem Demo Trực Tiếp
@@ -140,7 +144,7 @@ export default function FeaturedProjectsSection() {
 
                 {/* Content */}
                 <div className="p-6 space-y-3">
-                  <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-cyan-400 transition-colors line-clamp-2">
+                  <h3 className="text-base font-extrabold text-[#1C2526] dark:text-white group-hover:text-[#9B2A4C] dark:group-hover:text-rose-400 transition-colors line-clamp-2">
                     {item.title}
                   </h3>
 
@@ -166,14 +170,14 @@ export default function FeaturedProjectsSection() {
               <div className="p-6 pt-0 flex items-center justify-between border-t border-gray-100 dark:border-gray-800/80 mt-4">
                 <button
                   onClick={() => setActiveDemoModal(item)}
-                  className="text-xs font-bold text-[#9B2A4C] dark:text-cyan-400 inline-flex items-center gap-1 hover:gap-2 transition-all cursor-pointer"
+                  className="text-xs font-bold text-[#9B2A4C] dark:text-rose-400 inline-flex items-center gap-1 hover:gap-2 transition-all cursor-pointer"
                 >
                   Xem demo trực tiếp <i className="ri-play-circle-line" />
                 </button>
 
                 <span
                   onClick={() => setActiveDemoModal(item)}
-                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-[#9B2A4C] group-hover:text-white dark:group-hover:bg-cyan-400 dark:group-hover:text-black transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-[#9B2A4C] group-hover:text-white dark:group-hover:bg-[#9B2A4C] dark:group-hover:text-white transition-colors cursor-pointer"
                 >
                   <i className="ri-arrow-right-up-line" />
                 </span>
@@ -237,7 +241,7 @@ export default function FeaturedProjectsSection() {
 
                 <button
                   onClick={() => openDemoInNewTab(activeDemoModal.id)}
-                  className="px-3 py-1 rounded-lg border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1 rounded-lg border border-[#9B2A4C]/40 text-[#9B2A4C] dark:text-rose-400 hover:bg-[#9B2A4C]/10 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                 >
                   Mở tab mới ↗
                 </button>

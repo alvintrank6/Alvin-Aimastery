@@ -80,43 +80,47 @@ export default function EcosystemSection() {
             </div>
           </div>
 
-          {/* Developer Path Card */}
+          {/* Partner & Solution Path Card */}
           <div className="bg-white dark:!bg-[#121722] rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group">
             <div className="space-y-6">
               {/* Header inside Card */}
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white" style={{ background: '#6B1D35' }}>
-                  <i className="ri-code-box-line text-xl" />
+                  <i className="ri-shake-hands-line text-xl" />
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-[#6B1D35] uppercase tracking-wider">
-                    {i18n.language === 'vi' ? 'Dành Cho Lập Trình Viên' : 'For Developers'}
+                    {i18n.language === 'vi' ? 'Dành Cho Doanh Nghiệp' : 'For Enterprises'}
                   </span>
-                  <h3 className="text-lg md:text-xl font-bold text-[#1C2526] dark:text-white">{t('ecosystem.developer.title')}</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-[#1C2526] dark:text-white">
+                    {i18n.language === 'vi' ? 'Tư Vấn Giải Pháp & Hợp Tác' : 'Consulting & Partnership'}
+                  </h3>
                 </div>
               </div>
 
               <p className="text-xs text-[#5A6A72] dark:text-gray-300 leading-relaxed">
-                {t('ecosystem.developer.desc')}
+                {i18n.language === 'vi'
+                  ? 'Nhận thiết kế riêng giải pháp AI Marketing, tự động hóa quy trình n8n và tích hợp Web/App theo yêu cầu.'
+                  : 'Get tailored AI Marketing solutions, n8n workflow automation, and custom Web/App integration.'}
               </p>
 
               {/* Steps */}
               <div className="space-y-3.5 pt-2">
                 <h4 className="text-xs font-bold text-[#1C2526] dark:text-white uppercase tracking-wide">
-                  {t('ecosystem.developer.stepTitle')}
+                  {i18n.language === 'vi' ? 'Quy Trình Triển Khai' : 'Implementation Process'}
                 </h4>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2 text-xs text-[#5A6A72] dark:text-gray-300">
                     <span className="w-5 h-5 rounded-full bg-[#6B1D35]/10 text-[#6B1D35] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
-                    <span>{t('ecosystem.developer.step1')}</span>
+                    <span>{i18n.language === 'vi' ? 'Khảo sát nhu cầu & tư vấn 1:1' : '1:1 Needs Assessment & Consulting'}</span>
                   </li>
                   <li className="flex items-start gap-2 text-xs text-[#5A6A72] dark:text-gray-300">
                     <span className="w-5 h-5 rounded-full bg-[#6B1D35]/10 text-[#6B1D35] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
-                    <span>{t('ecosystem.developer.step2')}</span>
+                    <span>{i18n.language === 'vi' ? 'Xây dựng giải pháp & Demo kịch bản' : 'Solution Design & Demo Script'}</span>
                   </li>
                   <li className="flex items-start gap-2 text-xs text-[#5A6A72] dark:text-gray-300">
                     <span className="w-5 h-5 rounded-full bg-[#6B1D35]/10 text-[#6B1D35] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
-                    <span>{t('ecosystem.developer.step3')}</span>
+                    <span>{i18n.language === 'vi' ? 'Bàn giao hệ thống & Đào tạo sử dụng' : 'System Handover & Staff Training'}</span>
                   </li>
                 </ul>
               </div>
@@ -124,11 +128,11 @@ export default function EcosystemSection() {
 
             <div className="pt-8">
               <Link
-                to="/developer/register"
+                to="/contact"
                 className="inline-flex items-center justify-center gap-2 w-full sm:w-auto text-xs font-bold text-[#1C2526] dark:text-white px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 hover:border-[#6B1D35]/40 transition-colors bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-center"
               >
-                {t('ecosystem.developer.cta')}
-                <i className="ri-team-line" />
+                {i18n.language === 'vi' ? 'Đăng Ký Tư Vấn' : 'Book Consultation'}
+                <i className="ri-arrow-right-line" />
               </Link>
             </div>
           </div>

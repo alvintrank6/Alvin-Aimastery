@@ -283,16 +283,6 @@ export default function Navbar() {
                       {i18n.language === 'vi' ? 'Cổng khách hàng' : 'Client Portal'}
                     </Link>
                   )}
-                  {userState.role === 'developer' && (
-                    <Link
-                      to="/member-portal"
-                      onClick={() => setAuthDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6A72] hover:text-[#9B2A4C] hover:bg-[#9B2A4C]/5 transition-all mt-1"
-                    >
-                      <i className="ri-code-box-line text-base text-[#9B2A4C]" />
-                      {i18n.language === 'vi' ? 'Cổng Freelancer' : 'Member Portal'}
-                    </Link>
-                  )}
                   {(userState.role === 'admin' || userState.role === 'manager') && (
                     <Link
                       to="/admin"
